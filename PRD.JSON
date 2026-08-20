@@ -40,12 +40,12 @@
     },
     {
       "id": "1",
-      "name": "Offline time-capsule slice (past baseline + present window) — PENDING data-scout",
+      "name": "Offline time-capsule slice (past baseline + present window)",
       "deps": [
         "0"
       ],
       "tasks": [
-        "PENDING wgbdis0fw: lock real sources (AISStream live + DMA/NOAA historical for ships; OpenSky live+historical for air-freight).",
+        "Sources LOCKED (see docs/data-capture-plan.md): ships=AISStream.io WebSocket (present) + self-recorded earlier windows (past); air=OpenSky /states/all OAuth2 (present). Theater = Suez + Bab-el-Mandeb. Cargo filter (AIS 70-89) is CLIENT-SIDE; freighters by callsign prefix (FDX/UPS/GTI/CLX).",
         "scripts/capture.py: record BOTH a PAST baseline (archived bulk) AND a PRESENT live window for ONE chokepoint theater into data/theater.parquet — cargo/tanker (AIS 70-89) + freighter flights — deterministic replay schema + a per-row provenance stamp (source, captured_at, observed=true).",
         "scripts/replay.py: stream the sealed slice at a controllable clock with ZERO network calls at replay time."
       ],
@@ -83,7 +83,7 @@
         "0"
       ],
       "tasks": [
-        "sim/reroute.py: given (origin, destination) + a set of BLOCKED chokepoints, return the sea route (waypoints + transit hours) using searoute with the blocked node/edge removed.",
+        "sim/reroute.py: use searoute-py's native `restrictions=[...]` param (suez/panama/malacca/ormuz/babalmandab/bosporus/gibraltar) to force reroutes — NO custom graph surgery. Return waypoints + transit hours.",
         "Encode the major chokepoints (Suez, Panama, Malacca, Hormuz, Bab-el-Mandeb) as toggleable blocks."
       ],
       "verifications": [
