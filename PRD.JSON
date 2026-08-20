@@ -14,7 +14,8 @@
       "This codebase is written by an AI loop: comments minimal and only where they inform the next iteration; test only what must survive repeated runs.",
       "Rail is OUT of the MVP (freight rail data is private) — air + sea only; rail is a roadmap line, never faked."
     ],
-    "venue_notes": "M0-M5 are PRE-EVENT, buildable on Alex's laptop/Mini via OpenRouter (this loop). M6-M8 are ON-BOX (GB10) or pitch/taste — the loop scaffolds them but Alex owns the GB10 numbers, the agent quality, and the pitch. Data sources in M1 are PENDING the deep-research data-scout (wgbdis0fw) — finalize M1 when it lands."
+    "venue_notes": "M0-M5 are PRE-EVENT, buildable on Alex's laptop/Mini via OpenRouter (this loop). M6-M8 are ON-BOX (GB10) or pitch/taste — the loop scaffolds them but Alex owns the GB10 numbers, the agent quality, and the pitch. Data sources in M1 are PENDING the deep-research data-scout (wgbdis0fw) — finalize M1 when it lands.",
+    "scope_locked_aug20": "PRIZE-RUN, not a body of work — optimize to WIN reliably, do not gold-plate. Theater=Suez+Bab-el-Mandeb (iconic) with US/NOAA-bulk as BREAK-GLASS so data can never sink the demo. Live-ness=hybrid (self-recorded past window + one live present window). Ships first; air (OpenSky, already verified) only if slack. Aesthetic=PS2 shaders + Plague-Inc playful. Demo CLIMAX=inject chokepoint -> reroute cascade blooms, agent narrates it live. Balance=50/50 business-armor-on-artful-core. History (Bronze Age)=ONE pitch line, NOT built. Ambition=swing for 1st on a reliable core that cannot break; exactly one big wow on top; settling for solid top-8 is acceptable."
   },
   "defaults": {
     "model": "openrouter/z-ai/glm-5.2",
@@ -47,7 +48,8 @@
       "tasks": [
         "Sources LOCKED (see docs/data-capture-plan.md): ships=AISStream.io WebSocket (present) + self-recorded earlier windows (past); air=OpenSky /states/all OAuth2 (present). Theater = Suez + Bab-el-Mandeb. Cargo filter (AIS 70-89) is CLIENT-SIDE; freighters by callsign prefix (FDX/UPS/GTI/CLX).",
         "scripts/capture.py: record BOTH a PAST baseline (archived bulk) AND a PRESENT live window for ONE chokepoint theater into data/theater.parquet — cargo/tanker (AIS 70-89) + freighter flights — deterministic replay schema + a per-row provenance stamp (source, captured_at, observed=true).",
-        "scripts/replay.py: stream the sealed slice at a controllable clock with ZERO network calls at replay time."
+        "scripts/replay.py: stream the sealed slice at a controllable clock with ZERO network calls at replay time.",
+        "BREAK-GLASS: if AISStream live keeps 429ing, fall back to a NOAA US-port theater (bulk CSV, zero rate limit) so the pipeline still has real cargo data. Air (OpenSky) is a STRETCH, not required for MVP."
       ],
       "verifications": [
         "data/theater.parquet has a past-baseline segment AND a present-window segment, >= N cargo tracks total (N from scout sizing)",
@@ -65,7 +67,7 @@
       ],
       "tasks": [
         "globe/: deck.gl globe view; load a theater slice (synthetic fixture until M1); animate cargo tracks over the replay clock as arcs/points.",
-        "Layer widgets: cargo/tanker toggle, region filter, a time-scrubber; a Plague-Inc-plain aesthetic (taste later).",
+        "Layer widgets (cargo toggle, region filter, time-scrubber) + LOCKED aesthetic: PS2 shaders (vertex lighting, dither, low-res, warm fog) + Plague-Inc playful map.",
         "Read-only render — no sim yet."
       ],
       "verifications": [
@@ -116,12 +118,13 @@
     },
     {
       "id": "5",
-      "name": "Plague-Inc cascade visualization",
+      "name": "Reroute-cascade viz (THE demo climax)",
       "deps": [
         "2",
         "4"
       ],
       "tasks": [
+        "THIS IS THE MONEY SHOT: inject chokepoint -> congestion blooms Plague-Inc-style, rerouted flows animate around the Cape, ports back up, agent narrates. Make it read in 10 seconds.",
         "Render a loaded timeline: chokepoint clog blooms (congestion color), rerouted flows animate along new paths, downstream port nodes back up over sim-weeks.",
         "A play/scrub control over the simulated future; compare two saved timelines side by side (stretch)."
       ],
@@ -176,9 +179,9 @@
       ],
       "tasks": [
         "A 30-second 'same engine, modern supply chain' transfer scenario (e.g., chips / Taiwan Strait) proving Skein is an engine, not a one-off — kills the 'it's a toy' red-team.",
-        "Optional historical layer: the same engine running the Bronze Age as the FIRST supply-chain collapse ('this has happened before').",
         "The pitch spine: local-sovereignty why, the visible agent, the telemetry HUD, the refuse-to-oracle ethos.",
-        "THE PROOF BEAT: physically unplug the network mid-demo — the sealed capsule + sim + agent + render keep running. Line: 'a sealed capsule of the world's cargo flow on <date>, and every future of it, on this box, no internet.'"
+        "THE PROOF BEAT: physically unplug the network mid-demo — the sealed capsule + sim + agent + render keep running. Line: 'a sealed capsule of the world's cargo flow on <date>, and every future of it, on this box, no internet.'",
+        "Bronze Age = ONE pitch sentence ('the first supply-chain collapse was 1200 BCE'), NOT a built layer."
       ],
       "verifications": [
         "HUMAN_GATE: the transfer scenario runs on the same engine with a different scenario file",
