@@ -85,11 +85,11 @@
         "0"
       ],
       "tasks": [
-        "sim/reroute.py: use searoute-py's native `restrictions=[...]` param (suez/panama/malacca/ormuz/babalmandab/bosporus/gibraltar) to force reroutes — NO custom graph surgery. Return waypoints + transit hours.",
+        "sim/reroute.py: force reroutes via searoute-py `restrictions` — but maintain a per-scenario BLOCK-SET (target + all bypasses; keep default 'northwest'). VERIFIED: ['suez','panama','northwest'] rounds the Cape (see docs/searoute-notes.md). NO graph surgery.",
         "Encode the major chokepoints (Suez, Panama, Malacca, Hormuz, Bab-el-Mandeb) as toggleable blocks."
       ],
       "verifications": [
-        "blocking Suez on an Asia->Europe pair returns a route whose length increases and whose waypoints pass near the Cape of Good Hope (approx coords assert)",
+        "blocking the Suez set on Shanghai->Rotterdam returns a route with min_lat < -25 (ROUNDS THE CAPE) — assert by geometry, NOT by length (a wrong route can be shorter)",
         "unblocked baseline route passes through the Suez corridor",
         "transit-hours output is monotincreasing with route length"
       ],
