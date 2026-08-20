@@ -1,0 +1,167 @@
+{
+  "project": {
+    "name": "skein",
+    "one_liner": "An offline, cargo-focused logistics observability + agent war-gaming instrument: measure the LIVE flow of ships and air-freight through a chokepoint theater, then fork a simulated future — inject a blockage and watch each vessel reroute over weeks — rendered Plague-Inc-style on a zoomable globe, running entirely local on an NVIDIA GB10.",
+    "full_context": "Skein is a 12-hour hackathon build for the Dell x NVIDIA GB10 event (Aug 22 2026). Requirement: an always-on BUSINESS agent that runs LOCALLY on the box (no cloud API). Skein reads pre-recorded cargo AIS (ships) + ADS-B (air-freight) for one chokepoint theater (e.g., Suez/Red Sea, or Singapore/Malacca), renders the live flow on a deck.gl globe, and lets you INJECT a chokepoint disruption (an Ever-Given-style Suez block). It then forks a SIMULATED future: each cargo vessel is forward-projected via searoute (reroute around the block / wait / divert to alt port) over simulated weeks, congestion blooms Plague-Inc-style, downstream ports back up, and the whole timeline is SAVED as a seeded, provenance-stamped artifact you can replay and compare. A local NVIDIA Nemotron agent (via NemoClaw/OpenClaw, sandboxed by OpenShell) is the always-on SENTINEL: it watches the flows, flags chokepoint stress, runs what-if disruptions on command, and briefs in plain language. The engine is domain-agnostic (agents + dependency network + shock cascade); the demo scenario is a maritime chokepoint, with a 30-second 'same engine, modern chip supply / Taiwan Strait' transfer beat to prove it is not a one-off. ETHOS: the simulated future is DECLARED FABULATION, not prediction — the sentinel shows interdependencies and reactions and REFUSES to claim it knows what will really happen. Business: supply-chain risk intelligence / logistics observability (buyers: cargo & trade-credit insurers, freight forwarders, commodity traders, defense/gov OSINT, port authorities); the LOCAL/offline form is the honest value — sovereign, air-gapped systemic-risk war-gaming, no cloud leakage.",
+    "hard_rules": [
+      "LOCAL-ONLY at demo time: the agent/model runs on the box; all data is PRE-RECORDED to a drive and replayed offline. No cloud API during the demo (hackathon rule + the product's sovereignty pitch).",
+      "The simulated future is DECLARED FABULATION, never prediction. Every saved timeline carries its seed + assumptions + the blocked chokepoint; the sentinel refuses to name a single certain outcome.",
+      "CARGO-FOCUSED: filter AIS to cargo/tanker ship types; filter ADS-B to freighter operators. Passenger traffic is out of scope for the MVP.",
+      "HONEST COVERAGE: free AIS is terrestrial/coastal (line-of-sight ~20-40nm) — the theater is scoped to chokepoints/ports/coastal lanes where coverage is dense; mid-ocean gaps are dead-reckoned and LABELLED, never presented as real fixes.",
+      "The agent must take VISIBLE, AUTONOMOUS actions (query_flows, inject_shock, reroute_sim, brief, alert) — it is an AGENT, not a dashboard. If it only renders, it fails the brief.",
+      "PUSH THE BOX AND PROVE IT: a live telemetry HUD (GPU %, SoC watts of 140, unified-GB of 128, tok/s, vessels simulated) read from NVML/sparkview — nvidia-smi under-reports on GB10 UMA, do not rely on it. Targets: GPU >=90%, SoC >=120W, unified mem >=60GB, 10k+ vessels real-time.",
+      "This codebase is written by an AI loop: comments minimal and only where they inform the next iteration; test only what must survive repeated runs.",
+      "Rail is OUT of the MVP (freight rail data is private) — air + sea only; rail is a roadmap line, never faked."
+    ],
+    "venue_notes": "M0-M5 are PRE-EVENT, buildable on Alex's laptop/Mini via OpenRouter (this loop). M6-M8 are ON-BOX (GB10) or pitch/taste — the loop scaffolds them but Alex owns the GB10 numbers, the agent quality, and the pitch. Data sources in M1 are PENDING the deep-research data-scout (wgbdis0fw) — finalize M1 when it lands."
+  },
+  "defaults": { "model": "openrouter/z-ai/glm-5.2", "effort": "high" },
+  "milestones": [
+    {
+      "id": "0",
+      "name": "Repo scaffold + preflight",
+      "deps": [],
+      "tasks": [
+        "Confirm target tree (data/ sim/ globe/ agent/ scripts/ docs/ fixtures/ evidence/) and a top-level STATUS.md.",
+        "scripts/preflight.sh: assert node>=18, python3>=3.10, git clean-ish, and that the JS deps (deck.gl) + python deps (searoute, pyais/pandas) install into local envs, never system.",
+        "Write a tiny synthetic fixture theater (a handful of fake cargo tracks + one chokepoint) so M2-M5 are runnable BEFORE the real data slice exists."
+      ],
+      "verifications": [
+        "scripts/preflight.sh exits 0",
+        "the target directories exist",
+        "fixtures/theater-synth.json loads and contains >=10 vessel tracks with position+timestamp+ship_type"
+      ],
+      "human_gate": false,
+      "completed": false
+    },
+    {
+      "id": "1",
+      "name": "Offline data slice (chokepoint theater) — PENDING data-scout",
+      "deps": ["0"],
+      "tasks": [
+        "PENDING wgbdis0fw: lock the real sources (AISStream / DMA / NOAA for ships; OpenSky for air-freight).",
+        "scripts/capture.py (or .sh): record a few-hours slice of ONE chokepoint theater to data/theater.parquet — cargo/tanker ships (AIS type 70-89) + freighter flights, with a deterministic replay schema (mmsi/icao, lon, lat, ts, type, speed, heading, destination?).",
+        "scripts/replay.py: stream the slice back at a controllable clock so the rest of the app is offline + deterministic."
+      ],
+      "verifications": [
+        "data/theater.parquet exists with >= N cargo vessel tracks (N from scout sizing) over a contiguous time window",
+        "replay is deterministic: same slice + same clock => identical positions (byte-stable export)",
+        "schema validates; every row has ship_type in the cargo/tanker range or is a tagged freighter flight"
+      ],
+      "human_gate": false,
+      "completed": false
+    },
+    {
+      "id": "2",
+      "name": "Globe + replay render (deck.gl)",
+      "deps": ["0"],
+      "tasks": [
+        "globe/: deck.gl globe view; load a theater slice (synthetic fixture until M1); animate cargo tracks over the replay clock as arcs/points.",
+        "Layer widgets: cargo/tanker toggle, region filter, a time-scrubber; a Plague-Inc-plain aesthetic (taste later).",
+        "Read-only render — no sim yet."
+      ],
+      "verifications": [
+        "globe builds (vite build exits 0)",
+        "headless screenshot shows a rendering <canvas> with >=10 vessel marks and no console errors",
+        "advancing the time-scrubber moves vessel positions (asserted via a headless DOM/state check)"
+      ],
+      "human_gate": false,
+      "completed": false
+    },
+    {
+      "id": "3",
+      "name": "searoute reroute engine",
+      "deps": ["0"],
+      "tasks": [
+        "sim/reroute.py: given (origin, destination) + a set of BLOCKED chokepoints, return the sea route (waypoints + transit hours) using searoute with the blocked node/edge removed.",
+        "Encode the major chokepoints (Suez, Panama, Malacca, Hormuz, Bab-el-Mandeb) as toggleable blocks."
+      ],
+      "verifications": [
+        "blocking Suez on an Asia->Europe pair returns a route whose length increases and whose waypoints pass near the Cape of Good Hope (approx coords assert)",
+        "unblocked baseline route passes through the Suez corridor",
+        "transit-hours output is monotincreasing with route length"
+      ],
+      "human_gate": false,
+      "completed": false
+    },
+    {
+      "id": "4",
+      "name": "Forward-sim + timeline persistence",
+      "deps": ["1", "3"],
+      "tasks": [
+        "sim/forwardsim.py: from a live snapshot, INJECT a chokepoint block, forward-project each cargo vessel (reroute via M3 / wait / divert to alt port) over N simulated weeks.",
+        "Persist the run as a SEEDED, provenance-stamped timeline artifact (seed, blocked chokepoint, assumptions, per-vessel future tracks) under data/timelines/.",
+        "Emit a congestion metric per chokepoint/port over sim-time."
+      ],
+      "verifications": [
+        "injecting a Suez block produces a saved timeline file with per-vessel future tracks and a rising congestion metric at the block",
+        "deterministic: same snapshot + same seed => identical timeline (byte-stable)",
+        "the timeline artifact carries seed + blocked-chokepoint + an explicit 'fabulation' provenance stamp"
+      ],
+      "human_gate": false,
+      "completed": false
+    },
+    {
+      "id": "5",
+      "name": "Plague-Inc cascade visualization",
+      "deps": ["2", "4"],
+      "tasks": [
+        "Render a loaded timeline: chokepoint clog blooms (congestion color), rerouted flows animate along new paths, downstream port nodes back up over sim-weeks.",
+        "A play/scrub control over the simulated future; compare two saved timelines side by side (stretch)."
+      ],
+      "verifications": [
+        "loading a saved timeline animates congestion state evolving over sim-time (headless frames differ)",
+        "port backlog nodes change state as reroutes arrive",
+        "no console errors"
+      ],
+      "human_gate": false,
+      "completed": false
+    },
+    {
+      "id": "6",
+      "name": "Telemetry HUD (prove the box is maxed)",
+      "deps": ["2"],
+      "tasks": [
+        "globe HUD overlay: GPU %, SoC watts (of 140), unified memory GB (of 128), tok/s, vessels-simulated.",
+        "Metrics source: NVML/sparkview/tegrastats on the GB10; a stub feed off-box for pre-event dev (nvidia-smi UNDER-reports on GB10 UMA — do not use it for memory)."
+      ],
+      "verifications": [
+        "HUD renders and updates from a metrics source (stub off-box)",
+        "stub feed proves the wiring; real NVML feed is an on-box human-gate"
+      ],
+      "human_gate": true,
+      "completed": false
+    },
+    {
+      "id": "7",
+      "name": "OpenClaw sentinel skill (the always-on agent)",
+      "deps": ["4"],
+      "tasks": [
+        "agent/: an OpenClaw Skill (SKILL.md) + typed Tools (query_flows, inject_shock, reroute_sim, brief, alert) that let a local Nemotron agent watch the sim, flag chokepoint stress, run a what-if on command, and brief in plain language — REFUSING to claim certainty.",
+        "Wire to run under NemoClaw/OpenShell on the GB10 (practice on Alex's existing OpenClaw install this week)."
+      ],
+      "verifications": [
+        "the skill + tools load in OpenClaw and the agent makes visible autonomous tool-calls on a canned run (query -> inject -> brief)",
+        "HUMAN_GATE: agent brief QUALITY + the on-box NemoClaw/Nemotron run is Alex's verdict; the loop delivers the skill + a canned transcript, it does not self-certify the live agent"
+      ],
+      "human_gate": true,
+      "completed": false
+    },
+    {
+      "id": "8",
+      "name": "Transfer + pitch beats",
+      "deps": ["5", "7"],
+      "tasks": [
+        "A 30-second 'same engine, modern supply chain' transfer scenario (e.g., chips / Taiwan Strait) proving Skein is an engine, not a one-off — kills the 'it's a toy' red-team.",
+        "Optional historical layer: the same engine running the Bronze Age as the FIRST supply-chain collapse ('this has happened before').",
+        "The pitch spine: local-sovereignty why, the visible agent, the telemetry HUD, the refuse-to-oracle ethos."
+      ],
+      "verifications": [
+        "HUMAN_GATE: the transfer scenario runs on the same engine with a different scenario file",
+        "HUMAN_GATE: pitch quality is Alex's — the loop assembles material, Alex delivers"
+      ],
+      "human_gate": true,
+      "completed": false
+    }
+  ]
+}

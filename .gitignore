@@ -1,0 +1,8 @@
+
+logs/
+opencode.json
+node_modules/
+*.env
+data/*.parquet
+data/*.jsonl
+.opencode/
