@@ -6,17 +6,16 @@
   #deck{position:fixed;inset:0}
   .panel{position:fixed;background:rgba(11,15,26,.93);border:1px solid var(--bd);z-index:3;backdrop-filter:blur(3px)}
   #top{top:0;left:0;right:0;height:36px;display:flex;align-items:center;gap:20px;padding:0 16px;border-top:none;border-left:none;border-right:none;font-size:11px;letter-spacing:.1em}
-  #top .brand{color:var(--amber);font-weight:600;letter-spacing:.32em}#top .sep{color:var(--mut)}
-  #top b{color:var(--tx)} .m .v{color:var(--amber)} .m.crit .v{color:var(--red)}
+  #top .brand{color:var(--amber);font-weight:600;letter-spacing:.32em}#top .sep{color:var(--mut)}#top b{color:var(--tx)}.m .v{color:var(--amber)}.m.crit .v{color:var(--red)}
   #side{top:36px;left:0;bottom:0;width:284px;display:flex;flex-direction:column;border-left:none;border-bottom:none}
   #side .hd{padding:9px 12px;border-bottom:1px solid var(--bd);font-size:11px;letter-spacing:.15em;color:var(--mut)}
   #search{width:100%;box-sizing:border-box;background:#070b14;border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:12px;padding:7px 9px;margin:8px 0}
   #chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}.chip{font-size:10px;padding:3px 8px;border:1px solid var(--bd);border-radius:3px;color:var(--mut);cursor:pointer}.chip.on{color:var(--amber);border-color:var(--amber)}
   #list{flex:1;overflow-y:auto;font-size:11px}.row{padding:6px 12px;border-bottom:1px solid #131b2e;cursor:pointer;display:flex;justify-content:space-between;gap:8px}.row:hover{background:#0f1626}.row.sel{background:#141d33;border-left:2px solid var(--amber)}.row .ty{color:var(--mut);font-size:10px}
   #detail{top:46px;right:16px;width:296px;display:none}.dh{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--bd)}.dh .nm{color:var(--amber);font-size:13px}.x{color:var(--mut);cursor:pointer}#d_tab{width:100%;border-collapse:collapse;font-size:11px}#d_tab td{padding:5px 12px;border-bottom:1px solid #131b2e}#d_tab td.k{color:var(--mut);width:44%}
-  #sent{right:16px;bottom:14px;width:340px;max-height:46%;display:flex;flex-direction:column}
+  #sent{right:16px;bottom:14px;width:340px;max-height:44%;display:flex;flex-direction:column}
   #sent .sh{padding:9px 12px;border-bottom:1px solid var(--bd);font-size:11px;letter-spacing:.14em;color:var(--amber);display:flex;justify-content:space-between}
-  #sent .dot{color:var(--grn)} .lbl{padding:6px 12px 2px;font-size:9px;letter-spacing:.16em;color:var(--mut)}
+  .lbl{padding:6px 12px 2px;font-size:9px;letter-spacing:.16em;color:var(--mut)}
   #alerts{font-size:11px}.al{padding:6px 12px;border-bottom:1px solid #131b2e;display:flex;gap:8px}.al .sev{font-weight:600}.CRIT .sev{color:var(--red)}.WARN .sev{color:var(--amber)}.WATCH .sev{color:#c9c2b0}
   #feed{font-size:10.5px;overflow-y:auto;flex:1;padding-bottom:6px}.fe{padding:3px 12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fe .t{color:#39435e}.fe b{color:var(--grn)}.fe .w{color:var(--amber)}
   #ctl{top:46px;right:328px;z-index:4;display:flex;gap:8px}#ctl button{background:#0b0f1a;color:var(--tx);border:1px solid var(--bd);font-family:inherit;font-size:11px;letter-spacing:.08em;padding:6px 11px;cursor:pointer}#ctl button.on{color:var(--amber);border-color:var(--amber)}#blk.armed{color:var(--red);border-color:var(--red)}
@@ -28,85 +27,79 @@
   <span class="m" id="m_af_w">AFFECTED <b class="v" id="m_af">0</b></span>
   <span class="m" id="m_val_w">$ AT RISK <b class="v" id="m_val">$0</b></span>
   <span class="m" id="m_dt_w">+TRANSIT <b class="v" id="m_dt">0d</b></span>
+  <span class="m" id="m_q_w">QUEUE <b class="v" id="m_q">0</b></span>
   <span class="sep">|</span><span>SUEZ <b id="m_ch" style="color:var(--grn)">OPEN</b></span></div>
 <div id="side" class="panel"><div class="hd">VESSEL REGISTRY</div>
-  <div style="padding:0 12px"><input id="search" placeholder="search name / MMSI / flag…"/><div id="chips"></div></div>
-  <div id="list"></div></div>
+  <div style="padding:0 12px"><input id="search" placeholder="search name / MMSI / flag…"/><div id="chips"></div></div><div id="list"></div></div>
 <div id="detail" class="panel"><div class="dh"><span class="nm" id="d_nm"></span><span class="x" id="d_x">✕</span></div><table id="d_tab"></table></div>
-<div id="sent" class="panel"><div class="sh"><span>◈ SENTINEL AGENT</span><span class="dot" id="s_state">● IDLE · local</span></div>
+<div id="sent" class="panel"><div class="sh"><span>◈ SENTINEL AGENT</span><span id="s_state" style="color:var(--grn)">● IDLE · local</span></div>
   <div class="lbl">ALERTS</div><div id="alerts"><div class="al" style="color:var(--mut)">no active alerts</div></div>
   <div class="lbl">AGENT ACTIVITY</div><div id="feed"></div></div>
-<div id="ctl"><button id="blk">⚠ BLOCK SUEZ</button><button id="mode" class="on">◍ 3D</button><button id="rot" class="on">⟳</button></div>
+<div id="ctl"><button id="blk">⚠ BLOCK SUEZ</button><button id="mode" class="on">◍ 3D</button><button id="rot">⟳</button></div>
 <div id="read" class="panel"></div>
 <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
 <script>
-const {DeckGL,_GlobeView:GlobeView,MapView,SolidPolygonLayer,GeoJsonLayer,ArcLayer,PathLayer,ScatterplotLayer}=deck;
+const {DeckGL,_GlobeView:GlobeView,MapView,SolidPolygonLayer,GeoJsonLayer,PathLayer,ScatterplotLayer,TextLayer}=deck;
 const CHOKES={suez:[32.35,30.0],babelmandeb:[43.3,12.6],hormuz:[56.3,26.6],malacca:[101.3,2.5],panama:[-79.7,9.1]};
 const LANES=[{from:[121.5,31.2],to:[4.0,51.95]},{from:[114.1,22.3],to:[-4.5,48.4]},{from:[55.3,25.0],to:[4.0,51.95]},{from:[72.8,18.9],to:[13,45]},{from:[103.8,1.3],to:[121.5,31.2]},{from:[-79.7,9.1],to:[-74,40.6]}];
 const VIA={0:[[103.8,1.3],[43.3,12.6],[32.35,30.0]],1:[[80,6],[43.3,12.6],[32.35,30.0]],2:[[43.3,12.6],[32.35,30.0]],3:[[43.3,12.6],[32.35,30.0]]};
-const SUEZ_LANES=[0,1,2,3];
-// cape reroute path (around Africa) for a Suez lane
-const CAPE=[[80,2],[60,-8],[35,-30],[18.5,-34.8],[0,-25],[-8,10],[-6,36]];
-function capePath(l){return [l.from,...CAPE,l.to];}
-const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],R=a=>a[Math.floor(Math.random()*a.length)];
-const OPS=['MAERSK','MSC','COSCO','CMA CGM','EVERGREEN','HAPAG','ONE','YANG MING','ZIM','OOCL'],SUF=['SPIRIT','HORIZON','MERIDIAN','VOYAGER','SENTINEL','PIONEER','TRIUMPH','ODYSSEY','ENDEAVOR','ATLAS','AURORA'];
-const TYPES=['Container','Tanker','Bulk Carrier','LNG Carrier','Ro-Ro'],FLAGS=['Panama','Liberia','Marshall Is.','Singapore','Hong Kong','Malta'],TYCOL={'Container':[224,169,90],'Tanker':[226,120,74],'Bulk Carrier':[150,170,210],'LNG Carrier':[120,200,190],'Ro-Ro':[200,150,220]};
+const SUEZ_LANES=[0,1,2,3], CAPE=[[80,2],[60,-8],[35,-30],[18.5,-34.8],[0,-25],[-8,10],[-6,36]];
+const LABELS=[{n:'Mediterranean Sea',p:[17,34],c:'w',b:1},{n:'Red Sea',p:[37,20.5],c:'w'},{n:'Gulf of Aden',p:[48,12.8],c:'w'},{n:'Arabian Sea',p:[62,15],c:'w',b:1},{n:'Persian Gulf',p:[51,27],c:'w'},{n:'Indian Ocean',p:[73,-6],c:'w',b:1},{n:'Suez Canal',p:[32.4,30.9],c:'s'},{n:'Bab-el-Mandeb',p:[43.4,12.2],c:'s'},{n:'Str. of Hormuz',p:[56.7,26.9],c:'s'},{n:'Str. of Malacca',p:[100.2,3.7],c:'s'},{n:'Port Said',p:[32.3,31.3],c:'p'},{n:'Rotterdam',p:[4.1,51.95],c:'p'},{n:'Singapore',p:[103.8,1.3],c:'p'},{n:'Jebel Ali',p:[55.1,25.0],c:'p'},{n:'Djibouti',p:[43.15,11.6],c:'p'}];
+const R=a=>a[Math.floor(Math.random()*a.length)];
+const OPS=['MAERSK','MSC','COSCO','CMA CGM','EVERGREEN','HAPAG','ONE','ZIM','OOCL'],SUF=['SPIRIT','HORIZON','MERIDIAN','VOYAGER','PIONEER','TRIUMPH','ODYSSEY','ATLAS','AURORA'],TYPES=['Container','Tanker','Bulk Carrier','LNG Carrier','Ro-Ro'],FLAGS=['Panama','Liberia','Marshall Is.','Singapore','Hong Kong','Malta'],TYCOL={'Container':[224,169,90],'Tanker':[226,120,74],'Bulk Carrier':[150,170,210],'LNG Carrier':[120,200,190],'Ro-Ro':[200,150,220]};
+function pointAlong(r,t){const n=r.length;const x=Math.max(0,Math.min(0.99999,t))*(n-1);const i=Math.floor(x);const f=x-i;return [r[i][0]+(r[i+1][0]-r[i][0])*f,r[i][1]+(r[i+1][1]-r[i][1])*f];}
 let id=0;const ships=[];
-function mk(pos,choke,dep){return{id:id++,pos,choke,suezDep:dep,mmsi:''+(200000000+Math.floor(Math.random()*99999999)),name:R(OPS)+' '+R(SUF),type:R(TYPES),flag:R(FLAGS),speed:choke?(Math.random()*6).toFixed(1):(8+Math.random()*15).toFixed(1),course:Math.floor(Math.random()*360),dest:R(['ROTTERDAM','SINGAPORE','SHANGHAI','JEBEL ALI','HAMBURG','PIRAEUS']),status:'Underway',dwt:Math.floor(20+Math.random()*180)+'k'};}
-LANES.forEach((l,li)=>{const pts=[l.from,...(VIA[li]||[]),l.to],dep=SUEZ_LANES.includes(li);for(let s=0;s<pts.length-1;s++)for(let i=0;i<14;i++){const p=lerp(pts[s],pts[s+1],(i+Math.sin(s*7+i))/14);ships.push(mk([p[0]+(Math.random()-.5)*1.2,p[1]+(Math.random()-.5)*1.2],0,dep));}});
-Object.entries(CHOKES).forEach(([k,c])=>{const dep=k==='suez'||k==='babelmandeb';for(let i=0;i<18;i++)ships.push(mk([c[0]+(Math.random()-.5)*2.4,c[1]+(Math.random()-.5)*2.4],1,dep));});
-const byId=Object.fromEntries(ships.map(s=>[s.id,s]));
-m_tr.textContent=ships.length;
-const affected=ships.filter(s=>s.suezDep);
+function attrs(dep,choke){return{id:id++,dep,choke,mmsi:''+(200000000+Math.floor(Math.random()*99999999)),name:R(OPS)+' '+R(SUF),type:R(TYPES),flag:R(FLAGS),course:Math.floor(Math.random()*360),dest:R(['ROTTERDAM','SINGAPORE','SHANGHAI','JEBEL ALI','HAMBURG']),status:'Underway',dwt:Math.floor(20+Math.random()*180)+'k',speed:(8+Math.random()*14).toFixed(1)};}
+LANES.forEach((l,li)=>{const route=[l.from,...(VIA[li]||[]),l.to],dep=SUEZ_LANES.includes(li),cape=dep?[l.from,...CAPE,l.to]:null;for(let i=0;i<22;i++){const s=attrs(dep,0);s.route=route;s.cape=cape;s.t=(i+Math.random())/22;s.spd=0.00022+Math.random()*0.00035;s.pos=pointAlong(route,s.t);ships.push(s);}});
+Object.entries(CHOKES).forEach(([k,c])=>{const dep=k==='suez'||k==='babelmandeb';for(let i=0;i<8;i++){const s=attrs(dep,1);s.route=null;s.pos=[c[0]+(Math.random()-.5)*2.2,c[1]+(Math.random()-.5)*2.2];ships.push(s);}});
+const byId=Object.fromEntries(ships.map(s=>[s.id,s]));const affected=ships.filter(s=>s.dep);m_tr.textContent=ships.length;
+const QPOOL=Array.from({length:48},()=>[33.4+(Math.random()-.5)*1.8,29.4+(Math.random()-.5)*1.6]);
 const ocean=[{polygon:[[-180,-85],[180,-85],[180,85],[-180,85]]}];
-let selId=null,blocked=false,pulse=0;
-function layers(){const L=[
-  new SolidPolygonLayer({id:'ocean',data:ocean,getPolygon:d=>d.polygon,getFillColor:[9,14,26]}),
-  new GeoJsonLayer({id:'land',data:'assets/land.geojson',getFillColor:[22,28,44],getLineColor:[42,54,82],lineWidthMinPixels:.5,stroked:true,filled:true}),
-  new ArcLayer({id:'lanes',data:LANES.map((l,i)=>({...l,i})).filter(l=>!(blocked&&SUEZ_LANES.includes(l.i))),getSourcePosition:d=>d.from,getTargetPosition:d=>d.to,getSourceColor:[224,169,90,80],getTargetColor:[226,86,74,120],getWidth:1.3,greatCircle:true}),
+// cached heavy layers
+const landLayer=new GeoJsonLayer({id:'land',data:'assets/land.geojson',getFillColor:[22,28,44],getLineColor:[42,54,82],lineWidthMinPixels:.5,stroked:true,filled:true});
+const OL={outlineWidth:2,outlineColor:[3,6,12,220],fontSettings:{sdf:true}};
+const labelLayers=[
+  new TextLayer({id:'lw',data:LABELS.filter(l=>l.c==='w'),getPosition:d=>d.p,getText:d=>d.n,getSize:d=>d.b?14:11,sizeUnits:'pixels',getColor:[120,138,166,180],fontFamily:'sans-serif',getTextAnchor:'middle',getAlignmentBaseline:'center',...OL}),
+  new TextLayer({id:'ls',data:LABELS.filter(l=>l.c==='s'),getPosition:d=>d.p,getText:d=>d.n.toUpperCase(),getSize:9.5,sizeUnits:'pixels',getColor:[224,169,90,235],fontFamily:'sans-serif',getTextAnchor:'middle',...OL}),
+  new ScatterplotLayer({id:'pm',data:LABELS.filter(l=>l.c==='p'),getPosition:d=>d.p,getRadius:3,radiusUnits:'pixels',getFillColor:[210,218,230,230],stroked:true,getLineColor:[3,6,12,220],lineWidthMinPixels:1}),
+  new TextLayer({id:'lp',data:LABELS.filter(l=>l.c==='p'),getPosition:d=>d.p,getText:d=>d.n,getSize:10,sizeUnits:'pixels',getColor:[205,214,228,225],getPixelOffset:[7,0],getTextAnchor:'start',getAlignmentBaseline:'center',fontFamily:'monospace',...OL}),
 ];
-  if(blocked){ // rerouted paths around the Cape
-    L.push(new PathLayer({id:'reroute',data:SUEZ_LANES.map(i=>capePath(LANES[i])),getPath:d=>d,getColor:[224,169,90,150],getWidth:2,widthMinPixels:1.5}));
-    // congestion bloom upstream of Suez (Red Sea queue)
-    const queue=affected.filter(s=>s.pos[1]<32&&s.pos[0]>30&&s.pos[0]<56);
-    L.push(new ScatterplotLayer({id:'congestion',data:queue,getPosition:d=>d.pos,getRadius:90000+pulse*30000,radiusUnits:'meters',getFillColor:[226,86,74,40],stroked:false}));
-  }
-  L.push(new ScatterplotLayer({id:'chokes',data:Object.entries(CHOKES).map(([k,v])=>({k,v})),getPosition:d=>d.v,radiusUnits:'meters',getRadius:d=>d.k==='suez'&&blocked?120000+pulse*60000:55000,getFillColor:d=>d.k==='suez'&&blocked?[226,86,74,120]:[226,86,74,40],stroked:true,getLineColor:[226,86,74,220],lineWidthMinPixels:d=>d.k==='suez'&&blocked?2:1,updateTriggers:{getRadius:[blocked,pulse],getFillColor:blocked,getLineWidth:blocked}}));
-  L.push(new ScatterplotLayer({id:'ships',data:ships,pickable:true,getPosition:d=>d.pos,radiusUnits:'meters',getRadius:d=>d.id===selId?42000:(d.choke?24000:14000),getFillColor:d=>d.id===selId?[255,255,255,255]:(blocked&&d.suezDep?[226,86,74,220]:[...(TYCOL[d.type]||[224,169,90]),210]),updateTriggers:{getRadius:selId,getFillColor:[selId,blocked]},onClick:i=>{if(i.object)select(i.object.id);}}));
-  if(selId!=null)L.push(new ScatterplotLayer({id:'ring',data:[byId[selId]],getPosition:d=>d.pos,getRadius:70000,radiusUnits:'meters',stroked:true,filled:false,getLineColor:[255,255,255,220],lineWidthMinPixels:1.5}));
+let selId=null,blocked=false,pulse=0,queue=0;
+function frame(){const L=[new SolidPolygonLayer({id:'ocean',data:ocean,getPolygon:d=>d.polygon,getFillColor:[9,14,26]}),landLayer,...labelLayers];
+  L.push(new PathLayer({id:'lanes',data:LANES.map((l,i)=>({p:[l.from,...(VIA[i]||[]),l.to],i})).filter(l=>!(blocked&&SUEZ_LANES.includes(l.i))),getPath:d=>d.p,getColor:[224,169,90,60],getWidth:1,widthMinPixels:1}));
+  if(blocked){L.push(new PathLayer({id:'reroute',data:SUEZ_LANES.map(i=>[LANES[i].from,...CAPE,LANES[i].to]),getPath:d=>d,getColor:[224,169,90,150],getWidth:2,widthMinPixels:1.5}));
+    L.push(new ScatterplotLayer({id:'cong',data:QPOOL.slice(0,queue),getPosition:d=>d,getRadius:70000,radiusUnits:'meters',getFillColor:[226,86,74,45]}));}
+  L.push(new ScatterplotLayer({id:'choke',data:Object.entries(CHOKES).map(([k,v])=>({k,v})),getPosition:d=>d.v,radiusUnits:'meters',getRadius:d=>d.k==='suez'&&blocked?120000+pulse*60000:55000,getFillColor:d=>d.k==='suez'&&blocked?[226,86,74,110]:[226,86,74,35],stroked:true,getLineColor:[226,86,74,220],lineWidthMinPixels:1.4,updateTriggers:{getRadius:[blocked,pulse]}}));
+  L.push(new ScatterplotLayer({id:'ships',data:ships,pickable:true,getPosition:d=>d.pos,radiusUnits:'meters',getRadius:d=>d.id===selId?42000:(d.choke?22000:13000),getFillColor:d=>d.id===selId?[255,255,255,255]:(blocked&&d.dep?[226,86,74,225]:[...(TYCOL[d.type]||[224,169,90]),215]),updateTriggers:{getFillColor:[selId,blocked],getRadius:selId},onClick:i=>{if(i.object)select(i.object.id);}}));
+  if(selId!=null&&byId[selId])L.push(new ScatterplotLayer({id:'ring',data:[byId[selId]],getPosition:d=>d.pos,getRadius:68000,radiusUnits:'meters',stroked:true,filled:false,getLineColor:[255,255,255,220],lineWidthMinPixels:1.5}));
   return L;}
-let vs={longitude:40,latitude:18,zoom:1.4},is3D=true,spin=true,busy=false;
-const dk=new DeckGL({container:'deck',views:new GlobeView({id:'v'}),viewState:vs,controller:{inertia:250,scrollZoom:{smooth:true}},parameters:{clearColor:[.023,.035,.06,1]},layers:layers(),
-  onViewStateChange:({viewState})=>{vs=viewState;dk.setProps({viewState:vs});read.textContent=`LON ${vs.longitude.toFixed(2)}  LAT ${vs.latitude.toFixed(2)}  Z ${vs.zoom.toFixed(2)} · ${is3D?'GLOBE':'MERCATOR'}`;},
+let vs={longitude:44,latitude:19,zoom:2.2},is3D=true,busy=false,last=performance.now();
+const dk=new DeckGL({container:'deck',views:new GlobeView({id:'v'}),viewState:vs,controller:{inertia:250,scrollZoom:{smooth:true}},parameters:{clearColor:[.023,.035,.06,1]},layers:frame(),
+  onViewStateChange:({viewState})=>{vs=viewState;read.textContent=`LON ${vs.longitude.toFixed(2)} LAT ${vs.latitude.toFixed(2)} Z ${vs.zoom.toFixed(2)} · ${is3D?'GLOBE':'MERCATOR'} · ${ships.length} tracks`;},
   onInteractionStateChange:s=>{busy=s.isDragging||s.isZooming||s.isPanning;}});
-function tick(){if(spin&&!busy){vs={...vs,longitude:(vs.longitude+0.05)%360};dk.setProps({viewState:vs});}if(blocked){pulse=(Math.sin(Date.now()/400)+1)/2;dk.setProps({layers:layers()});}requestAnimationFrame(tick);}tick();
-function redraw(){dk.setProps({layers:layers()});}
+function tick(now){const dt=Math.min(60,now-last);last=now;
+  for(const s of ships){if(!s.route)continue;const rt=(blocked&&s.dep&&s.cape)?s.cape:s.route;s.t+=s.spd*dt/16;if(s.t>=1)s.t-=1;s.pos=pointAlong(rt,s.t);}
+  if(blocked)pulse=(Math.sin(now/400)+1)/2;
+  dk.setProps({viewState:vs,layers:frame()});requestAnimationFrame(tick);}requestAnimationFrame(tick);
 // registry
 let q='',tf='All';document.getElementById('chips').innerHTML=['All',...TYPES].map(c=>`<span class="chip${c==='All'?' on':''}" data-t="${c}">${c}</span>`).join('');
 document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{tf=el.dataset.t;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.t===tf));renderList();});
 search.oninput=e=>{q=e.target.value.toLowerCase();renderList();};
 const match=s=>(tf==='All'||s.type===tf)&&(!q||s.name.toLowerCase().includes(q)||s.mmsi.includes(q)||s.flag.toLowerCase().includes(q));
-function renderList(){const rows=ships.filter(match).slice(0,200);document.getElementById('list').innerHTML=rows.map(s=>`<div class="row${s.id===selId?' sel':''}" data-id="${s.id}"><span>${s.name}</span><span class="ty">${s.type.slice(0,4).toUpperCase()} · ${s.speed}kn</span></div>`).join('')||'<div class="row" style="color:var(--mut)">no matches</div>';document.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>select(+r.dataset.id,true));}
-function select(sid,fly){selId=sid;const s=byId[sid];const D=document.getElementById('detail');D.style.display='block';d_nm.textContent=s.name;d_tab.innerHTML=[['MMSI',s.mmsi],['Type',s.type],['Flag',s.flag],['Status',s.status],['Speed',s.speed+' kn'],['Course',s.course+'°'],['DWT',s.dwt],['Destination',s.dest],['Position',s.pos[1].toFixed(3)+', '+s.pos[0].toFixed(3)]].map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('');if(fly){spin=false;rot.classList.remove('on');vs={...vs,longitude:s.pos[0],latitude:s.pos[1],zoom:Math.max(vs.zoom,3.2)};dk.setProps({viewState:vs});}renderList();redraw();}
-document.getElementById('d_x').onclick=()=>{selId=null;document.getElementById('detail').style.display='none';renderList();redraw();};
-mode.onclick=()=>{is3D=!is3D;mode.textContent=is3D?'◍ 3D':'▦ 2D';mode.classList.toggle('on',is3D);dk.setProps({views:is3D?new GlobeView({id:'v'}):new MapView({id:'v',repeat:true}),viewState:{...vs,zoom:is3D?1.4:2.4}});};
-rot.onclick=()=>{spin=!spin;rot.classList.toggle('on',spin);};
-// ---- warning system + agent activity + metrics ----
-function feed(html,cls){const f=document.getElementById('feed');const t=new Date().toLocaleTimeString('en-GB');f.insertAdjacentHTML('afterbegin',`<div class="fe ${cls||''}"><span class="t">${t}</span> ${html}</div>`);}
-function alert(sev,txt){document.getElementById('alerts').insertAdjacentHTML('afterbegin',`<div class="al ${sev}"><span class="sev">${sev}</span><span>${txt}</span></div>`);}
-document.getElementById('blk').onclick=()=>{blocked=!blocked;const b=document.getElementById('blk');b.classList.toggle('armed',blocked);b.textContent=blocked?'✓ CLEAR SUEZ':'⚠ BLOCK SUEZ';
-  m_ch.textContent=blocked?'BLOCKED':'OPEN';m_ch.style.color=blocked?'var(--red)':'var(--grn)';
-  if(!blocked){document.getElementById('alerts').innerHTML='<div class="al" style="color:var(--mut)">no active alerts</div>';['m_af_w','m_val_w','m_dt_w'].forEach(x=>document.getElementById(x).classList.remove('crit'));m_af.textContent='0';m_val.textContent='$0';m_dt.textContent='0d';s_state.textContent='● IDLE · local';redraw();return;}
-  // AGENT reacts (visible autonomous tool-calls, staggered)
-  const N=affected.length,val=(N*0.185).toFixed(1);s_state.textContent='● ACTIVE · Nemotron/local';s_state.style.color='var(--amber)';
-  const steps=[
-    ()=>feed('SENTINEL ▸ <b>query_flows</b>(chokepoint=SUEZ)'),
-    ()=>{feed('detect: dwell-time <span class="w">+186%</span> vs 30d baseline','w');alert('WATCH','Suez dwell-time anomaly — congestion building');},
-    ()=>feed('SENTINEL ▸ <b>run_whatif</b>(block=SUEZ)'),
-    ()=>feed(`SENTINEL ▸ <b>reroute_sim</b>(vessels=${N}, via=CAPE) → +11d avg`),
-    ()=>{m_af.textContent=N;m_val.textContent='$'+val+'B';m_dt.textContent='+11d';['m_af_w','m_val_w','m_dt_w'].forEach(x=>document.getElementById(x).classList.add('crit'));feed('SENTINEL ▸ <b>estimate_exposure</b>(portfolio)');},
-    ()=>{alert('WARN','Rotterdam berth backlog projected +6 days');alert('CRIT',`SUEZ BLOCKED — ${N} vessels affected · $${val}B cargo at risk`);},
-    ()=>{feed(`SENTINEL ▸ <b>brief</b>() → "Suez critical: ${N} vessels rerouting via Cape, +11d avg, $${val}B delayed. Recommend hedging Rotterdam-bound exposure."`);s_state.textContent='● WATCHING · local';s_state.style.color='var(--grn)';},
-  ];steps.forEach((f,i)=>setTimeout(f,i*650));redraw();};
+function renderList(){document.getElementById('list').innerHTML=ships.filter(match).slice(0,200).map(s=>`<div class="row${s.id===selId?' sel':''}" data-id="${s.id}"><span>${s.name}</span><span class="ty">${s.type.slice(0,4).toUpperCase()} · ${s.speed}kn</span></div>`).join('')||'<div class="row" style="color:var(--mut)">no matches</div>';document.querySelectorAll('.row[data-id]').forEach(r=>r.onclick=()=>select(+r.dataset.id,true));}
+function select(sid,fly){selId=sid;const s=byId[sid];detail.style.display='block';d_nm.textContent=s.name;d_tab.innerHTML=[['MMSI',s.mmsi],['Type',s.type],['Flag',s.flag],['Status',blocked&&s.dep?'Rerouting':s.status],['Speed',s.speed+' kn'],['DWT',s.dwt],['Destination',s.dest],['Position',s.pos[1].toFixed(2)+', '+s.pos[0].toFixed(2)]].map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('');if(fly){vs={...vs,longitude:s.pos[0],latitude:s.pos[1],zoom:Math.max(vs.zoom,3.4)};}renderList();}
+d_x.onclick=()=>{selId=null;detail.style.display='none';renderList();};
+mode.onclick=()=>{is3D=!is3D;mode.textContent=is3D?'◍ 3D':'▦ 2D';mode.classList.toggle('on',is3D);dk.setProps({views:is3D?new GlobeView({id:'v'}):new MapView({id:'v',repeat:true}),viewState:vs={...vs,zoom:is3D?2.2:2.8}});};
+// warning + agent + aftermath
+function feed(h,cls){const t=new Date().toLocaleTimeString('en-GB');document.getElementById('feed').insertAdjacentHTML('afterbegin',`<div class="fe ${cls||''}"><span class="t">${t}</span> ${h}</div>`);}
+function alertln(sev,txt){document.getElementById('alerts').insertAdjacentHTML('afterbegin',`<div class="al ${sev}"><span class="sev">${sev}</span><span>${txt}</span></div>`);}
+let ramp=null;
+blk.onclick=()=>{blocked=!blocked;blk.classList.toggle('armed',blocked);blk.textContent=blocked?'✓ CLEAR SUEZ':'⚠ BLOCK SUEZ';m_ch.textContent=blocked?'BLOCKED':'OPEN';m_ch.style.color=blocked?'var(--red)':'var(--grn)';
+  if(!blocked){clearInterval(ramp);queue=0;document.getElementById('alerts').innerHTML='<div class="al" style="color:var(--mut)">no active alerts</div>';['m_af_w','m_val_w','m_dt_w','m_q_w'].forEach(x=>document.getElementById(x).classList.remove('crit'));m_af.textContent='0';m_val.textContent='$0';m_dt.textContent='0d';m_q.textContent='0';s_state.textContent='● IDLE · local';s_state.style.color='var(--grn)';return;}
+  const N=affected.length;s_state.textContent='● ACTIVE · Nemotron/local';s_state.style.color='var(--amber)';
+  [()=>feed('SENTINEL ▸ <b>query_flows</b>(chokepoint=SUEZ)'),()=>{feed('detect: dwell <span class="w">+186%</span> vs 30d baseline','w');alertln('WATCH','Suez dwell-time anomaly — congestion building');},()=>feed('SENTINEL ▸ <b>run_whatif</b>(block=SUEZ)'),()=>feed(`SENTINEL ▸ <b>reroute_sim</b>(vessels=${N}, via=CAPE) → +11d avg`),()=>feed('SENTINEL ▸ <b>estimate_exposure</b>(portfolio)'),()=>{alertln('WARN','Rotterdam berth backlog projected +6 days');alertln('CRIT',`SUEZ BLOCKED — ${N} vessels affected`);},()=>{feed(`SENTINEL ▸ <b>brief</b>() → "Suez critical: ${N} rerouting via Cape, +11d, ~$${(N*0.185).toFixed(1)}B delayed. Hedge Rotterdam exposure."`);s_state.textContent='● WATCHING · local';s_state.style.color='var(--grn)';}].forEach((f,i)=>setTimeout(f,i*650));
+  // aftermath ramps over ~10s
+  queue=0;['m_af_w','m_val_w','m_dt_w','m_q_w'].forEach(x=>document.getElementById(x).classList.add('crit'));m_dt.textContent='+11d';
+  ramp=setInterval(()=>{queue=Math.min(48,queue+2);const fr=queue/48;m_q.textContent=queue;m_af.textContent=Math.round(N*fr);m_val.textContent='$'+(N*0.185*fr).toFixed(1)+'B';if(queue>=48)clearInterval(ramp);},450);};
 renderList();
 </script>
