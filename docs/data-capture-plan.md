@@ -1,4 +1,4 @@
-# Skein — data-capture plan (verified Aug 20 2026)
+# Straits — data-capture plan (verified Aug 20 2026)
 
 Source: deep-research scout `wgbdis0fw` (105 agents, adversarially verified) + a direct searoute-py check. Provenance: **verified** against cited sources; items marked *(recalled)* need a live confirm before the day.
 

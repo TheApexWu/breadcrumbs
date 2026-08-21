@@ -1,4 +1,4 @@
-# Skein — Ralph loop contract (the HOW)
+# Straits — Ralph loop contract (the HOW)
 
 This is the per-iteration contract for the autonomous build loop. `ralph.sh` drives it: one milestone per `opencode` process, on OpenRouter, verifying each with a program the agent cannot edit, committing + pushing per pass. This file is the source of truth for *how* an iteration behaves; `PRD.JSON` is the source of truth for *what* (the milestones, verifications, hard_rules).
 
@@ -10,7 +10,7 @@ This is the per-iteration contract for the autonomous build loop. `ralph.sh` dri
 5. Commit `ralph: milestone <id> complete — <name>` and push.
 6. If truly blocked (a credential you cannot get, a source that is down, a contradiction), write `BLOCKED.md` explaining exactly what blocks you and what a human must do — then stop.
 
-## Skein-specific rules (on top of PRD hard_rules)
+## Straits-specific rules (on top of PRD hard_rules)
 - **Offline-first, always.** Never make the app depend on a live network at demo time. Build against `fixtures/theater-synth.json` until the real `data/theater.parquet` slice exists (M1), then against the recorded slice. Replay must be deterministic.
 - **Cargo only.** Ships = AIS types 70-89; air = freighter operators. Drop passenger traffic.
 - **Declared fabulation, never prediction.** Any forward-sim output is a *possible* future carrying its seed + assumptions + blocked chokepoint. Never emit language that claims certainty about what will happen. The sentinel refuses to name one true outcome.
@@ -21,7 +21,7 @@ This is the per-iteration contract for the autonomous build loop. `ralph.sh` dri
 
 ## What must be true before firing this loop
 - [ ] Data-scout `wgbdis0fw` returned; M1 sources + sizing finalized.
-- [ ] Name locked (working name: Skein).
+- [ ] Name locked (working name: Straits).
 - [ ] Alex's explicit go. The loop spends OpenRouter credit and auto-pushes — do not fire it on assumption.
 
 ## Test discipline
