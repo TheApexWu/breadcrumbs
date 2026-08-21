@@ -15,7 +15,8 @@
       "Rail is OUT of the MVP (freight rail data is private) — air + sea only; rail is a roadmap line, never faked."
     ],
     "venue_notes": "M0-M5 are PRE-EVENT, buildable on Alex's laptop/Mini via OpenRouter (this loop). M6-M8 are ON-BOX (GB10) or pitch/taste — the loop scaffolds them but Alex owns the GB10 numbers, the agent quality, and the pitch. Data sources in M1 are PENDING the deep-research data-scout (wgbdis0fw) — finalize M1 when it lands.",
-    "scope_locked_aug20": "PRIZE-RUN, not a body of work — optimize to WIN reliably, do not gold-plate. Theater=Suez+Bab-el-Mandeb (iconic) with US/NOAA-bulk as BREAK-GLASS so data can never sink the demo. Live-ness=hybrid (self-recorded past window + one live present window). Ships first; air (OpenSky, already verified) only if slack. Aesthetic=PS2 shaders + Plague-Inc playful. Demo CLIMAX=inject chokepoint -> reroute cascade blooms, agent narrates it live. Balance=50/50 business-armor-on-artful-core. History (Bronze Age)=ONE pitch line, NOT built. Ambition=swing for 1st on a reliable core that cannot break; exactly one big wow on top; settling for solid top-8 is acceptable."
+    "scope_locked_aug20": "PRIZE-RUN, not a body of work — optimize to WIN reliably, do not gold-plate. Theater=Suez+Bab-el-Mandeb (iconic) with US/NOAA-bulk as BREAK-GLASS so data can never sink the demo. Live-ness=hybrid (self-recorded past window + one live present window). Ships first; air (OpenSky, already verified) only if slack. Aesthetic=PS2 shaders + Plague-Inc playful. Demo CLIMAX=inject chokepoint -> reroute cascade blooms, agent narrates it live. Balance=50/50 business-armor-on-artful-core. History (Bronze Age)=ONE pitch line, NOT built. Ambition=swing for 1st on a reliable core that cannot break; exactly one big wow on top; settling for solid top-8 is acceptable.",
+    "aesthetic_lock": "GOV/MILITARY-GRADE maritime-intelligence command console (Palantir/C2 register) — SUPERSEDES the earlier PS2/playful. Dense monospace HUD, top status bar, LEFT vessel-registry sidebar (search + type-filter chips + scrollable list), CLICK-to-inspect right detail panel (MMSI/type/flag/status/speed/course/DWT/dest/position), coordinate/zoom readout, 2D(mercator)/3D(globe) toggle. This UX is the defense-OSINT credibility layer."
   },
   "defaults": {
     "model": "openrouter/z-ai/glm-5.2",
@@ -61,14 +62,17 @@
     },
     {
       "id": "2",
-      "name": "Globe + replay render (deck.gl)",
+      "name": "Globe/map console (deck.gl) — gov-grade UX",
       "deps": [
         "0"
       ],
       "tasks": [
         "globe/: deck.gl globe view; load a theater slice (synthetic fixture until M1); animate cargo tracks over the replay clock as arcs/points.",
         "Layer widgets (cargo toggle, region filter, time-scrubber) + LOCKED aesthetic: PS2 shaders (vertex lighting, dither, low-res, warm fog) + Plague-Inc playful map.",
-        "Read-only render — no sim yet."
+        "Read-only render — no sim yet.",
+        "Vessels PICKABLE: click -> detail panel (full AIS-style record) + highlight ring + fly-to.",
+        "LEFT registry sidebar: search (name/MMSI/flag) + type-filter chips + scrollable synced list.",
+        "Command-center chrome: status bar, coordinate readout, type-colored vessels. 2D=web-mercator, 3D=globe."
       ],
       "verifications": [
         "globe builds (vite build exits 0)",
