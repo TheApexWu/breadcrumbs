@@ -46,7 +46,7 @@
 </div>
 <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
 <script>
-const {DeckGL,MapView,SolidPolygonLayer,GeoJsonLayer,PathLayer,ScatterplotLayer,IconLayer}=deck;
+const {DeckGL,MapView,SolidPolygonLayer,GeoJsonLayer,PathLayer,ScatterplotLayer,IconLayer,TextLayer}=deck;
 const PAL={
   'Radar Cyan':{bg:'#060a12',panel:'11,17,28',line:'#1b2740',ink:'#c3ccdd',mut:'#6b7a95',brand:'#3fb6c9',brandRGB:[63,182,201],land:[22,28,44],lc:[42,54,82],choke:[229,72,77]},
   'Phosphor Amber':{bg:'#0a0805',panel:'18,14,8',line:'#2a2213',ink:'#c9c2b0',mut:'#8a8475',brand:'#e0a95a',brandRGB:[224,169,90],land:[28,24,16],lc:[54,46,28],choke:[226,86,74]},
@@ -54,13 +54,18 @@ const PAL={
   'Blackops':{bg:'#000000',panel:'6,10,7',line:'#14261a',ink:'#b9c9be',mut:'#5f705f',brand:'#3fb950',brandRGB:[63,185,80],land:[14,20,15],lc:[30,46,32],choke:[229,72,77]},
 };
 const FONT={'IBM Plex':["'IBM Plex Mono'","'IBM Plex Sans Condensed'"],'JetBrains':["'JetBrains Mono'","'Space Grotesk'"],'Oswald mix':["'JetBrains Mono'","'Oswald'"],'System':["ui-monospace,monospace","ui-monospace,monospace"]};
-const state={pal:'Radar Cyan',font:'IBM Plex',vessel:'chevron',map:'graticule',scan:false,vig:false,glow:false,sonar:true};
+const state={pal:'Radar Cyan',font:'IBM Plex',vessel:'chevron',map:'graticule',scan:false,vig:false,glow:false,sonar:true,labels:true};
 
 // mini theater data
 const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
 const ships=[];const lane=[[103.8,1.3],[43.3,12.6],[32.35,30.0],[13,40]];
 for(let s=0;s<lane.length-1;s++)for(let i=0;i<26;i++){const p=lerp(lane[s],lane[s+1],i/26);ships.push({pos:[p[0]+(Math.random()-.5)*1.4,p[1]+(Math.random()-.5)*1.4],course:Math.floor(Math.random()*360)});}
 const SUEZ=[32.35,30.0];
+const LABELS=[
+ {n:'Mediterranean Sea',p:[17,34],c:'water',big:1},{n:'Red Sea',p:[37,20.5],c:'water'},{n:'Gulf of Aden',p:[48,12.8],c:'water'},{n:'Arabian Sea',p:[62,15],c:'water',big:1},{n:'Persian Gulf',p:[51,27],c:'water'},{n:'Indian Ocean',p:[73,-6],c:'water',big:1},{n:'Black Sea',p:[34,43],c:'water'},
+ {n:'Suez Canal',p:[32.4,30.9],c:'strait'},{n:'Bab-el-Mandeb',p:[43.4,12.2],c:'strait'},{n:'Str. of Hormuz',p:[56.7,26.9],c:'strait'},{n:'Str. of Malacca',p:[100.2,3.7],c:'strait'},{n:'Gibraltar',p:[-5.5,35.7],c:'strait'},{n:'Bosphorus',p:[29.1,41.2],c:'strait'},
+ {n:'Port Said',p:[32.3,31.3],c:'port'},{n:'Rotterdam',p:[4.1,51.95],c:'port'},{n:'Singapore',p:[103.8,1.3],c:'port'},{n:'Jebel Ali',p:[55.1,25.0],c:'port'},{n:'Piraeus',p:[23.6,37.9],c:'port'},{n:'Djibouti',p:[43.15,11.6],c:'port'},
+];
 const ocean=[{polygon:[[-40,-60],[140,-60],[140,75],[-40,75]]}];
 function graticule(){const L=[];for(let lo=-30;lo<=120;lo+=10)L.push({p:[[lo,-50],[lo,70]]});for(let la=-40;la<=60;la+=10)L.push({p:[[-30,la],[120,la]]});return L;}
 const ICON=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(
@@ -75,6 +80,12 @@ function layers(){const P=PAL[state.pal];const L=[
   if(state.map==='graticule'||state.map==='chart')L.push(new PathLayer({id:'grat',data:graticule(),getPath:d=>d.p,getColor:[...P.brandRGB,28],getWidth:.5,widthMinPixels:.5}));
   L.push(new PathLayer({id:'lane',data:[lane],getPath:d=>d,getColor:[...P.brandRGB,120],getWidth:1.5,widthMinPixels:1}));
   L.push(new ScatterplotLayer({id:'choke',data:[{p:SUEZ}],getPosition:d=>d.p,getRadius:state.sonar?60000+pulse*80000:60000,radiusUnits:'meters',stroked:true,filled:false,getLineColor:[...P.choke,state.sonar?Math.floor(200*(1-pulse)):200],lineWidthMinPixels:1.5,updateTriggers:{getRadius:[state.sonar,pulse],getLineColor:[state.sonar,pulse]}}));
+  if(state.labels){const OL={outlineWidth:2,outlineColor:[3,6,12,220],fontSettings:{sdf:true}};
+    L.push(new TextLayer({id:'lw',data:LABELS.filter(l=>l.c==='water'),getPosition:d=>d.p,getText:d=>d.n,getSize:d=>d.big?14:11,sizeUnits:'pixels',getColor:[120,138,166,180],fontFamily:"'IBM Plex Sans Condensed',sans-serif",fontWeight:500,getTextAnchor:'middle',getAlignmentBaseline:'center',...OL}));
+    L.push(new TextLayer({id:'ls',data:LABELS.filter(l=>l.c==='strait'),getPosition:d=>d.p,getText:d=>d.n.toUpperCase(),getSize:9.5,sizeUnits:'pixels',getColor:[...P.brandRGB,235],fontFamily:"'IBM Plex Sans Condensed',sans-serif",fontWeight:600,getTextAnchor:'middle',...OL,updateTriggers:{getColor:state.pal}}));
+    L.push(new ScatterplotLayer({id:'pm',data:LABELS.filter(l=>l.c==='port'),getPosition:d=>d.p,getRadius:3,radiusUnits:'pixels',getFillColor:[210,218,230,230],stroked:true,getLineColor:[3,6,12,220],lineWidthMinPixels:1}));
+    L.push(new TextLayer({id:'lp',data:LABELS.filter(l=>l.c==='port'),getPosition:d=>d.p,getText:d=>d.n,getSize:10,sizeUnits:'pixels',getColor:[205,214,228,225],getPixelOffset:[7,0],getTextAnchor:'start',getAlignmentBaseline:'center',fontFamily:"'IBM Plex Mono',monospace",...OL}));
+  }
   if(state.glow)L.push(new ScatterplotLayer({id:'halo',data:ships,getPosition:d=>d.pos,getRadius:40000,radiusUnits:'meters',getFillColor:[...P.brandRGB,40]}));
   if(state.vessel==='dot')L.push(new ScatterplotLayer({id:'ships',data:ships,getPosition:d=>d.pos,getRadius:14000,radiusUnits:'meters',getFillColor:[...P.brandRGB,220]}));
   else L.push(new IconLayer({id:'ships',data:ships,getPosition:d=>d.pos,getIcon:d=>({url:ICON(state.vessel),width:24,height:24,anchorX:12,anchorY:12,mask:true}),sizeUnits:'pixels',getSize:13,getAngle:d=>-(d.course),getColor:[...P.brandRGB,235],updateTriggers:{getIcon:state.vessel,getColor:state.pal}}));
@@ -93,6 +104,6 @@ seg('g_pal',Object.keys(PAL).map(v=>({v,l:v})),'pal');
 seg('g_font',Object.keys(FONT).map(v=>({v,l:v})),'font');
 seg('g_ves',[{v:'chevron',l:'Chevron'},{v:'triangle',l:'Triangle'},{v:'diamond',l:'Diamond'},{v:'dot',l:'Dot'}],'vessel');
 seg('g_map',[{v:'flat',l:'Flat'},{v:'graticule',l:'Graticule'},{v:'chart',l:'Chart'}],'map');
-seg('g_fx',[{k:'scan',l:'Scanlines'},{k:'vig',l:'Vignette'},{k:'glow',l:'Glow'},{k:'sonar',l:'Sonar'}],null,true);
+seg('g_fx',[{k:'labels',l:'Labels'},{k:'scan',l:'Scanlines'},{k:'vig',l:'Vignette'},{k:'glow',l:'Glow'},{k:'sonar',l:'Sonar'}],null,true);
 apply();
 </script>
