@@ -7,3 +7,4 @@ data/*.parquet
 data/*.jsonl
 .opencode/
 data/raw/
+globe/assets/brooklyn_buildings.json

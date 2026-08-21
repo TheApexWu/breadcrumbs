@@ -1,0 +1,206 @@
+<meta charset="utf-8" />
+<title>STRAITS — NYC food supply intelligence (3D)</title>
+<style>
+  :root{--bg:#05080f;--panel:#0b0f1a;--bd:#1e2a44;--tx:#aeb8cf;--amber:#e0a95a;--red:#e2564a;--grn:#5ac26a;--mut:#5f6b85;--cyan:#3fb6c9}
+  html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;font-family:ui-monospace,Menlo,monospace;color:var(--tx)}
+  #deck{position:fixed;inset:0}
+  .panel{position:fixed;background:rgba(11,15,26,.92);border:1px solid var(--bd);z-index:3;backdrop-filter:blur(3px)}
+  #cls{position:fixed;top:0;left:0;right:0;height:16px;line-height:16px;text-align:center;font-size:9px;letter-spacing:.32em;color:#7d8aa6;background:#0a0e18;border-bottom:1px solid #141d31;z-index:6}
+  #top{top:16px;left:0;right:0;height:36px;display:flex;align-items:center;gap:15px;padding:0 16px;border:none;font-size:11px;letter-spacing:.08em}
+  #top .brand{color:var(--amber);font-weight:600;letter-spacing:.26em}#top .sep{color:var(--mut)}#top b{color:var(--tx)}.m .v{color:var(--amber)}.m.crit .v{color:var(--red)}
+  #right{right:14px;top:56px;width:346px;max-height:calc(100% - 150px);display:flex;flex-direction:column}
+  #right .sh{padding:9px 12px;border-bottom:1px solid var(--bd);font-size:11px;letter-spacing:.13em;color:var(--amber);display:flex;justify-content:space-between}
+  .lbl{padding:7px 12px 3px;font-size:9px;letter-spacing:.15em;color:var(--mut)}
+  #score{font-size:11px;overflow-y:auto;max-height:210px}.sc{padding:5px 12px;border-bottom:1px solid #131b2e;display:flex;align-items:center;gap:8px;cursor:pointer}.sc:hover{background:#0f1626}.sc .bar{height:7px;background:var(--red);opacity:.85}.sc .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc .n{color:var(--mut);font-size:10px;min-width:56px;text-align:right}
+  #alerts .al{padding:6px 12px;border-bottom:1px solid #131b2e;display:flex;gap:8px;font-size:11px}.al .sev{font-weight:600}.CRIT .sev{color:var(--red)}.WARN .sev{color:var(--amber)}
+  #feed{font-size:10.5px;overflow-y:auto;max-height:118px;padding-bottom:6px}.fe{padding:3px 12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fe .t{color:#39435e}.fe b{color:var(--grn)}.fe .w{color:var(--amber)}
+  #ctl{top:56px;left:14px;z-index:4;display:flex;flex-direction:column;gap:7px;width:186px}
+  #ctl button{background:#0b0f1a;color:var(--tx);border:1px solid var(--bd);font-family:inherit;font-size:11px;letter-spacing:.05em;padding:7px 10px;cursor:pointer;text-align:left}#ctl button.on{color:var(--amber);border-color:var(--amber)}#rec.armed{color:var(--red);border-color:var(--red)}
+  #ctl .gp{display:flex;gap:6px}#ctl .gp button{flex:1;text-align:center}
+  #legend{left:14px;bottom:14px;width:186px;padding:9px 11px;font-size:10px;letter-spacing:.03em}
+  #legend .row{display:flex;align-items:center;gap:6px;margin:3px 0}.sw{width:26px;height:8px;border-radius:1px}
+  #detail{right:14px;bottom:14px;width:300px;display:none}.dh{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--bd)}.dh .nm{color:var(--amber);font-size:13px}.x{color:var(--mut);cursor:pointer}#d_tab{width:100%;border-collapse:collapse;font-size:11px}#d_tab td{padding:5px 12px;border-bottom:1px solid #131b2e}#d_tab td.k{color:var(--mut);width:48%}
+  #read{left:210px;bottom:14px;padding:4px 10px;font-size:10px;color:var(--mut);letter-spacing:.06em}
+  #load{position:fixed;inset:0;background:var(--bg);z-index:9;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px;letter-spacing:.16em;text-align:center}
+</style>
+<div id="cls">UNCLASSIFIED // SIMULATION · STRAITS · NYC FOOD-SUPPLY RISK · LOCAL / GB10</div>
+<div id="deck"></div>
+<div id="top" class="panel"><span class="brand">◈ STRAITS</span><span class="sep">|</span>
+  <span class="m">ESTABLISHMENTS <b class="v" id="m_est">—</b></span>
+  <span class="m">GRADE-C <b class="v" id="m_c" style="color:var(--red)">—</b></span>
+  <span class="m" id="m_af_w">RECALL-EXPOSED <b class="v" id="m_af">0</b></span>
+  <span class="m" id="m_cov_w">COVERS/DAY <b class="v" id="m_cov">0</b></span>
+  <span class="sep">|</span><span>SUPPLY <b id="m_st" style="color:var(--grn)">NOMINAL</b></span></div>
+
+<div id="ctl">
+  <button id="rec">⚠ SIMULATE RECALL</button>
+  <div class="lbl" style="padding-left:2px">CITY</div>
+  <div class="gp"><button id="bk" class="on">◧ Buildings</button><button id="bx">+ Brooklyn</button></div>
+  <div class="gp"><button id="hex" class="on">▲ Risk hexbins</button></div>
+  <div class="gp"><button id="arcs">↳ Supply flow</button><button id="reset">⟲ View</button></div>
+</div>
+
+<div id="right" class="panel"><div class="sh"><span>◈ SENTINEL AGENT</span><span id="s_state" style="color:var(--grn)">● IDLE · local</span></div>
+  <div class="lbl">DISTRIBUTOR RISK · openFDA recall history (Class I / total)</div><div id="score"></div>
+  <div class="lbl">ALERTS</div><div id="alerts"></div>
+  <div class="lbl">AGENT ACTIVITY</div><div id="feed"></div></div>
+
+<div id="detail" class="panel"><div class="dh"><span class="nm" id="d_nm"></span><span class="x" id="d_x">✕</span></div><table id="d_tab"></table></div>
+
+<div id="legend" class="panel">
+  <div style="color:var(--mut);letter-spacing:.14em;margin-bottom:4px">RISK HEXBIN</div>
+  <div class="row"><span class="sw" style="background:#2f7d6b"></span>mostly grade-A</div>
+  <div class="row"><span class="sw" style="background:#e0a95a"></span>mixed</div>
+  <div class="row"><span class="sw" style="background:#e2564a"></span>grade-C cluster</div>
+  <div class="row" style="color:var(--mut);margin-top:5px">height = dining density</div>
+  <div class="row" style="color:var(--mut)">◆ hub · size = recall risk</div>
+  <div class="row" style="color:var(--mut)">supply links = MODELED</div>
+</div>
+<div id="read" class="panel"></div>
+<div id="load">EXTRUDING NYC · loading buildings + DOHMH + openFDA …</div>
+
+<script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
+<script>
+const {DeckGL,MapView,PolygonLayer,HexagonLayer,ColumnLayer,ScatterplotLayer,ArcLayer,TextLayer,GeoJsonLayer,LightingEffect,AmbientLight,_SunLight:SunLight}=deck;
+
+const HUBS=[
+  {key:'HUNTS PT PRODUCE', name:'Hunts Point Produce Market', pos:[-73.879,40.807], kind:'market'},
+  {key:'BALDOR',           name:'Baldor Specialty Foods',     pos:[-73.878,40.811], kind:'dist'},
+  {key:'RESTAURANT DEPOT', name:'Restaurant Depot / Jetro',   pos:[-73.843,40.784], kind:'dist'},
+  {key:'US FOODS',         name:'US Foods (Bronx)',           pos:[-73.866,40.802], kind:'dist'},
+  {key:'SYSCO',            name:'Sysco Metro NY',             pos:[-73.720,40.752], kind:'dist'},
+];
+const SCORE_KEYS={'HUNTS PT PRODUCE':null,'BALDOR':'BALDOR','RESTAURANT DEPOT':'RESTAURANT DEPOT','US FOODS':'US FOODS','SYSCO':'SYSCO'};
+const rscore=g=>g==='C'?1:g==='B'?0.5:g==='A'?0.05:0.25;
+const HEXCOLORS=[[47,125,107],[92,150,120],[176,168,96],[224,169,90],[226,120,74],[226,86,74]];
+
+let rests=[], scorecard=[], scoreByFirm={}, bldMan=null, bldBk=null;
+let showBk=false, showHex=true, showArcs=false, recall=null, pulse=0, selId=null;
+let mapAffected=new Set();
+
+function nearestHub(lon,lat){let bi=0,bd=1e9;for(let i=0;i<HUBS.length;i++){const dx=HUBS[i].pos[0]-lon,dy=HUBS[i].pos[1]-lat,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i;}}return bi;}
+
+// lighting for the extruded city
+const lighting=new LightingEffect({ambient:new AmbientLight({color:[255,255,255],intensity:1.0}),
+  sun:new SunLight({timestamp:1553998800000,color:[255,230,200],intensity:1.3})});
+
+function boot(rj,scj,man){
+  scorecard=scj.cards; scoreByFirm=Object.fromEntries(scorecard.map(c=>[c.firm,c]));
+  for(const h of HUBS){const k=SCORE_KEYS[h.key];const c=k?scoreByFirm[k]:null;h.class1=c?c.class1:0;h.recalls=c?c.recalls:0;h.recent=c?c.recent:null;h.recentProd=c?c.recent_product:null;}
+  rests=rj.rows.map((r,i)=>({...r,i,hub:nearestHub(r.lon,r.lat),rs:rscore(r.grade)}));
+  bldMan=man;
+  m_est.textContent=rests.length.toLocaleString();
+  m_c.textContent=(rj.meta.grades.C||0);
+  renderScore();
+  document.getElementById('load').style.display='none';
+  dk.setProps({layers:frame()}); requestAnimationFrame(loop);
+}
+
+function bldLayer(id,data){
+  return new PolygonLayer({id,data,extruded:true,wireframe:false,
+    getPolygon:d=>d.p, getElevation:d=>d.h,
+    getFillColor:d=>{const t=Math.min(1,d.h/120);return [18+t*26,26+t*30,44+t*34];},
+    material:{ambient:0.5,diffuse:0.6,shininess:20,specularColor:[40,50,70]},
+    pickable:false});
+}
+
+function frame(){
+  const L=[];
+  if(document.getElementById('bk').classList.contains('on')&&bldMan)L.push(bldLayer('man',bldMan));
+  if(showBk&&bldBk)L.push(bldLayer('bk',bldBk));
+  // risk hexbins (aggregate — no dot mess)
+  if(showHex)L.push(new HexagonLayer({id:'risk',data:rests,radius:130,elevationScale:6,extruded:true,pickable:true,
+    getPosition:d=>[d.lon,d.lat],
+    getColorWeight:d=>d.rs, colorAggregation:'MEAN', colorRange:HEXCOLORS,
+    getElevationWeight:1, elevationAggregation:'SUM', elevationRange:[0,900],
+    opacity:0.72, coverage:0.86,
+    updateTriggers:{getColorWeight:[]}}));
+  // recall exposure — affected establishments rise as red columns
+  if(recall){const aff=rests.filter(r=>mapAffected.has(r.i));
+    L.push(new ColumnLayer({id:'aff',data:aff,diskResolution:6,radius:36,extruded:true,
+      getPosition:d=>[d.lon,d.lat],getElevation:d=>120+pulse*90,getFillColor:[226,86,74,210],elevationScale:1}));}
+  // supply flow arcs (on demand)
+  if(showArcs){const sample=rests.filter((_,k)=>k%90===0);
+    L.push(new ArcLayer({id:'arcs',data:sample,getSourcePosition:d=>HUBS[d.hub].pos,getTargetPosition:d=>[d.lon,d.lat],
+      getSourceColor:d=>recall&&mapAffected.has(d.i)?[226,86,74,180]:[63,182,201,120],
+      getTargetColor:d=>recall&&mapAffected.has(d.i)?[226,86,74,60]:[63,182,201,20],
+      getHeight:0.3,getWidth:1,updateTriggers:{getSourceColor:recall}}));}
+  // distributor hubs as columns sized by recall risk
+  L.push(new ColumnLayer({id:'hubs',data:HUBS,diskResolution:12,radius:180,extruded:true,pickable:true,
+    getPosition:d=>d.pos,getElevation:d=>200+d.class1*40+(recall&&recall.key===d.key?pulse*300:0),
+    getFillColor:d=>recall&&recall.key===d.key?[226,86,74,230]:(d.class1>10?[226,86,74,160]:[63,182,201,150]),
+    radiusUnits:'meters',updateTriggers:{getElevation:[recall,pulse],getFillColor:recall},
+    onClick:i=>{if(i.object)pickHub(i.object.key);}}));
+  L.push(new TextLayer({id:'hubT',data:HUBS,getPosition:d=>d.pos,getText:d=>d.name,getSize:10,sizeUnits:'pixels',
+    getColor:d=>d.class1>10?[240,150,140,240]:[150,200,210,220],getPixelOffset:[0,-16],getTextAnchor:'middle',fontFamily:'monospace',
+    outlineWidth:2,outlineColor:[3,6,12,220],fontSettings:{sdf:true},billboard:true}));
+  return L;
+}
+
+let vs={longitude:-73.985,latitude:40.745,zoom:12.4,pitch:52,bearing:-18,minZoom:10,maxZoom:17};
+const HOME={...vs};
+const dk=new DeckGL({container:'deck',views:new MapView({id:'v',repeat:false}),viewState:vs,
+  controller:{inertia:250,scrollZoom:{smooth:true}},effects:[lighting],
+  parameters:{clearColor:[.02,.03,.055,1]},layers:[],
+  onViewStateChange:({viewState})=>{vs=viewState;read.textContent=`Z ${vs.zoom.toFixed(1)} · pitch ${vs.pitch|0}° · NYC`;}});
+
+let last=performance.now();
+function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;dk.setProps({viewState:vs,layers:frame()});requestAnimationFrame(loop);}
+
+function renderScore(){
+  const max=Math.max(...scorecard.map(c=>c.class1),1);
+  document.getElementById('score').innerHTML=scorecard.map(c=>{
+    const hub=HUBS.find(h=>SCORE_KEYS[h.key]===c.firm);
+    return `<div class="sc" ${hub?`data-hub="${hub.key}"`:''}>
+      <span class="nm" style="color:${c.class1>10?'var(--red)':c.class1>0?'var(--amber)':'var(--grn)'}">${c.firm}</span>
+      <span class="bar" style="width:${Math.round(58*c.class1/max)}px"></span>
+      <span class="n">${c.class1} / ${c.recalls}</span></div>`;}).join('');
+  document.querySelectorAll('.sc[data-hub]').forEach(el=>el.onclick=()=>pickHub(el.dataset.hub));
+}
+function feed(h,cls){const t=new Date().toLocaleTimeString('en-GB');document.getElementById('feed').insertAdjacentHTML('afterbegin',`<div class="fe ${cls||''}"><span class="t">${t}</span> ${h}</div>`);}
+function alertln(sev,txt){document.getElementById('alerts').insertAdjacentHTML('afterbegin',`<div class="al ${sev}"><span class="sev">${sev}</span><span>${txt}</span></div>`);}
+function pickHub(key){const h=HUBS.find(x=>x.key===key);if(!h)return;showArcs=true;document.getElementById('arcs').classList.add('on');
+  vs={...vs,longitude:h.pos[0],latitude:h.pos[1]};
+  const served=rests.filter(r=>HUBS[r.hub].key===key);
+  feed(`SENTINEL ▸ <b>trace_supplier</b>("${h.name}") → ${served.length} est. [MODELED]`);
+  feed(`  risk: ${h.class1} Class-I recalls on record${h.recent?', last '+h.recent:''}`,h.class1>10?'w':'');}
+
+let ramp=null;
+document.getElementById('rec').onclick=()=>{
+  const rb=document.getElementById('rec');
+  if(recall){recall=null;mapAffected=new Set();rb.classList.remove('armed');rb.textContent='⚠ SIMULATE RECALL';m_st.textContent='NOMINAL';m_st.style.color='var(--grn)';['m_af_w','m_cov_w'].forEach(x=>document.getElementById(x).classList.remove('crit'));m_af.textContent='0';m_cov.textContent='0';clearInterval(ramp);document.getElementById('alerts').innerHTML='';s_state.textContent='● IDLE · local';s_state.style.color='var(--grn)';return;}
+  const cand=HUBS.filter(h=>rests.some(r=>HUBS[r.hub].key===h.key)).sort((a,b)=>b.class1-a.class1);
+  recall=cand[0];
+  const served=rests.filter(r=>HUBS[r.hub].key===recall.key);
+  mapAffected=new Set(served.map(r=>r.i));
+  const cg=served.filter(r=>r.grade==='C').length;
+  showArcs=true;document.getElementById('arcs').classList.add('on');
+  rb.classList.add('armed');rb.textContent='✓ CLEAR RECALL';m_st.textContent='RECALL ACTIVE';m_st.style.color='var(--red)';
+  vs={...vs,longitude:recall.pos[0],latitude:recall.pos[1]};
+  s_state.textContent='● ACTIVE · Nemotron/local';s_state.style.color='var(--amber)';
+  const prod=(recall.recentProd||'recalled product').trim();
+  [()=>{alertln('CRIT',`Class I recall — ${recall.name}`);feed(`SENTINEL ▸ <b>ingest_recall</b>(openFDA) → "${prod}"`);},
+   ()=>feed(`SENTINEL ▸ <b>match_supplier</b>() → ${recall.name} · ${recall.class1} prior Class-I`,'w'),
+   ()=>feed(`SENTINEL ▸ <b>trace_forward</b>() → ${served.length} NYC establishments [MODELED]`),
+   ()=>{alertln('WARN',`${cg} exposed establishments already carry a C grade`);feed(`SENTINEL ▸ <b>flag_compounding</b>() → ${cg} grade-C in blast radius`,'w');},
+   ()=>{feed(`SENTINEL ▸ <b>brief</b>() → "${served.length} exposed via ${recall.name}. ${cg} already grade-C. Recommend hold + swap to Baldor (0 recalls)."`);s_state.textContent='● WATCHING · local';s_state.style.color='var(--grn)';},
+  ].forEach((f,i)=>setTimeout(f,i*750));
+  ['m_af_w','m_cov_w'].forEach(x=>document.getElementById(x).classList.add('crit'));
+  let n=0;const N=served.length,COV=180;ramp=setInterval(()=>{n=Math.min(N,n+Math.ceil(N/40));m_af.textContent=n.toLocaleString();m_cov.textContent=(n*COV).toLocaleString();if(n>=N)clearInterval(ramp);},40);
+};
+document.getElementById('bk').onclick=e=>e.target.classList.toggle('on');
+document.getElementById('hex').onclick=e=>{showHex=!showHex;e.target.classList.toggle('on',showHex);};
+document.getElementById('arcs').onclick=e=>{showArcs=!showArcs;e.target.classList.toggle('on',showArcs);};
+document.getElementById('reset').onclick=()=>{vs={...HOME};};
+document.getElementById('bx').onclick=e=>{
+  if(bldBk){showBk=!showBk;e.target.classList.toggle('on',showBk);return;}
+  e.target.textContent='loading…';
+  fetch('assets/brooklyn_buildings.json').then(r=>r.json()).then(d=>{bldBk=d;showBk=true;e.target.textContent='+ Brooklyn';e.target.classList.add('on');});
+};
+document.getElementById('d_x').onclick=()=>{selId=null;document.getElementById('detail').style.display='none';};
+
+Promise.all(['nyc-restaurants.json','distributor-scorecard.json','manhattan_buildings.json']
+  .map(f=>fetch('assets/'+f).then(r=>r.json())))
+  .then(([r,sc,man])=>boot(r,sc,man))
+  .catch(e=>{document.getElementById('load').textContent='LOAD FAILED: '+e;});
+</script>
