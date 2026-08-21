@@ -70,7 +70,7 @@ const ICON=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(
 let pulse=0;
 function layers(){const P=PAL[state.pal];const L=[
   new SolidPolygonLayer({id:'ocean',data:ocean,getPolygon:d=>d.polygon,getFillColor:P.brandRGB.map((c,i)=>[9,14,26][i])}),
-  new GeoJsonLayer({id:'land',data:'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson',getFillColor:P.land,getLineColor:P.lc,lineWidthMinPixels:.5,stroked:true,filled:true}),
+  new GeoJsonLayer({id:'land',data:'assets/land.geojson',getFillColor:P.land,getLineColor:P.lc,lineWidthMinPixels:.5,stroked:true,filled:true}),
 ];
   if(state.map==='graticule'||state.map==='chart')L.push(new PathLayer({id:'grat',data:graticule(),getPath:d=>d.p,getColor:[...P.brandRGB,28],getWidth:.5,widthMinPixels:.5}));
   L.push(new PathLayer({id:'lane',data:[lane],getPath:d=>d,getColor:[...P.brandRGB,120],getWidth:1.5,widthMinPixels:1}));
