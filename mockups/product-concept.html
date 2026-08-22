@@ -1,0 +1,199 @@
+<meta charset="utf-8">
+<title>BREADCRUMB — product concept</title>
+<style>
+  :root{
+    --abyss:#060a12; --panel:#0b111c; --panel2:#0e1626; --line:#1b2740;
+    --ink:#c3ccdd; --mut:#6b7a95; --faint:#38455e;
+    --brand:#3fb6c9; --amber:#e0a95a;
+    --nominal:#3fb950; --watch:#d29922; --warn:#e0823d; --critical:#e5484d;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--abyss);color:var(--ink)}
+  body{font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .cls{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.3em;color:#6f7d97;
+    text-align:center;padding:8px;border-bottom:1px solid var(--line);background:#0a0e18}
+  .kicker{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brand)}
+  h2.sec{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--mut);font-weight:600;margin:0 0 22px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  section{padding:64px 0;border-bottom:1px solid #101826}
+
+  /* hero */
+  .hero{padding:78px 0 70px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;inset:0;background:
+    radial-gradient(60% 80% at 78% 20%, rgba(63,182,201,.10), transparent 60%),
+    radial-gradient(50% 60% at 15% 90%, rgba(224,169,90,.07), transparent 60%);pointer-events:none}
+  .brandrow{display:flex;align-items:center;gap:14px}
+  .logo{font-size:26px;color:var(--amber)}
+  .name{font-family:ui-monospace,Menlo,monospace;font-size:26px;letter-spacing:.16em;font-weight:600}
+  .swap{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.12em;color:var(--faint);
+    border:1px solid var(--line);border-radius:2px;padding:2px 7px}
+  h1{font-size:44px;line-height:1.1;letter-spacing:-.015em;font-weight:600;margin:26px 0 8px;max-width:16ch}
+  h1 .g{color:var(--brand)}
+  .tag{font-size:19px;color:var(--amber);font-style:italic;margin:0 0 22px}
+  .one{color:var(--mut);font-size:16px;max-width:60ch;margin:0 0 26px}
+  .badges{display:flex;gap:10px;flex-wrap:wrap}
+  .badge{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.06em;color:var(--ink);
+    border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:7px 12px;display:flex;gap:8px;align-items:center}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--nominal);box-shadow:0 0 8px var(--nominal)}
+
+  /* problem stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .stat{padding:24px;border-right:1px solid var(--line)}
+  .stat:last-child{border-right:none}
+  .stat .n{font-family:ui-monospace,Menlo,monospace;font-size:30px;color:var(--ink);letter-spacing:-.01em}
+  .stat .n.bad{color:var(--critical)}.stat .n.good{color:var(--nominal)}
+  .stat .l{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.4}
+
+  /* agent swarm */
+  .swarm{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .agent{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:14px;position:relative}
+  .agent .c{position:absolute;top:6px;right:8px;font-family:ui-monospace,Menlo,monospace;font-size:9px;color:var(--faint)}
+  .agent .an{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.08em;color:var(--amber);margin-bottom:4px}
+  .agent .ar{font-size:12px;color:var(--mut);min-height:48px}
+  .agent .as{margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--nominal);display:flex;gap:6px;align-items:center}
+  .agent .pd{width:6px;height:6px;border-radius:50%;background:var(--nominal);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1;box-shadow:0 0 8px var(--nominal)}}
+  .swarmnote{text-align:center;color:var(--mut);font-size:13px;margin-top:18px}
+  .swarmnote b{color:var(--brand)}
+
+  /* telemetry */
+  .telem{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--brand);border-radius:3px;
+    background:linear-gradient(180deg,rgba(63,182,201,.06),transparent)}
+  .tm{padding:18px 16px;border-right:1px solid var(--line)}
+  .tm:last-child{border-right:none}
+  .tm .v{font-family:ui-monospace,Menlo,monospace;font-size:24px;color:var(--brand)}
+  .tm .k{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-top:5px}
+
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0}
+  .fstep{flex:1;padding:16px;border:1px solid var(--line);border-right:none;position:relative}
+  .fstep:last-child{border-right:1px solid var(--line)}
+  .fstep .fn{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--faint)}
+  .fstep .ft{font-size:13px;margin-top:6px}
+  .fstep .ft b{color:var(--amber)}
+  .fstep.crit{background:rgba(229,72,77,.07)}
+  .fstep.crit .ft b{color:var(--critical)}
+
+  /* phone + pillars */
+  .split{display:grid;grid-template-columns:300px 1fr;gap:40px;align-items:center}
+  .phone{border:2px solid var(--line);border-radius:26px;background:#05070c;padding:16px 14px 24px;position:relative;box-shadow:0 0 40px rgba(0,0,0,.5)}
+  .phone .notch{width:120px;height:20px;background:#05070c;border:1px solid var(--line);border-top:none;border-radius:0 0 14px 14px;margin:-16px auto 14px}
+  .phone .time{text-align:center;font-family:ui-monospace,Menlo,monospace;color:var(--mut);font-size:12px;margin-bottom:16px}
+  .sms{background:var(--panel2);border:1px solid var(--line);border-radius:12px;border-top-left-radius:3px;padding:12px 13px;font-size:13px;opacity:0;transform:translateY(8px);transition:.5s}
+  .sms.in{opacity:1;transform:none}
+  .sms .from{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;color:var(--critical);margin-bottom:6px}
+  .sms b{color:var(--ink)}
+  .pillars{display:flex;flex-direction:column;gap:14px}
+  .pillar{border:1px solid var(--line);border-left:2px solid var(--brand);background:var(--panel);border-radius:3px;padding:16px 18px}
+  .pillar .pn{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.1em;color:var(--amber)}
+  .pillar .pt{font-size:14px;margin-top:5px;color:var(--ink)}
+  .pillar .pd{font-size:12px;color:var(--mut);margin-top:5px}
+  .pillar .pd b{color:var(--brand);font-family:ui-monospace,Menlo,monospace}
+
+  /* footer honesty */
+  .why{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:18px}
+  .card h3{margin:0 0 8px;font-size:14px}
+  .card p{margin:0;color:var(--mut);font-size:13px}
+  .real{color:var(--nominal)}.model{color:var(--watch)}
+  footer{padding:36px 0 70px;color:var(--faint);font-size:12px;text-align:center}
+  @media(max-width:820px){.swarm,.stats,.telem{grid-template-columns:1fr 1fr}.split,.why{grid-template-columns:1fr}.flow{flex-wrap:wrap}.fstep{flex:1 1 40%;border-right:1px solid var(--line)}}
+</style>
+
+<div class="cls">UNCLASSIFIED // SIMULATION · ON-PREM FOOD-SUPPLY INTELLIGENCE · GB10 / LOCAL</div>
+
+<section class="hero"><div class="wrap">
+  <div class="brandrow"><span class="logo">◈</span><span class="name" id="brand">BREADCRUMB</span><span class="swap">name — placeholder, swappable</span></div>
+  <h1>When a recall drops, know <span class="g">which of your sites are exposed</span> — in seconds.</h1>
+  <p class="tag">Follow it back to the source.</p>
+  <p class="one">An always-on, on-prem food-safety agent for a NYC food operator. It watches the FDA
+  recall feed, knows your suppliers and your locations, and the instant a recall lands it tells you
+  who's hit, how bad, and what to do — on a box in the back office, data never leaving the building.</p>
+  <div class="badges">
+    <span class="badge"><span class="dot"></span> RUNS LOCAL · NVIDIA GB10</span>
+    <span class="badge"><span class="dot"></span> NO CLOUD · AIR-GAPPABLE</span>
+    <span class="badge mono">NemoClaw · OpenClaw · MongoDB</span>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">The problem</h2>
+  <div class="stats">
+    <div class="stat"><div class="n bad">48M</div><div class="l">Americans sickened by foodborne illness a year (CDC)</div></div>
+    <div class="stat"><div class="n bad">3,000</div><div class="l">deaths a year — recalls are life-and-death</div></div>
+    <div class="stat"><div class="n">~3 days</div><div class="l">to trace exposure today — manual phone calls, opaque supply chains</div></div>
+    <div class="stat"><div class="n good" id="secs">4 sec</div><div class="l">with BREADCRUMB — local, offline, at recall time</div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">The wow — five agents, concurrent, on one box</h2>
+  <div class="swarm">
+    <div class="agent"><span class="c">01</span><div class="an">WATCHER</div><div class="ar">Monitors the live FDA recall feed 24/7.</div><div class="as"><span class="pd"></span>watching · local</div></div>
+    <div class="agent"><span class="c">02</span><div class="an">TRACER</div><div class="ar">Matches the recall to your suppliers → exposed sites.</div><div class="as"><span class="pd"></span>tracing</div></div>
+    <div class="agent"><span class="c">03</span><div class="an">RISK</div><div class="ar">Scores compounding risk from critical food-handling violations.</div><div class="as"><span class="pd"></span>scoring</div></div>
+    <div class="agent"><span class="c">04</span><div class="an">BRIEFER</div><div class="ar">Writes the plain-language ops brief + swap recommendation.</div><div class="as"><span class="pd"></span>briefing</div></div>
+    <div class="agent"><span class="c">05</span><div class="an">COMMS</div><div class="ar">Drafts + fires the SMS to affected site managers.</div><div class="as"><span class="pd"></span>standing by</div></div>
+  </div>
+  <p class="swarmnote">Five specialized agents run <b>in parallel</b> on the GB10's 128&nbsp;GB unified memory — reasoning a laptop can't hold, a cloud you can't trust with your supplier list.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">Proof it's on the box — live GB10 telemetry</h2>
+  <div class="telem">
+    <div class="tm"><div class="v">Nemotron</div><div class="k">model · local</div></div>
+    <div class="tm"><div class="v" id="tps">66</div><div class="k">tokens / sec</div></div>
+    <div class="tm"><div class="v" id="mem">71 GB</div><div class="k">unified memory</div></div>
+    <div class="tm"><div class="v" id="pw">128 W</div><div class="k">SoC power</div></div>
+    <div class="tm"><div class="v">5 / 5</div><div class="k">agents concurrent</div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">Recall-response — the 90-second demo</h2>
+  <div class="flow">
+    <div class="fstep"><div class="fn">0:00</div><div class="ft"><b>Watch.</b> Your 12 sites lit on the 3D map. Idle, local.</div></div>
+    <div class="fstep"><div class="fn">0:25</div><div class="ft"><b>Recall drops.</b> Real openFDA item hits the feed.</div></div>
+    <div class="fstep"><div class="fn">0:40</div><div class="ft"><b>Trace.</b> Exposed sites light red — "3 of your 12."</div></div>
+    <div class="fstep crit"><div class="fn">0:55</div><div class="ft"><b>Compound.</b> 2 already show critical food-handling violations.</div></div>
+    <div class="fstep"><div class="fn">1:05</div><div class="ft"><b>Act.</b> Hold + swap to a 0-recall supplier. SMS fires.</div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">Detection → action — it doesn't just tell you, it acts</h2>
+  <div class="split">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="time" id="ptime">9:41</div>
+      <div class="sms" id="sms1"><div class="from">◈ BREADCRUMB ALERT</div><b>Class I recall — Dole leafy greens (E. coli).</b> 3 of your 12 sites received this lot. 2 have open critical violations. Hold all Dole greens now; swap → Baldor (0 recalls). Tap for the brief.</div>
+    </div>
+    <div class="pillars">
+      <div class="pillar"><div class="pn">01 · EXPOSURE</div><div class="pt">Am I hit?</div><div class="pd">Real openFDA recalls × your suppliers × <b>17,204</b> geocoded NYC establishments.</div></div>
+      <div class="pillar"><div class="pn">02 · RISK</div><div class="pt">How bad?</div><div class="pd">Real distributor recall history — <b>Dole 205</b> Class-I, <b>Sysco 24</b>, <b>Baldor 0</b> — × critical food-handling violations.</div></div>
+      <div class="pillar"><div class="pn">03 · ACTION</div><div class="pt">What do I do?</div><div class="pd">Hold / pull / swap-supplier, drafted + fired as SMS by the Comms agent. Reasoned <b>locally</b>.</div></div>
+    </div>
+  </div>
+</div></section>
+
+<section style="border-bottom:none"><div class="wrap">
+  <h2 class="sec">Why local, and honest by design</h2>
+  <div class="why">
+    <div class="card"><h3>Why it must run on the box</h3><p>Supplier contracts, margins, and sourcing are trade secrets — no operator ships them to a cloud LLM. FSMA 204 makes traceability a legal mandate. Always-on + private = only possible on the GB10.</p></div>
+    <div class="card"><h3>Real vs modeled — stated, never blurred</h3><p><span class="real">Real:</span> recalls, health violations, distributor history, buildings. <span class="model">Modeled:</span> supplier→site links (the FSMA-204 gap itself), the operator's portfolio. We label it — an instrument, not an oracle.</p></div>
+  </div>
+</div></section>
+
+<footer>◈ BREADCRUMB · concept for internal review · Dell × NVIDIA AI Factory hackathon · all data real, free, offline-cacheable</footer>
+
+<script>
+  // gentle life: ticking telemetry + the SMS arriving
+  const tps=document.getElementById('tps'),mem=document.getElementById('mem'),pw=document.getElementById('pw');
+  setInterval(()=>{tps.textContent=(60+Math.round(Math.sin(Date.now()/700)*6+6));},600);
+  setInterval(()=>{mem.textContent=(68+Math.round(Math.sin(Date.now()/1500)*4+4))+' GB';pw.textContent=(122+Math.round(Math.sin(Date.now()/900)*8+6))+' W';},900);
+  const sms=document.getElementById('sms1');
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)setTimeout(()=>sms.classList.add('in'),350);}),{threshold:.4});
+  io.observe(sms);
+</script>
