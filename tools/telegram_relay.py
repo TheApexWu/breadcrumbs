@@ -49,11 +49,14 @@ def _tg_document(pdf_bytes, filename, caption):
         d = json.load(r); return {"ok": d.get("ok"), "message_id": d.get("result", {}).get("message_id")}
 
 def _ask(question, context):
-    sysmsg = ("detailed thinking off. You are BREADCRUMBS, an on-prem food-safety agent. "
-              "Answer the operator ONLY from the FACTS provided, in 1-3 plain sentences. "
-              "Do not invent numbers or firms. If the facts don't cover it, say so.")
-    user = "FACTS:\n%s\n\nQUESTION: %s" % (context or "(none)", question)
-    body = json.dumps({"model": MODEL, "temperature": 0.2, "max_tokens": 200,
+    sysmsg = ("detailed thinking off. You are BREADCRUMBS, a sharp NYC food-safety analyst advising an "
+              "operator during a live recall. Answer the question DIRECTLY in ONE or TWO short sentences. "
+              "Lead with the number or the answer, then one clause of why it matters. Use the exact figures in "
+              "the FACTS and count them yourself when asked 'how many'. Be decisive and specific — never say "
+              "'not specified', never list what you don't know, never hedge, no markdown headers or bullets. "
+              "Talk like an expert who already read the report.")
+    user = "FACTS:\n%s\n\nQUESTION: %s\n\nAnswer in 1-2 direct sentences:" % (context or "(none)", question)
+    body = json.dumps({"model": MODEL, "temperature": 0.1, "max_tokens": 160,
                        "messages": [{"role": "system", "content": sysmsg},
                                     {"role": "user", "content": user}]}).encode()
     req = urllib.request.Request(VLLM.rstrip("/") + "/chat/completions",

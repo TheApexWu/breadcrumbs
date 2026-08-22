@@ -647,7 +647,14 @@ document.getElementById('view3d').onclick=e=>{const top=vs.pitch>10;flyTo({pitch
 document.querySelectorAll('#chips .chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('#chips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');gradeF=c.dataset.g;if(gradeF&&!showPts){showPts=true;document.getElementById('pts').classList.add('on');}dk.setProps({layers:frame()});});
 document.getElementById('ask_q').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=e.target.value.trim();if(!q)return;
   const R=BRIDGE.response,rc=R.recall,sw=(R.recommendation&&R.recommendation.swap_to)||{};
-  const ctx=`Recall: ${rc.recalling_firm} ${rc.recall_number||''} ${rc.classification}, ${(rc.product_description||'').slice(0,80)}, reason ${(rc.reason_for_recall||'').slice(0,60)}. Exposed: ${R.exposed_count} of the operator's 45 sites; ${R.compounding_count} have prior critical DOHMH violations. Distributor ${R.distributor_risk.firm}: ${R.distributor_risk.class1} Class-I on record. Recommended swap: ${sw.firm||'a verified-record supplier'} (${sw.basis||'verified low record'}).`;
+  const gmap=g=>({A:'A',B:'B',C:'C',Z:'Pending',P:'Pending',N:'Pending'}[g]||'Pending');
+  const gc={}; OPEXP.forEach(s=>{const g=gmap(s.grade);gc[g]=(gc[g]||0)+1;});
+  const gradeBreak=Object.entries(gc).sort().map(([g,n])=>n+' grade-'+g).join(', ');
+  const siteList=OPEXP.map(s=>`${s.name} (${s.boro}, grade ${gmap(s.grade)}, ${s.cuisine||'?'}, ${s.cv||0} critical violations)`).join('; ');
+  const ctx=`FDA recall ${rc.recall_number||''}: ${rc.recalling_firm} ${rc.classification} — ${(rc.product_description||'').slice(0,60)}; reason: ${(rc.reason_for_recall||'').slice(0,50)}.
+EXPOSED SITES: ${OPEXP.length} of the operator's ${OPERATOR.length} locations. Grade breakdown: ${gradeBreak}. ${OPCOMP} have prior critical DOHMH violations.
+Full list — ${siteList}.
+Distributor ${R.distributor_risk.firm}: ${R.distributor_risk.class1} Class-I recalls of ${R.distributor_risk.recalls} total. Recommended swap: ${sw.firm||'a verified-record supplier'} (${sw.basis||'verified low'}).`;
   const a=document.getElementById('ask_a');a.textContent='◈ reasoning on the box…';
   fetch('http://localhost:8899/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,context:ctx})})
     .then(r=>r.json()).then(d=>{a.textContent=d.ok?('◈ '+d.answer):('(local model offline — '+(d.error||'no relay')+')');})
@@ -682,7 +689,7 @@ document.getElementById('q').onkeydown=e=>{
 function makeDraggable(el){ if(!el)return; el.style.cursor='grab';
   let sx,sy,ox,oy,drag=false;
   el.addEventListener('mousedown',e=>{
-    if(e.target.closest('button,input,.sc,.row,.boro,.x,a'))return;
+    if(e.target.closest('button,input,.sc,.row,.boro,.x,a,#rpt_x'))return;
     const r=el.getBoundingClientRect(); el.style.right='auto'; el.style.bottom='auto';
     el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.cursor='grabbing';
     sx=e.clientX; sy=e.clientY; ox=r.left; oy=r.top; drag=true; e.preventDefault();
@@ -691,7 +698,7 @@ function makeDraggable(el){ if(!el)return; el.style.cursor='grab';
     el.style.left=Math.max(0,ox+e.clientX-sx)+'px'; el.style.top=Math.max(20,oy+e.clientY-sy)+'px'; });
   window.addEventListener('mouseup',()=>{ if(drag){drag=false; el.style.cursor='grab';} });
 }
-['ctl','right','detail','legend','read'].forEach(id=>makeDraggable(document.getElementById(id)));
+['ctl','right','detail','legend','read','rpt'].forEach(id=>makeDraggable(document.getElementById(id)));
 
 Promise.all(['nyc-restaurants.json','distributor-scorecard.json','manhattan_buildings.json'].map(f=>fetch('assets/'+f).then(r=>r.json())))
   .then(([r,sc,man])=>boot(r,sc,man)).catch(e=>{document.getElementById('load').textContent='LOAD FAILED: '+e;});
