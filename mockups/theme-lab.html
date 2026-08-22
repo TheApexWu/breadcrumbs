@@ -1,0 +1,162 @@
+<meta charset="utf-8">
+<title>BREADCRUMBS — theme lab</title>
+<style>
+  :root{
+    --bg:#060a12;--panel:#0b111c;--line:#1b2740;--ink:#c3ccdd;--mut:#6b7a95;
+    --accent:#e0a95a;--accent2:#3fb6c9;--risk:#e5484d;--grid:#17324a;
+    --font: ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#05070c;color:var(--ink);overflow:hidden;font-family:var(--font)}
+  #app{display:flex;height:100vh}
+  /* control rail */
+  #rail{width:250px;flex:none;background:#080c14;border-right:1px solid #131c2e;overflow-y:auto;padding:14px 0}
+  #rail h1{font-size:14px;letter-spacing:.22em;margin:0 14px 4px;color:var(--accent)}
+  #rail .sub{font-size:10px;letter-spacing:.14em;color:var(--mut);margin:0 14px 16px}
+  #rail .grp{margin:0 0 18px}
+  #rail .gl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);padding:0 14px;margin-bottom:7px}
+  .opt{display:block;width:calc(100% - 20px);margin:3px 10px;padding:8px 11px;background:#0b111c;border:1px solid #1b2740;color:var(--ink);
+    font-family:inherit;font-size:12px;text-align:left;cursor:pointer;border-radius:2px;letter-spacing:.03em}
+  .opt:hover{border-color:#2b3a58}
+  .opt.on{border-color:var(--accent);color:var(--accent)}
+  .opt .d{display:block;font-size:9.5px;color:var(--mut);margin-top:2px;letter-spacing:.02em}
+  .opt.on .d{color:#8794a8}
+  .tog{display:flex;justify-content:space-between;align-items:center;width:calc(100% - 20px);margin:3px 10px;padding:7px 11px;background:#0b111c;border:1px solid #1b2740;font-size:11px;cursor:pointer;border-radius:2px;letter-spacing:.04em}
+  .tog .sw{width:26px;height:14px;border-radius:8px;background:#1b2740;position:relative;transition:.2s}
+  .tog .sw::after{content:"";position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#4a566e;transition:.2s}
+  .tog.on .sw{background:var(--accent)}.tog.on .sw::after{left:14px;background:#05070c}
+  /* stage */
+  #stage{flex:1;position:relative;background:var(--bg);overflow:hidden}
+  #chrome{position:absolute;top:0;left:0;right:0;height:34px;display:flex;align-items:center;gap:16px;padding:0 16px;
+    border-bottom:1px solid var(--line);background:color-mix(in srgb, var(--panel) 92%, transparent);font-size:11px;letter-spacing:.09em;z-index:4}
+  #chrome .brand{color:var(--accent);font-weight:600;letter-spacing:.24em}
+  #chrome .m b{color:var(--ink)}#chrome .m .v{color:var(--accent)}
+  #chrome .cls{margin-left:auto;color:var(--mut);font-size:9px;letter-spacing:.24em}
+  #map{position:absolute;inset:34px 0 0 0}
+  #iso{width:100%;height:100%;display:block}
+  /* side panel preview */
+  #side{position:absolute;top:48px;right:14px;width:210px;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:2px;z-index:4;font-size:11px}
+  #side .h{padding:8px 11px;border-bottom:1px solid var(--line);color:var(--accent);letter-spacing:.12em;font-size:10px}
+  #side .r{padding:6px 11px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);display:flex;justify-content:space-between}
+  #side .r .n{color:var(--mut)}#side .r .risk{color:var(--risk)}
+  #tname{position:absolute;bottom:14px;left:14px;z-index:4;font-size:12px;letter-spacing:.14em;color:var(--accent)}
+  #tname .mut{color:var(--mut)}
+  /* EFFECT overlays */
+  .fx{position:absolute;inset:34px 0 0 0;pointer-events:none;z-index:5}
+  #scan{background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0,rgba(0,0,0,.22) 1px,transparent 2px,transparent 3px);display:none}
+  #vig{background:radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,.55) 100%);display:none}
+  #fog{background:linear-gradient(180deg,transparent 40%,color-mix(in srgb,var(--bg) 85%,transparent) 100%);display:none}
+  #glowcss.on #iso{filter:drop-shadow(0 0 2px color-mix(in srgb,var(--accent) 60%,transparent))}
+  .on-scan #scan{display:block}.on-vig #vig{display:block}.on-fog #fog{display:block}
+</style>
+<div id="app">
+  <div id="rail">
+    <h1>◈ THEME LAB</h1>
+    <div class="sub">NYC 3D · pick a vibe</div>
+    <div class="grp"><div class="gl">Vibe</div><div id="themes"></div></div>
+    <div class="grp"><div class="gl">Font</div><div id="fonts"></div></div>
+    <div class="grp"><div class="gl">Effects</div><div id="fx"></div></div>
+    <div class="grp"><div class="gl">City density</div><div id="dens"></div></div>
+  </div>
+  <div id="stage">
+    <div id="chrome">
+      <span class="brand">◈ BREADCRUMBS</span>
+      <span class="m">ESTABLISHMENTS <b class="v">17,204</b></span>
+      <span class="m">EXPOSED <b class="v" style="color:var(--risk)">3</b></span>
+      <span class="cls">UNCLASSIFIED // SIMULATION · NYC</span>
+    </div>
+    <div id="map"><svg id="iso" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice">
+      <defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    </svg></div>
+    <div id="side">
+      <div class="h">SENTINEL · LIVE</div>
+      <div class="r"><span class="n">Dole leafy greens</span><span class="risk">CLASS I</span></div>
+      <div class="r"><span class="n">exposed sites</span><span>3</span></div>
+      <div class="r"><span class="n">allergen</span><span class="risk">peanut</span></div>
+      <div class="r"><span class="n">swap → Baldor</span><span>0 recalls</span></div>
+    </div>
+    <div id="tname"></div>
+    <div class="fx" id="scan"></div><div class="fx" id="vig"></div><div class="fx" id="fog"></div>
+  </div>
+</div>
+<script>
+  const THEMES=[
+    {k:'Phosphor C2', d:'military intel terminal', bg:'#060a12',panel:'#0b111c',line:'#1b2740',ink:'#c3ccdd',mut:'#6b7a95',accent:'#e0a95a',risk:'#e5484d',grid:'#17324a',bldLo:[24,32,50],bldHi:[54,70,104],font:'mono',fx:['grid']},
+    {k:'Tron Grid', d:'neon vector world', bg:'#00060b',panel:'#04141e',line:'#0a3a4e',ink:'#bfe9f4',mut:'#4a8298',accent:'#24e0ff',risk:'#ff3b6b',grid:'#0c4256',bldLo:[6,28,40],bldHi:[12,74,98],font:'mono',fx:['grid','glow']},
+    {k:'PS2 Dusk', d:'low-poly warm haze', bg:'#1a1220',panel:'#231830',line:'#3a2a44',ink:'#e8d8dc',mut:'#9a8290',accent:'#e8a24a',risk:'#e05a3a',grid:'#2c1f34',bldLo:[58,42,62],bldHi:[120,86,104],font:'system',fx:['fog','vig','scan']},
+    {k:'Night City', d:'cyberpunk sprawl', bg:'#0a0512',panel:'#150a22',line:'#2c1044',ink:'#f0d8f6',mut:'#9a6ab0',accent:'#ff2bd6',risk:'#ff5a3c',grid:'#2a0a3e',bldLo:[30,10,46],bldHi:[92,26,120],font:'mono',fx:['glow','scan']},
+    {k:'Cities: Sim', d:'clean daylight management', bg:'#c9d4de',panel:'#eef2f6',line:'#b4c2ce',ink:'#26333f',mut:'#6a7a88',accent:'#2f7d8c',risk:'#d1502a',grid:'#b6c4d0',bldLo:[150,168,184],bldHi:[224,232,240],font:'grotesk',fx:[]},
+    {k:'Pip-Boy CRT', d:'fallout green terminal', bg:'#04120a',panel:'#082014',line:'#0e3a22',ink:'#7fe8a6',mut:'#3f8a5e',accent:'#4fe08a',risk:'#e0c04a',grid:'#0a3a1e',bldLo:[10,46,26],bldHi:[26,120,66],font:'mono',fx:['scan','vig','glow']},
+    {k:'Vaporwave', d:'sunset mall dream', bg:'#1e1442',panel:'#2a1a54',line:'#472a7e',ink:'#eddcff',mut:'#9a7ec8',accent:'#4fe0d0',risk:'#ff5a8a',grid:'#3a2470',bldLo:[70,44,110],bldHi:[210,90,170],font:'system',fx:['grid','glow']},
+    {k:'Blueprint', d:'technical schematic', bg:'#08182e',panel:'#0c244a',line:'#1a4a7e',ink:'#cfe4fb',mut:'#5a86b0',accent:'#7fb0e0',risk:'#e05a5a',grid:'#1a466f',bldLo:[16,54,92],bldHi:[36,96,150],font:'mono',fx:['grid']},
+  ];
+  const FONTS={mono:'ui-monospace,"SF Mono",Menlo,monospace',system:'-apple-system,"Segoe UI",Helvetica,sans-serif',grotesk:'"Helvetica Neue",Arial,sans-serif'};
+  const FX=['grid','glow','scan','vig','fog'];
+  let state={theme:0,font:null,fx:new Set(),dens:'Manhattan'};
+
+  const iso=document.getElementById('iso'),NS='http://www.w3.org/2000/svg';
+  function drawCity(t){
+    // clear (keep defs)
+    [...iso.querySelectorAll('polygon,text,rect,line,g')].forEach(e=>e.remove());
+    const GX=34,GY=22,hw=15,hh=7.5,ox=500,oy=64;
+    const gp=(x,y)=>[ox+(x-y)*hw, oy+(x+y)*hh];
+    const poly=(pts,fill,cls)=>{const p=document.createElementNS(NS,'polygon');p.setAttribute('points',pts.map(a=>a[0].toFixed(1)+','+a[1].toFixed(1)).join(' '));p.setAttribute('fill',fill);if(cls)p.setAttribute('class',cls);iso.appendChild(p);};
+    const rand=(x,y)=>{const s=Math.sin(x*12.9898+y*78.233)*43758.5453;return s-Math.floor(s);};
+    const risk=new Set(['18,8','11,13','25,15','14,5','28,10']);
+    const hubs=[[3,4,'HUNTS PT'],[31,6,'SYSCO'],[5,19,'BALDOR']];
+    const dens=state.dens;
+    const lo=t.bldLo,hi=t.bldHi;
+    const mix=(f)=>`rgb(${Math.round(lo[0]+(hi[0]-lo[0])*f)},${Math.round(lo[1]+(hi[1]-lo[1])*f)},${Math.round(lo[2]+(hi[2]-lo[2])*f)})`;
+    const cells=[];for(let x=0;x<GX;x++)for(let y=0;y<GY;y++)cells.push([x,y]);
+    cells.sort((a,b)=>(a[0]+a[1])-(b[0]+b[1]));
+    const skip = dens==='Sparse'?0.5 : dens==='Dense'?0.06 : 0.18;
+    for(const [x,y] of cells){
+      const A=gp(x,y),B=gp(x+1,y),C=gp(x+1,y+1),D=gp(x,y+1);
+      if(x%7===0||y%6===0){ if(t.fx.includes('grid')) poly([A,B,C,D], t.grid); continue; }
+      if(rand(x+7,y+3)<skip){ poly([A,B,C,D], mix(0.02)); continue; }
+      const key=x+','+y,isRisk=risk.has(key);
+      let H=6+rand(x,y)*52; if(isRisk)H=95+rand(x,y)*30;
+      const f=Math.min(1,H/70), up=p=>[p[0],p[1]-H];
+      const top=isRisk? t.risk : mix(f);
+      poly([B,C,up(C),up(B)], isRisk? shade(t.risk,-30):mix(f*0.55));
+      poly([C,D,up(D),up(C)], isRisk? shade(t.risk,-55):mix(f*0.32));
+      poly([up(A),up(B),up(C),up(D)], top, isRisk?'risktop':null);
+    }
+    for(const [x,y,name] of hubs){const g=gp(x,y);
+      poly([[g[0],g[1]-9],[g[0]+7,g[1]],[g[0],g[1]+9],[g[0]-7,g[1]]], t.accent);
+      const tx=document.createElementNS(NS,'text');tx.setAttribute('x',g[0]+10);tx.setAttribute('y',g[1]+3);tx.setAttribute('fill',t.accent);tx.setAttribute('font-size','9');tx.setAttribute('font-family',FONTS[state.font||t.font]);tx.textContent=name;iso.appendChild(tx);}
+    // risk glow style
+    let st=iso.querySelector('style');if(!st){st=document.createElementNS(NS,'style');iso.appendChild(st);}
+    st.textContent='.risktop{'+(t.fx.includes('glow')?'filter:url(#g);':'')+'animation:rp 1.7s infinite}@keyframes rp{50%{opacity:.6}}';
+  }
+  function shade(hex,d){const n=parseInt(hex.slice(1),16);let r=(n>>16)+d,g=((n>>8)&255)+d,b=(n&255)+d;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return`rgb(${r},${g},${b})`;}
+
+  function apply(){
+    const t=THEMES[state.theme];
+    const r=document.documentElement.style;
+    r.setProperty('--bg',t.bg);r.setProperty('--panel',t.panel);r.setProperty('--line',t.line);
+    r.setProperty('--ink',t.ink);r.setProperty('--mut',t.mut);r.setProperty('--accent',t.accent);
+    r.setProperty('--risk',t.risk);r.setProperty('--grid',t.grid);
+    r.setProperty('--font',FONTS[state.font||t.font]);
+    const stage=document.getElementById('stage');
+    FX.forEach(f=>stage.classList.toggle('on-'+f, state.fx.has(f)));
+    document.getElementById('map').style.filter = state.fx.has('glow')? 'saturate(1.15)':'none';
+    document.getElementById('tname').innerHTML = t.k+' <span class="mut">· '+t.d+'</span>';
+    drawCity(t);
+    // reflect active buttons
+    [...document.querySelectorAll('#themes .opt')].forEach((el,i)=>el.classList.toggle('on',i===state.theme));
+    [...document.querySelectorAll('#fonts .opt')].forEach(el=>el.classList.toggle('on', el.dataset.f===(state.font||t.font)));
+    [...document.querySelectorAll('#fx .tog')].forEach(el=>el.classList.toggle('on', state.fx.has(el.dataset.fx)));
+    [...document.querySelectorAll('#dens .opt')].forEach(el=>el.classList.toggle('on', el.dataset.dn===state.dens));
+  }
+  // build controls
+  document.getElementById('themes').innerHTML=THEMES.map((t,i)=>`<button class="opt" data-i="${i}">${t.k}<span class="d">${t.d}</span></button>`).join('');
+  document.getElementById('fonts').innerHTML=['mono','system','grotesk'].map(f=>`<button class="opt" data-f="${f}">${f}</button>`).join('');
+  document.getElementById('fx').innerHTML=[['grid','Graticule grid'],['glow','Neon glow / bloom'],['scan','CRT scanlines'],['vig','Vignette'],['fog','Horizon fog']].map(([k,l])=>`<button class="tog" data-fx="${k}"><span>${l}</span><span class="sw"></span></button>`).join('');
+  document.getElementById('dens').innerHTML=['Sparse','Manhattan','Dense'].map(d=>`<button class="opt" data-dn="${d}">${d}</button>`).join('');
+  document.querySelectorAll('#themes .opt').forEach(el=>el.onclick=()=>{state.theme=+el.dataset.i;state.font=null;state.fx=new Set(THEMES[state.theme].fx);apply();});
+  document.querySelectorAll('#fonts .opt').forEach(el=>el.onclick=()=>{state.font=el.dataset.f;apply();});
+  document.querySelectorAll('#fx .tog').forEach(el=>el.onclick=()=>{const k=el.dataset.fx;state.fx.has(k)?state.fx.delete(k):state.fx.add(k);apply();});
+  document.querySelectorAll('#dens .opt').forEach(el=>el.onclick=()=>{state.dens=el.dataset.dn;apply();});
+  state.fx=new Set(THEMES[0].fx); apply();
+</script>
