@@ -8,7 +8,7 @@
 Reads TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID from ~/.config/breadcrumbs/telegram.env.
 vLLM from BC_VLLM_URL (default http://localhost:8000/v1)."""
 import base64, io, json, os, re, urllib.request
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ENV = os.path.expanduser("~/.config/breadcrumbs/telegram.env")
 VLLM = os.environ.get("BC_VLLM_URL", "http://localhost:8000/v1")
@@ -404,4 +404,4 @@ class H(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     port = int(os.environ.get("BC_RELAY_PORT", "8899"))
     print("[bc-relay] :%d  ->  Telegram(/alert,/report) + local Nemotron %s (/ask)" % (port, VLLM))
-    HTTPServer(("127.0.0.1", port), H).serve_forever()
+    ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
