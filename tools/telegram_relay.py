@@ -228,9 +228,12 @@ def _render(rep):
 
     # --- 2. Exposure (MODELED supplier->site links) ---
     exp_count = _int(rep.get("exposed_count", len(exposed)), len(exposed))
+    n_listed = len(exposed)
+    hdr = ("%d site(s) received the affected lot" % exp_count if exp_count == n_listed
+           else "%d site(s) received the affected lot (%d itemized below; %d not resolved in this record)"
+                % (exp_count, n_listed, max(0, exp_count - n_listed)))
     el.append(Paragraph(
-        "2. Your Exposure &mdash; %d site(s) received the affected lot "
-        "[supplier&rarr;site links MODELED]" % exp_count, sec))
+        "2. Your Exposure &mdash; %s [supplier&rarr;site links MODELED]" % hdr, sec))
     if exposed:
         rows = [[Paragraph("<b>Site</b>", small), Paragraph("<b>Borough</b>", small),
                  Paragraph("<b>Cuisine</b>", small), Paragraph("<b>Crit. viol.</b>", small),
