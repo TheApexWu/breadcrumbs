@@ -1,25 +1,16 @@
 {
   "project": {
-    "name": "breadcrumbs",
-    "one_liner": "BREADCRUMBS is an always-on, on-prem food-safety agent for a NYC food operator: it watches the live FDA recall feed, knows the operator's suppliers and locations, and the instant a recall lands it answers — which of my sites are exposed, how bad, and what to do — in seconds, offline, on an NVIDIA GB10.",
-    "full_context": "BREADCRUMBS is a same-day build for the Dell x NVIDIA AI Factory (BuilderBase) hackathon, Aug 22 2026. The brief: an always-on BUSINESS agent that runs LOCALLY on the GB10 (no cloud inference). BREADCRUMBS is a food-supply risk & recall-response agent scoped to NYC. It monitors the FDA (openFDA) food-recall feed, cross-references a food operator's suppliers and locations, and on a recall computes EXPOSURE (which of my sites received the affected lot), RISK (how bad — using the distributor's real recall history plus the site's real critical food-handling violation history), and ACTION (hold / pull / swap supplier, drafted and fired as an SMS to affected site managers). A local NVIDIA Nemotron agent swarm (Watcher -> Tracer -> Risk -> Briefer -> Comms) does the reasoning, orchestrated via OpenClaw/NemoClaw and reading from a local MongoDB. The wow is the operator's own city rendered in 3D (extruded NYC buildings at real LiDAR heights, reused from the Sixth Borough engine — same deck.gl stack), with exposure glowing on the real blocks, plus live GB10 telemetry proving the reasoning is on the box. WHY LOCAL (load-bearing, not decorative): a buyer's supplier list, margins and sourcing are trade secrets they will never send to a cloud LLM; FSMA 204 makes traceability a legal mandate; always-on + private = only possible on the GB10. INSTRUMENT NOT ORACLE: it reports REAL state (real recalls, real distributor recall history, real critical-violation history, real buildings) and visibly LABELS the modeled parts (supplier->site links, which are proprietary in reality — exactly the FSMA-204 gap — and the operator's illustrative portfolio). No black-box prediction.",
+    "name": "breadcrumbs-rust",
+    "one_liner": "A Bevy/wgpu 3D fly-through of NYC for BREADCRUMBS: extruded buildings + food-risk overlay + supplier hubs, with a free-flying game camera (the 'video-game feel' deck.gl can't match). Adapts the Sixth Borough renderer.",
+    "full_context": "This is a PARALLEL, EXPERIMENTAL track. The deck.gl web console (globe/food3d.html on branch food) is the PRIMARY demo and the safe fallback; this Rust engine is upside only. Base = the Sixth Borough Bevy renderer copied to rust-engine/ (it COMPILES \u2014 target/ existed). Job: strip the Sixth Borough cultural/biography/year-scrubber specifics and adapt it to BREADCRUMBS food-safety data in rust-engine/data/ (buildings.json = Manhattan LiDAR extrusions [{p:[[lon,lat]...],h,y,b}]; restaurants.json = DOHMH graded establishments; distributors.json = supplier scorecard). Goal feel: fly THROUGH the city (free camera, WASD+mouse), neutral buildings, food-risk as color/markers, supplier hubs. Build/verify on the Mac (Rust 1.94, arm64); final demo runs on the GB10 (aarch64) \u2014 human-gated.",
     "hard_rules": [
-      "LOCAL-ONLY inference at demo time: all model inference runs on the GB10 box on-site (hackathon rule + the product's sovereignty pitch). No cloud API for inference during the demo.",
-      "AGENT IS BUILT ON THE DAY: the data pipeline, cached datasets, MongoDB load, and the deck.gl console are pre-built SCAFFOLDS (explicitly allowed by the rules). The AGENT logic (the swarm, its tool-calls, its reasoning) is built during the event. Do not present a pre-finished agent.",
-      "AGENT FRAMEWORK = NemoClaw (primary): NemoClaw is NVIDIA's local-agent runtime for Nemotron on the GB10 — sponsor-aligned and the natural fit for local inference; it satisfies the 'at least one of NemoClaw/OpenClaw/OpenShell' rule. OpenClaw is the off-box dev fallback behind the SAME model/agent adapter so the on-box swap is one line. Verify NemoClaw's exact API on the box (day-of).",
-      "MONGODB, USED TASTEFULLY (not a dumb JSON store): (1) recalls/establishments/distributors/operator_sites are native heterogeneous DOCUMENTS; (2) a 2dsphere GEOSPATIAL index on all geocoded docs so exposure/blast-radius are real $geoWithin/$near queries; (3) the agent's analytical TOOLS are Mongo AGGREGATION pipelines ($lookup joins recalls<->distributors<->sites, $group for scorecards/compounding) — not hand-rolled JS loops; (4) a CHANGE STREAM on the recalls collection IS the always-on Watcher — a new recall insert fires the swarm. This makes 'always-on + geospatial reasoning' architecturally real.",
-      "OFFLINE: every dataset is fetched ONCE and cached to disk / loaded into local Mongo (openFDA recalls, DOHMH inspections, NYS stores, distributor scorecard, NYC buildings). At demo time the whole system runs with the network unplugged. Vendor deck.gl + fonts locally (no unpkg at demo).",
-      "REAL vs MODELED, always labeled. REAL: openFDA recalls, DOHMH critical-violation history, distributor recall history, NYC buildings, Comtrade origins. MODELED (label in UI + narration): supplier->restaurant links (proprietary in reality), the operator's portfolio, the covers/day exposure multiplier. Never conflate the two classes.",
-      "RISK SIGNAL IS CRITICAL FOOD-HANDLING VIOLATIONS, NOT THE LETTER GRADE. DOHMH letter grades are a composite (vermin, facility, paperwork, temperature). Use the DOHMH critical_flag='Critical' violations (unapproved/unknown source, improper holding temperature, contaminated food-contact surface, vermin in food) as the compounding-risk axis — those are causally linked to whether a site turns a recalled lot into an illness. Do NOT claim a letter grade measures supplier/ingredient safety.",
-      "BRANCH + FILE OWNERSHIP (critical — humans build in parallel): this loop runs on branch 'ralph' and edits ONLY backend paths — agent/ sim/ db/ scripts/ bridge/ — plus PRD.JSON and evidence/. NEVER create or edit globe/*.html, globe/assets/*, mockups/, or docs/*; those are HUMAN-OWNED (frontend + assets built by teammates on ui-*/assets-* branches off food). The console consumes the loop's output through bridge/ (Mongo-backed JSON over a documented contract), never the reverse. If a task seems to require editing a human-owned file, stop and write the contract in bridge/ instead.",
-      "THE AGENT ACTS. The swarm must make visible, autonomous tool-calls (watch_feed / ingest_recall / trace_forward / score_risk / brief / draft_sms / send). A render-only build fails the 'always-on business agent' brief.",
-      "PROVE THE BOX, DO NOT ASSERT IT. A live telemetry HUD (tokens/sec, unified-memory GB of 128, SoC watts of ~140, N agents concurrent) read from NVML/tegrastats — nvidia-smi under-reports on GB10 unified memory. Show multiple agents running concurrently as the hardware flex.",
-      "INSTRUMENT NOT ORACLE: report real state; label any simulation; the agent refuses to claim certainty it does not have.",
-      "This codebase is written by an AI loop: comments minimal and only where they inform the next iteration; test only what must survive repeated runs; the verification IS the test."
+      "This is PARALLEL/experimental. Do NOT touch anything outside rust-engine/. The deck.gl console stays the primary demo.",
+      "Every milestone's gate is `cargo build --release` succeeding in rust-engine/ (a build that does not compile is never 'complete'). Where possible also run the binary headlessly to confirm it loads data without panic.",
+      "Adapt, don't rewrite from scratch \u2014 the base already compiles. Strip Sixth Borough specifics (biography/30B-model calls, immigration, ghost buildings, year scrubber) only as needed; keep the building extrusion + camera.",
+      "Data lives in rust-engine/data/*.json (already copied). Load from there; no network at runtime.",
+      "Comments minimal; the verification (cargo build + no-panic run) IS the test."
     ],
-    "venue_notes": "M0-M5 are built by this OFF-BOX loop (Alex's laptop/Mini via OpenRouter). M6-M8 are ON-BOX (GB10) or pitch/taste — the loop scaffolds them but Alex owns the GB10 numbers, the live agent quality, and the pitch. Hard submission wall: 18:00 (demo video + project via BuilderBase portal); no coding after. Top-8 pitch 19:30, 5 min. Fire this loop ~10:30-11:00.",
-    "scope_locked_aug22": "PRIZE-RUN, reliable core. Product = BREADCRUMBS, on-prem NYC food-safety agent. POV = operator's console ('my sites'), city-scale is a toggle. Hero = reactive recall-response. Buyer = generic NYC food buyer, demoed through a restaurant group. Provenance = one origin beat (openFDA firm state + Comtrade commodity origin), NOT the full import graph. SMS = mock phone UI (offline, no creds). The wow = agent swarm + GB10 telemetry + the SMS action, staged on the 3D city. Maritime build is abandoned on branch main as a fallback only.",
-    "already_built_scaffolds": "Real data cached in globe/assets/ (nyc-restaurants 17204 graded, nyc-stores 11224, distributor-scorecard, food-types, food-sources, nyc-nta, manhattan_buildings 45194). Consoles globe/food.html (2D) + globe/food3d.html (3D extruded NYC + risk hexbins + hubs + recall-trace). Fetchers in scripts/. Premise in docs/premise.md. These are ALLOWED scaffolds; the loop builds the agent + Mongo + integration ON TOP."
+    "venue_notes": "Runs off-box on the Mac (Rust 1.94) via this loop. Final GB10 aarch64 build + the FEEL are human-gated (Alex). Parallel to the food loop; deck.gl is the fallback."
   },
   "defaults": {
     "model": "openrouter/z-ai/glm-5.2",
@@ -28,156 +19,82 @@
   "milestones": [
     {
       "id": "0",
-      "name": "Preflight + MongoDB load",
+      "name": "Build gate \u2014 base engine compiles under Rust 1.94",
       "deps": [],
       "tasks": [
-        "scripts/preflight.sh: assert node>=18, python3>=3.10, a local MongoDB is reachable (mongod on localhost:27017), and JS/python deps install into LOCAL envs (never system).",
-        "scripts/load_mongo.py: load the cached datasets into MongoDB collections — recalls (openFDA), establishments (DOHMH latest-graded + critical-violation count per camis), distributors (scorecard), buildings_meta (counts only, not the geometry). Idempotent (drop+reload). Provenance stamp per doc: source + fetched_at + class ('real').",
-        "Add a critical-violation count per establishment: re-derive from DOHMH critical_flag='Critical' rows (NOT the letter grade). Store crit_violations:int on each establishment doc.",
-        "Tag each recall doc: allergens[] parsed from reason_for_recall (undeclared peanut/tree-nut/milk/egg/soy/wheat/fish/shellfish/sesame) + hazard_class (allergen|pathogen|foreign-material|other). Real openFDA text only, no invention. Allergen recalls are ~6,896 — the #2 cause of all food recalls.",
-        "Store every geocoded doc (establishments, operator_sites, distributor hubs) with a GeoJSON 'loc' field and build a 2dsphere index on each — so blast-radius/exposure become real $geoWithin/$near queries.",
-        "db/queries.py: the analytical primitives as Mongo AGGREGATION pipelines — exposure ($match+$lookup recalls<->distributors<->sites), distributor scorecard ($group), compounding ($match crit_violations>0). These pipelines are what the agent's tools call."
+        "cd rust-engine && `cargo build --release`. Fix any Rust-1.94 / Bevy-0.18 / edition-2024 drift so it compiles clean. Do NOT change behavior yet.",
+        "Note what the current main.rs does (data source, camera, what it renders) in RALPH.md for the next iteration."
       ],
       "verifications": [
-        "preflight.sh exits 0 and prints a MongoDB serverStatus ok:1",
-        "after load_mongo.py, db.establishments.count() >= 15000 and db.distributors.count() >= 8 and db.recalls.count() >= 300 (E.coli Class-I) — assert via a mongo query script",
-        "a random establishment doc has crit_violations (int), a GeoJSON loc, and a 'real' provenance class; a distributor doc has class1 (int) — assert via query",
-        "a $near query around a hub returns nearby establishments (2dsphere index is used — assert via explain() index scan), and the exposure aggregation returns the same set as the pure-python control",
-        "recalls are allergen-tagged: db.recalls.count({hazard_class:'allergen'}) is in the thousands (matches openFDA ~6,896 for undeclared/allergen); a sample undeclared-peanut recall has allergens containing 'peanut' — assert against a control recall that is pathogen-only and has hazard_class!='allergen'"
+        "`cargo build --release` in rust-engine/ exits 0",
+        "the resulting binary exists at rust-engine/target/release/*"
       ],
       "human_gate": false,
       "completed": false
     },
     {
       "id": "1",
-      "name": "Operator model — portfolio + modeled supplier links",
-      "deps": ["0"],
+      "name": "Load BREADCRUMBS buildings + render extruded Manhattan",
+      "deps": [
+        "0"
+      ],
       "tasks": [
-        "sim/operator.py: define the operator's portfolio = ~12 REAL geocoded DOHMH establishments (an illustrative NYC restaurant group; label class:'modeled-portfolio'). Persist to Mongo collection operator_sites.",
-        "Assign each site a MODELED primary distributor (nearest-hub rule over the 5 real NYC hubs; store rule + class:'modeled-link'). This is the proprietary edge we cannot get real — label it everywhere.",
-        "operator alert-preference profile (the notification layer): {min_severity, scope (suppliers | radius_m), categories[], allergens[] (which allergens the operator cares about), channel (telegram|digest|console), quiet_hours}. matches(recall, profile) -> bool decides whether a recall alerts. Settable in plain English OR as toggles.",
-        "exposure(recall) -> the operator_sites whose distributor matches the recall's distributor; deterministic and pure."
+        "Point the loader at rust-engine/data/buildings.json (schema [{p:[[lon,lat]...],h,y,b}]); project lon/lat to a local meter plane; extrude each footprint to height h. Neutral building material.",
+        "Strip Sixth Borough cultural/biography/immigration/year-scrubber code paths that block this."
       ],
       "verifications": [
-        "operator_sites has exactly 12 real geocoded establishments, each carrying class:'modeled-portfolio' and a modeled distributor link",
-        "exposure() for a Dole-linked recall returns a deterministic, non-empty subset of operator_sites (same input -> identical output across runs)",
-        "every modeled doc is tagged class:'modeled-*' — a query proves no modeled doc is mislabeled 'real'",
-        "matches(recall, profile) filters correctly: a Class-I allergen recall matching the profile returns True; a Class-III recall outside the profile's categories/allergens returns False (assert both — a filter that lets everything through fails)"
+        "`cargo build --release` exits 0",
+        "running the binary with `--smoke` (add a headless flag that loads data, prints building count, exits 0) prints >=40000 buildings and does not panic"
       ],
       "human_gate": false,
       "completed": false
     },
     {
       "id": "2",
-      "name": "Recall-response engine (exposure x risk x action)",
-      "deps": ["0", "1"],
+      "name": "Food-risk overlay + supplier hubs",
+      "deps": [
+        "1"
+      ],
       "tasks": [
-        "sim/respond.py: given a recall doc, compute EXPOSURE (operator sites via M1), RISK (the distributor's real class1 count + how many exposed sites have crit_violations>0 — the compounding signal), and an ACTION recommendation (hold + swap to the lowest-class1 distributor, e.g. Baldor 0).",
-        "Use the recall's REAL product text + reason + firm state for the brief; keep the origin beat (firm state + Comtrade commodity origin) as a supporting field.",
-        "If the recall is an allergen recall (hazard_class='allergen'), add allergen_match: the allergen(s) + which of the operator's categories carry that allergen risk (CATEGORY-level, MODELED — per-menu-item matching needs menu data we don't have, label it roadmap).",
-        "Emit a structured Response object: {recall, exposed_sites, compounding_count, distributor_risk, allergen_match, recommendation, provenance}."
+        "Load restaurants.json; render each as a small marker colored by DOHMH grade (A green / B amber / C red) OR a ground risk tint. Load distributors.json; place supplier hub markers sized by class1 recall count.",
+        "Keep buildings neutral; risk is the colored overlay (match the deck.gl 'neutral city + risk' language)."
       ],
       "verifications": [
-        "for the real Dole leafy-greens Class-I recall, respond.py returns exposed_sites>0, compounding_count = (# exposed with crit_violations>0), distributor_risk.class1 == the real openFDA count, and a swap recommendation naming a 0-class1 distributor",
-        "deterministic: same recall doc -> byte-identical Response",
-        "the Response carries provenance separating 'real' fields from 'modeled' (exposure via modeled links) — assert the modeled flag is present",
-        "for an undeclared-allergen recall, Response.allergen_match names the allergen(s) and flags category exposure labeled MODELED; for a pathogen-only recall, allergen_match is null/empty (control)"
+        "`cargo build --release` exits 0",
+        "`--smoke` prints restaurant + hub counts (>=15000 restaurants, >=5 hubs) with no panic"
       ],
       "human_gate": false,
       "completed": false
     },
     {
       "id": "3",
-      "name": "Agent swarm (OpenClaw/NemoClaw, tool-calling, concurrent)",
-      "deps": ["2"],
+      "name": "Free-fly game camera + controls",
+      "deps": [
+        "1"
+      ],
       "tasks": [
-        "agent/swarm.py via NemoClaw (primary runtime): five roles — Watcher (subscribes to a Mongo CHANGE STREAM on recalls — a new insert fires the swarm; this IS the always-on watch), Tracer (call the exposure aggregation), Risk (call risk scoring), Briefer (compose the plain-language brief), Comms (draft the SMS + supplier hold notice). Each is a tool-calling agent over the M0 aggregation pipelines + M2 functions.",
-        "Off-box: model behind an adapter = the OpenRouter default (glm) via OpenClaw so the scaffold is buildable now. On-box (M6): swap to local Nemotron via NemoClaw — one line at the adapter.",
-        "Run Tracer/Risk concurrently where independent; log every tool-call (name, args, result) to an evidence transcript.",
-        "The Briefer/Comms outputs must be grounded in the M2 Response — no invented numbers; refuse certainty (instrument-not-oracle)."
+        "Implement a free-flying camera: WASD move, mouse-look, shift=faster, scroll=speed. Smooth momentum. This is the 'movement' payoff.",
+        "Add a sensible spawn over Manhattan looking at the skyline."
       ],
       "verifications": [
-        "running the swarm on the Dole recall produces a structured brief whose numbers EQUAL the M2 Response (no drift) — assert by comparing fields",
-        "the tool-call transcript shows watch_feed -> ingest_recall -> trace_forward -> score_risk -> brief -> draft_sms in order, with real args/results logged",
-        "the model adapter has exactly one place to swap OpenRouter<->local Nemotron (assert the interface exists); at least one of OpenClaw/NemoClaw/OpenShell is the runtime"
+        "`cargo build --release` exits 0",
+        "the camera controller compiles and is wired into the Bevy app (assert the system is registered)"
       ],
       "human_gate": false,
       "completed": false
     },
     {
       "id": "4",
-      "name": "Bridge — serve the agent/data to the frontend (contract, no console edits)",
-      "deps": ["1", "3"],
+      "name": "ON-BOX: GB10 aarch64 build + feel",
+      "deps": [
+        "2",
+        "3"
+      ],
       "tasks": [
-        "bridge/server.py: a tiny LOCAL HTTP service (and/or generated JSON under bridge/out/) exposing from Mongo — operator_sites (GeoJSON), the live Response for a recall (exposure/risk/action from M2), the swarm tool-call transcript (M3), and a telemetry payload (stub off-box, real NVML on-box in M6). This is the ONLY interface between the loop-backend and the human-built frontend.",
-        "bridge/CONTRACT.md: document every endpoint + JSON shape (field names, types, and provenance class real/modeled) so the frontend team wires globe/food3d.html from the doc alone, without reading backend code.",
-        "bridge/samples/: write sample payloads (e.g. the Dole-recall Response) the console can fetch offline. DO NOT edit globe/*.html, globe/assets/*, or mockups/ — those are human-owned."
+        "Cross/native build for the GB10 (aarch64). Alex judges the movement/feel against the deck.gl console."
       ],
       "verifications": [
-        "GET /response?recall=<dole> (or bridge/out/response.json) returns exposure/risk/action whose numbers EQUAL respond.py (no drift) — assert by comparison",
-        "CONTRACT.md documents every field with its provenance class; operator_sites is valid GeoJSON with modeled labels",
-        "the loop touched NO human-owned file: git diff --name-only for this milestone shows only agent/|sim/|db/|scripts/|bridge/ paths — assert via a path check"
-      ],
-      "human_gate": false,
-      "completed": false
-    },
-    {
-      "id": "5",
-      "name": "Comms action — Telegram alert (real) + mock phone fallback",
-      "deps": ["3"],
-      "tasks": [
-        "The Comms agent drafts (a) a short layman alert (SMS-style, <=2 sentences) to affected site managers and (b) a supplier hold notice, both grounded in the M2 Response.",
-        "PRIMARY channel = Telegram Bot API: send via a bot token (read from env/config, NEVER committed) to the operator chat_id — a real message lands on a real phone. Sending is I/O, not inference, so it does not violate the local-inference rule.",
-        "FALLBACK channel = the mock phone UI in the console: fully offline, no network — for the pull-the-cable moment or flaky venue wifi. The operator alert-preference profile (M1) picks the channel.",
-        "The alert text names the real recall, the # exposed sites, the compounding count, and the swap recommendation."
-      ],
-      "verifications": [
-        "firing Comms on the Dole recall produces an alert payload containing the real product name, exposed-site count, compounding count, and swap target — equal to the M2 Response",
-        "the Telegram adapter POSTs to sendMessage and gets ok:true with a test token/chat_id, OR cleanly skips (logs 'no token') when unset; the mock UI renders offline with ZERO network calls",
-        "the bot token is read from env/config only — a grep of the repo finds NO token literal (assert)"
-      ],
-      "human_gate": false,
-      "completed": false
-    },
-    {
-      "id": "6",
-      "name": "ON-BOX: Nemotron local + real GB10 telemetry",
-      "deps": ["4"],
-      "tasks": [
-        "Swap the model adapter to local Nemotron on the GB10; the swarm reasons entirely on the box.",
-        "Wire the telemetry HUD to REAL NVML/tegrastats (tokens/sec, unified mem, watts, concurrency). Prove multiple agents run concurrently.",
-        "Pull-the-cable test: the whole system (Mongo + swarm + console) runs with the network unplugged."
-      ],
-      "verifications": [
-        "HUMAN-GATED: Alex confirms local Nemotron produces the brief on-box and the telemetry HUD shows real GB10 numbers with the cable pulled. Loop prepares the adapter + a canned transcript and STOPS."
-      ],
-      "human_gate": true,
-      "completed": false
-    },
-    {
-      "id": "7",
-      "name": "Agent quality pass",
-      "deps": ["6"],
-      "tasks": [
-        "Alex reviews the briefs for soundness: numbers grounded, modeled parts labeled, no invented certainty, the swap recommendation defensible."
-      ],
-      "verifications": [
-        "HUMAN-GATED: Alex renders the verdict on brief quality. Loop stops."
-      ],
-      "human_gate": true,
-      "completed": false
-    },
-    {
-      "id": "8",
-      "name": "Pitch + demo video (18:00 submission)",
-      "deps": [],
-      "tasks": [
-        "Record the 90-second demo (idle watch -> recall drops -> trace -> compounding -> brief -> SMS) per docs/premise.md.",
-        "Slides: the problem (48M sick), why-local (trade-secret supply data + FSMA 204), the agent swarm + GB10 flex, real-vs-modeled honesty, the ask.",
-        "Submit via BuilderBase before 18:00."
-      ],
-      "verifications": [
-        "HUMAN-GATED: Alex owns the pitch, the demo video, and the submission. Loop prepares the script/checklist and stops."
+        "HUMAN-GATED: Alex builds+runs it on the GB10 and renders the verdict on whether it beats deck.gl. Loop prepares the build + notes and STOPS."
       ],
       "human_gate": true,
       "completed": false
