@@ -52,7 +52,7 @@ This is the reason the hackathon's "local business agent" brief is satisfied for
 
 ## Demo script — 90 seconds
 - **0:00 Idle watch.** 3D NYC. The operator's ~12 restaurants lit among the city. Sentinel
-  "● watching · local." Supplier scorecard visible: Baldor clean, Dole/Fresh Express/Sysco hot.
+  "● watching · local." Supplier scorecard visible: Dole/Fresh Express/Sysco hot (verified Class-I history); low-history firms marked "unverified", not "clean".
 - **0:15 The local claim.** "This runs entirely on the GB10. No cloud. The supplier list never
   leaves the building."
 - **0:25 Recall drops.** Real openFDA item hits the feed. Alert. Sentinel: `ingest_recall` →
