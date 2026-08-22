@@ -87,7 +87,7 @@
   <div class="gp"><button class="boro" data-b="brooklyn">Brooklyn</button><button class="boro" data-b="queens">Queens</button></div>
   <div class="gp"><button class="boro" data-b="bronx">Bronx</button><button class="boro" data-b="staten">Staten</button></div>
   <div class="lbl">LAYERS</div>
-  <div class="gp"><button id="heat" class="on">◍ Risk heat</button><button id="pts" class="on">• Restaurants</button></div>
+  <div class="gp"><button id="heat" class="on">⬡ Risk hexbins</button><button id="pts" class="on">• Restaurants</button></div>
   <div class="gp"><button id="mysites" class="on">◈ My 45 sites</button><button id="arcs">↳ Supply flow</button><button id="reset">⟲ City</button></div>
   <div class="gp"><button id="view3d">⊞ Top view</button><button id="lite" class="on">☾ Dark / night</button></div>
 </div>
@@ -104,7 +104,7 @@
   <div style="color:var(--mut);letter-spacing:.14em;margin-bottom:4px">RISK · critical food-handling violations</div>
   <div class="row"><span class="sw" style="background:linear-gradient(90deg,#1f6b5e,#e0a95a,#e2564a)"></span>low → high</div>
   <div class="row" style="color:var(--mut);margin-top:5px">◆ supplier hub · size = recall risk</div>
-  <div class="row" style="color:var(--mut)">buildings glow by critical-violation density</div>
+  <div class="row" style="color:var(--mut)">hexbins: mean critical-violation risk</div>
   <div class="row" style="color:var(--mut)">supply links = MODELED</div>
   <div class="row" style="color:var(--mut);letter-spacing:.12em;margin-top:7px">BUILDING TYPE</div>
   <div class="row"><span class="sw" style="background:rgb(208,184,154)"></span>brownstone · brick</div>
@@ -120,7 +120,8 @@
 
 <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
 <script>
-const {DeckGL,MapView,PolygonLayer,HeatmapLayer,ScatterplotLayer,ColumnLayer,ArcLayer,TextLayer,GeoJsonLayer,LightingEffect,AmbientLight,_SunLight:SunLight,FlyToInterpolator}=deck;
+const {DeckGL,MapView,PolygonLayer,HeatmapLayer,HexagonLayer,ScatterplotLayer,ColumnLayer,ArcLayer,TextLayer,GeoJsonLayer,LightingEffect,AmbientLight,_SunLight:SunLight,FlyToInterpolator}=deck;
+const HEXCOLORS=[[47,125,107],[92,150,120],[176,168,96],[224,169,90],[226,120,74],[226,86,74]];
 function flyTo(t){vs={...vs,...t};dk.setProps({initialViewState:{...vs,transitionDuration:1200,transitionInterpolator:new FlyToInterpolator({speed:1.4})}});}
 function showToast(msg,ok){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(ok?'':' warn');clearTimeout(el._t);el._t=setTimeout(()=>{el.className='';},3600);}
 
@@ -139,7 +140,7 @@ const HEAT=[[31,107,94,0],[47,125,107],[120,150,96],[224,169,90],[226,120,74],[2
 const HEAT_D=HEAT.slice(1);
 const HEAT_L=[[250,238,200,0],[246,212,150],[238,178,120],[230,138,100],[222,100,84],[214,72,66]];
 // varied building materials: brownstone · brick · limestone · concrete · glass (light + dark tones)
-const BLD_L=[[208,184,154],[212,158,134],[218,212,198],[202,206,209],[188,210,223]];
+const BLD_L=[[168,96,58],[196,116,80],[222,208,172],[165,176,187],[104,162,208]];
 const BLD_D=[[68,54,44],[84,54,48],[76,76,64],[54,58,64],[42,66,84]];
 function bldMat(d){if(d._m!==undefined)return d._m;const c=(d.p&&d.p[0])||[0,0],h=d.h||0;
   d._m=h>125?4:h>82?3:h>46?2:(Math.abs(Math.round(c[0]*713)+Math.round(c[1]*911))%2);return d._m;}
@@ -469,10 +470,8 @@ function boot(rj,scj,man){
 function bldLayer(key){
   return new PolygonLayer({id:'bld-'+key,data:bld[key],extruded:true,wireframe:false,
     getPolygon:d=>d.p, getElevation:d=>d.h,
-    getFillColor:d=>{const m=(light?BLD_L:BLD_D)[bldMat(d)],t=Math.min(1,(d.h||0)/130),rk=d.rk||0;
-      const s=light?1-t*0.13:1+t*0.22,r0=m[0]*s,r1=m[1]*s,r2=m[2]*s;
-      const cr=light?[230,148,116]:[212,96,80],k=rk*(light?0.5:0.62);
-      return [r0+(cr[0]-r0)*k,r1+(cr[1]-r1)*k,r2+(cr[2]-r2)*k];},
+    getFillColor:d=>{const m=(light?BLD_L:BLD_D)[bldMat(d)],t=Math.min(1,(d.h||0)/130);
+      const s=light?1-t*0.05:1+t*0.24;return [m[0]*s,m[1]*s,m[2]*s];},
     updateTriggers:{getFillColor:light},  // neutral, glowing warm where risk is high
     material:{ambient:0.55,diffuse:0.6,shininess:16,specularColor:[30,38,54]},
     pickable:false, parameters:{depthTest:true}});
@@ -481,9 +480,9 @@ function bldLayer(key){
 function frame(){
   const L=[];
   // ground-heat (risk wash) — flat, calm
-  if(showHeat)L.push(new HeatmapLayer({id:'heat',data:rests,getPosition:d=>[d.lon,d.lat],
-    getWeight:d=>d.rs, radiusPixels:light?40:46, intensity:light?0.75:1, threshold:light?0.05:0.04,
-    opacity:light?0.5:1, colorRange:light?HEAT_L:HEAT_D, aggregation:'SUM'}));
+  if(showHeat)L.push(new HexagonLayer({id:'risk',data:rests,radius:125,extruded:false,pickable:false,
+    getPosition:d=>[d.lon,d.lat],getColorWeight:d=>d.rs,colorAggregation:'MEAN',
+    colorRange:HEXCOLORS,opacity:light?0.5:0.72,coverage:0.9}));
   // neutral buildings, per enabled borough
   for(const k in blayers){ if(blayers[k]&&bld[k]) L.push(bldLayer(k)); }
   // individual restaurants (declutter: only when zoomed in)
@@ -540,7 +539,7 @@ const dk=new DeckGL({container:'deck',views:new MapView({id:'v',repeat:false}),i
     if(rezoom)dk.setProps({layers:frame()});}});
 
 let last=performance.now(),flow=0;
-function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;flow=(flow+dt/1400)%1;dk.setProps({layers:frame()});requestAnimationFrame(loop);}
+function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;flow=(flow+dt/5200)%1;dk.setProps({layers:frame()});requestAnimationFrame(loop);}
 
 // ── lazy borough loading (the anti-crash: fetch only on toggle) ──
 function toggleBoro(key,btn){
