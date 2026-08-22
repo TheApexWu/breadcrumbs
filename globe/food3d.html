@@ -184,7 +184,7 @@ document.querySelectorAll('.boro').forEach(b=>b.onclick=()=>toggleBoro(b.dataset
 // ── panels / agent ──
 function renderScore(){const max=Math.max(...scorecard.map(c=>c.class1),1);
   document.getElementById('score').innerHTML=scorecard.map(c=>{const hub=HUBS.find(h=>h.sk===c.firm);
-    return `<div class="sc" ${hub?`data-hub="${hub.key}"`:''}><span class="nm" style="color:${c.class1>10?'var(--red)':c.class1>0?'var(--amber)':'var(--grn)'}">${c.firm}</span>
+    return `<div class="sc" ${hub?`data-hub="${hub.key}"`:''}><span class="nm" style="color:${c.recalls===0?'var(--mut)':c.class1>10?'var(--red)':c.class1>0?'var(--amber)':'var(--grn)'}">${c.firm}${c.recalls===0?' · no data':''}</span>
       <span class="bar" style="width:${Math.round(56*c.class1/max)}px"></span><span class="n">${c.class1} / ${c.recalls}</span></div>`;}).join('');
   document.querySelectorAll('.sc[data-hub]').forEach(el=>el.onclick=()=>pickHub(el.dataset.hub));}
 function feed(h,cls){const t=new Date().toLocaleTimeString('en-GB');document.getElementById('feed').insertAdjacentHTML('afterbegin',`<div class="fe ${cls||''}"><span class="t">${t}</span> ${h}</div>`);}
@@ -197,11 +197,11 @@ function pickHub(key){const h=HUBS.find(x=>x.key===key);if(!h)return;showArcs=tr
 function select(id,fly){selId=id;const d=rests.find(r=>r.i===id);if(!d)return;const hub=HUBS[d.hub];const sr=supRisk(hub);
   detail.style.display='block';d_nm.textContent=d.name;
   d_tab.innerHTML=[['DOHMH grade',d.grade||'pending'],['Cuisine',d.cuisine||'—'],['Borough',d.boro],['Last inspection',d.date||'—']].map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('');
-  const swap=scorecard.filter(c=>c.class1===0).map(c=>c.firm)[0]||'a 0-recall supplier';
+  const _sw=scorecard.filter(c=>c.class1===0&&c.recalls>0).sort((a,b)=>a.recalls-b.recalls)[0];const swap=_sw?_sw.firm:'a lower-risk supplier';const swapLbl=_sw?('0 Class-I of '+_sw.recalls+' on file'):'verified low';
   d_sup.innerHTML=`<div class="k" style="color:var(--mut)">SUPPLIER (modeled) · agent read</div>
     <div style="color:var(--amber);margin-top:3px">${hub.name}</div>
     <div class="q">Recall history: <b style="color:${sr.col}">${sr.c1} Class-I</b> / ${sr.recalls} total · <b style="color:${sr.col}">${sr.lvl} risk</b></div>
-    ${sr.c1>10?`<div class="q" style="color:var(--grn)">▸ agent recommends swap → ${swap} (0 recalls)</div>`:'<div class="q" style="color:var(--grn)">▸ supplier within tolerance</div>'}`;
+    ${sr.c1>10?`<div class="q" style="color:var(--grn)">▸ agent recommends swap → ${swap} (${swapLbl})</div>`:'<div class="q" style="color:var(--grn)">▸ supplier within tolerance</div>'}`;
   if(fly)flyTo({longitude:d.lon,latitude:d.lat,zoom:Math.max(vs.zoom,14)});}
 d_x.onclick=()=>{selId=null;detail.style.display='none';};
 
@@ -218,7 +218,7 @@ document.getElementById('rec').onclick=()=>{const rb=document.getElementById('re
    ()=>feed(`SENTINEL ▸ <b>match_supplier</b>() → ${recall.name} · ${recall.class1} prior Class-I`,'w'),
    ()=>feed(`SENTINEL ▸ <b>trace_forward</b>() → ${served.length} NYC establishments [MODELED]`),
    ()=>{alertln('WARN',`${cg} exposed sites carry a C grade`);feed(`SENTINEL ▸ <b>flag_compounding</b>() → ${cg} grade-C`,'w');},
-   ()=>{feed(`SENTINEL ▸ <b>brief</b>() → "${served.length} exposed. Recommend swap to Baldor (0)."`);s_state.textContent='● WATCHING · local';s_state.style.color='var(--grn)';},
+   ()=>{feed(`SENTINEL ▸ <b>brief</b>() → "${served.length} exposed. Hold the lot; swap to a supplier with a lower Class-I rate on file."`);s_state.textContent='● WATCHING · local';s_state.style.color='var(--grn)';},
   ].forEach((f,i)=>setTimeout(f,i*750));
   m_af_w.classList.add('crit');let n=0;const N=served.length;ramp=setInterval(()=>{n=Math.min(N,n+Math.ceil(N/40));m_af.textContent=n.toLocaleString();if(n>=N)clearInterval(ramp);},40);};
 document.getElementById('heat').onclick=e=>{showHeat=!showHeat;e.target.classList.toggle('on',showHeat);};
