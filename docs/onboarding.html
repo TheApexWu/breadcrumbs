@@ -158,9 +158,9 @@ cd globe &amp;&amp; python3 -m http.server 8777
 
   <h2>Conventions</h2>
   <ul>
-    <li>Branch <code>food</code> (maritime is <code>main</code>, the fallback). Commit as yourself; small, real messages.</li>
-    <li>New data → <code>globe/assets/</code>. New console/mock → <code>globe/</code> or <code>mockups/</code>.</li>
-    <li>Keep consoles self-contained. Match the design-system tokens; kill vibecode defaults.</li>
+    <li><strong>Branch off <code>food</code></strong> into your own <code>ui-&lt;name&gt;</code> / <code>assets-&lt;name&gt;</code> to play; PR back into <code>food</code>. The <code>ralph</code> branch is the loop's — don't hand-edit it. Full model + the file-ownership rule: <code>docs/branching.md</code>.</li>
+    <li><strong>Humans own</strong> <code>globe/*.html</code>, <code>globe/assets/</code>, <code>mockups/</code>, <code>docs/</code>. The <strong>loop owns backend</strong> (<code>agent/ sim/ db/ scripts/ bridge/</code>). You meet only at <code>bridge/</code> — the console fetches its JSON.</li>
+    <li>Commit as yourself; small, real messages. Keep consoles self-contained; match the design-system tokens.</li>
   </ul>
 
   <div class="note" style="margin-top:40px"><b>First sync:</b> grab Amadeus once you've run

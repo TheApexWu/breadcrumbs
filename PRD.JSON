@@ -11,6 +11,7 @@
       "OFFLINE: every dataset is fetched ONCE and cached to disk / loaded into local Mongo (openFDA recalls, DOHMH inspections, NYS stores, distributor scorecard, NYC buildings). At demo time the whole system runs with the network unplugged. Vendor deck.gl + fonts locally (no unpkg at demo).",
       "REAL vs MODELED, always labeled. REAL: openFDA recalls, DOHMH critical-violation history, distributor recall history, NYC buildings, Comtrade origins. MODELED (label in UI + narration): supplier->restaurant links (proprietary in reality), the operator's portfolio, the covers/day exposure multiplier. Never conflate the two classes.",
       "RISK SIGNAL IS CRITICAL FOOD-HANDLING VIOLATIONS, NOT THE LETTER GRADE. DOHMH letter grades are a composite (vermin, facility, paperwork, temperature). Use the DOHMH critical_flag='Critical' violations (unapproved/unknown source, improper holding temperature, contaminated food-contact surface, vermin in food) as the compounding-risk axis — those are causally linked to whether a site turns a recalled lot into an illness. Do NOT claim a letter grade measures supplier/ingredient safety.",
+      "BRANCH + FILE OWNERSHIP (critical — humans build in parallel): this loop runs on branch 'ralph' and edits ONLY backend paths — agent/ sim/ db/ scripts/ bridge/ — plus PRD.JSON and evidence/. NEVER create or edit globe/*.html, globe/assets/*, mockups/, or docs/*; those are HUMAN-OWNED (frontend + assets built by teammates on ui-*/assets-* branches off food). The console consumes the loop's output through bridge/ (Mongo-backed JSON over a documented contract), never the reverse. If a task seems to require editing a human-owned file, stop and write the contract in bridge/ instead.",
       "THE AGENT ACTS. The swarm must make visible, autonomous tool-calls (watch_feed / ingest_recall / trace_forward / score_risk / brief / draft_sms / send). A render-only build fails the 'always-on business agent' brief.",
       "PROVE THE BOX, DO NOT ASSERT IT. A live telemetry HUD (tokens/sec, unified-memory GB of 128, SoC watts of ~140, N agents concurrent) read from NVML/tegrastats — nvidia-smi under-reports on GB10 unified memory. Show multiple agents running concurrently as the hardware flex.",
       "INSTRUMENT NOT ORACLE: report real state; label any simulation; the agent refuses to claim certainty it does not have.",
@@ -99,18 +100,17 @@
     },
     {
       "id": "4",
-      "name": "Console integration — operator sites + swarm panel + GB10 telemetry",
+      "name": "Bridge — serve the agent/data to the frontend (contract, no console edits)",
       "deps": ["1", "3"],
       "tasks": [
-        "Wire globe/food3d.html to read operator_sites + the swarm output (via a small local JSON/HTTP bridge from Mongo). Light the operator's sites among the city; on a recall, flash exposed sites red on their real blocks.",
-        "Add the AGENT SWARM panel: five agent cards with live status + streaming tool-calls (replace the current scripted setTimeout narration with the real transcript).",
-        "Add the GB10 TELEMETRY HUD: tokens/sec, unified-GB, watts, N agents concurrent (stubbed off-box with a clear 'stub' tag; real via NVML in M6).",
-        "Keep every MODELED element labeled in the UI."
+        "bridge/server.py: a tiny LOCAL HTTP service (and/or generated JSON under bridge/out/) exposing from Mongo — operator_sites (GeoJSON), the live Response for a recall (exposure/risk/action from M2), the swarm tool-call transcript (M3), and a telemetry payload (stub off-box, real NVML on-box in M6). This is the ONLY interface between the loop-backend and the human-built frontend.",
+        "bridge/CONTRACT.md: document every endpoint + JSON shape (field names, types, and provenance class real/modeled) so the frontend team wires globe/food3d.html from the doc alone, without reading backend code.",
+        "bridge/samples/: write sample payloads (e.g. the Dole-recall Response) the console can fetch offline. DO NOT edit globe/*.html, globe/assets/*, or mockups/ — those are human-owned."
       ],
       "verifications": [
-        "console loads with operator_sites rendered and zero JS console errors (headless check)",
-        "triggering the recall lights the exact exposed_sites from M2 (asserted via a DOM/state check equal to respond.py output)",
-        "the swarm panel renders the real tool-call transcript (not the placeholder narration); the telemetry HUD is present and tagged 'stub' off-box"
+        "GET /response?recall=<dole> (or bridge/out/response.json) returns exposure/risk/action whose numbers EQUAL respond.py (no drift) — assert by comparison",
+        "CONTRACT.md documents every field with its provenance class; operator_sites is valid GeoJSON with modeled labels",
+        "the loop touched NO human-owned file: git diff --name-only for this milestone shows only agent/|sim/|db/|scripts/|bridge/ paths — assert via a path check"
       ],
       "human_gate": false,
       "completed": false
