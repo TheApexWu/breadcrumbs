@@ -1,0 +1,171 @@
+<meta charset="utf-8">
+<title>BREADCRUMBS — Onboarding</title>
+<style>
+  :root{
+    --bg:#fbfbfa; --ink:#1a1c1f; --mut:#7a7f87; --faint:#a8adb5;
+    --line:#e6e6e3; --line2:#efefec; --accent:#2f7d8c; --warn:#b4622a; --code:#f4f4f1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0f12; --ink:#d7dbe0; --mut:#8791a0; --faint:#5a626e;
+      --line:#20242b; --line2:#191c22; --accent:#4fa6b8; --warn:#d08a4a; --code:#14171c;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink)}
+  body{font:15px/1.62 ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:0 24px}
+  .wrap{max-width:748px;margin:0 auto;padding:72px 0 120px}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:44px}
+  .kicker{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--faint)}
+  h1{font-size:30px;font-weight:600;letter-spacing:-.01em;margin:14px 0 8px}
+  .sub{color:var(--mut);font-size:15px;max-width:60ch}
+  h2{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);font-weight:600;
+    margin:52px 0 16px;padding-bottom:9px;border-bottom:1px solid var(--line2)}
+  h3{font-size:14px;font-weight:600;margin:24px 0 6px;letter-spacing:.01em}
+  p{margin:0 0 14px;max-width:66ch}
+  .lead{color:var(--ink)}
+  strong{font-weight:600}
+  em{font-style:italic;color:var(--mut)}
+  ul{margin:0 0 14px;padding-left:0;list-style:none;max-width:66ch}
+  li{position:relative;padding-left:20px;margin:8px 0}
+  li::before{content:"";position:absolute;left:2px;top:.72em;width:5px;height:1px;background:var(--faint)}
+  ol{margin:0 0 14px;padding-left:22px;max-width:66ch}
+  ol li{padding-left:6px}ol li::before{display:none}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--code);
+    padding:1.5px 5px;border:1px solid var(--line);border-radius:2px;color:var(--ink)}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:3px;padding:14px 16px;
+    overflow-x:auto;margin:0 0 16px}
+  pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.7}
+  .note{border-left:2px solid var(--accent);padding:2px 0 2px 16px;margin:18px 0;color:var(--mut)}
+  .warn{border-left:2px solid var(--warn);padding:2px 0 2px 16px;margin:18px 0;color:var(--mut)}
+  .warn b,.note b{color:var(--ink)}
+  .one{font-size:16px;font-style:italic;color:var(--mut);border-left:2px solid var(--line);
+    padding-left:18px;margin:16px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 34px}
+  .meta{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--faint);
+    letter-spacing:.04em;margin-top:2px}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--line)}
+  .rule{height:1px;background:var(--line);margin:56px 0 0}
+  .tag{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:10px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);
+    border-radius:2px;padding:2px 7px;margin:0 6px 6px 0}
+</style>
+<div class="wrap">
+  <header>
+    <div class="kicker">Onboarding · Team</div>
+    <h1>◈ BREADCRUMBS</h1>
+    <p class="sub">Dell × NVIDIA hackathon build. One page to get any new member contributing without reverse-engineering anything. Read <code>docs/premise.md</code> second.</p>
+    <div style="margin-top:16px">
+      <span class="tag">deck.gl 9</span><span class="tag">vanilla JS</span>
+      <span class="tag">no build step</span><span class="tag">local / GB10</span>
+      <span class="tag">branch: food</span>
+    </div>
+  </header>
+
+  <h2>What BREADCRUMBS is</h2>
+  <p class="lead">An always-on, <strong>on-prem food-safety agent</strong> for a NYC food operator.
+  When an FDA recall drops, it tells the operator — in seconds, offline, on the GB10 —
+  <strong>which of their locations are exposed, how bad, and what to do.</strong> Not a dashboard:
+  an agent that watches, reasons, and acts.</p>
+  <p class="one">"When a food recall drops, BREADCRUMBS tells a NYC operator which of their sites are
+  exposed and what to do — on a box in the back office, data never leaving the building."</p>
+
+  <h2>Ground rules · today's clock</h2>
+  <div class="warn"><b>Event constraints (BuilderBase):</b> the agent is built <b>on the day</b>
+  (plans / scaffolds / libraries are fine — that's our data + console); <b>required stack: MongoDB +
+  NemoClaw</b> (≥1 of NemoClaw / OpenClaw / OpenShell); <b>all inference runs local on the GB10</b>, no cloud.</div>
+  <ul>
+    <li><b>09:50</b> hacking starts · <b>14:00</b> lunch</li>
+    <li><b>18:00</b> — submission wall (demo video + project via BuilderBase portal). No coding after this.</li>
+    <li><b>19:30</b> — top-8 teams pitch live, 5 min each · <b>20:30</b> wrap + photo.</li>
+  </ul>
+
+  <h2>Why it wins this hackathon</h2>
+  <p>Dell/NVIDIA are judging <strong>local AI on their hardware.</strong> Our edge: a buyer's
+  supplier list is a trade secret they'd never send to a cloud LLM → the agent <em>must</em> run
+  on-prem → the GB10 is the product, not a demo prop. FSMA 204 makes food traceability a legal
+  mandate on top.</p>
+
+  <h2>The wow we build toward</h2>
+  <p>The map is the stage; the <strong>AI agents + the GB10</strong> are the star. Four pieces,
+  all frontend-heavy:</p>
+  <ol>
+    <li><strong>Agent swarm view</strong> — Watcher → Tracer → Risk → Briefer → Comms, running
+    <em>concurrently</em>, each a live card with status + streaming output. The "five agents in
+    parallel on one box" flex.</li>
+    <li><strong>GB10 telemetry panel</strong> — tokens/sec, GPU memory, watts, model name, as
+    console chrome. Cheapest proof it's really on the hardware.</li>
+    <li><strong>Live agent reasoning</strong> — Nemotron's actual streamed tokens over the real
+    recall text (replacing today's placeholder narration).</li>
+    <li><strong>SMS / Comms action</strong> — the Comms agent drafts + fires an SMS to affected
+    site managers. A real phone buzzing on stage is the most tangible wow in the room. Pillar 3.</li>
+  </ol>
+
+  <h2>Where we are — built + real</h2>
+  <h3>Real data — all free, offline-cacheable (<code>globe/assets/</code>)</h3>
+  <ul>
+    <li><code>nyc-restaurants.json</code> — 17,204 geocoded NYC restaurants w/ DOHMH health grades.</li>
+    <li><code>nyc-stores.json</code> — 11,224 food stores · <code>nyc-nta.geojson</code> — 262 neighborhoods.</li>
+    <li><code>distributor-scorecard.json</code> — real openFDA recall history (Dole 205 Class-I, Sysco 24, Baldor 0).</li>
+    <li><code>food-types.json</code> / <code>food-sources.json</code> — recall risk by category + import origins.</li>
+    <li><code>manhattan_buildings.json</code> — 45,194 buildings w/ LiDAR heights (Sixth Borough engine).</li>
+  </ul>
+  <h3>Consoles (<code>globe/</code>)</h3>
+  <ul>
+    <li><code>food3d.html</code> — <strong>primary.</strong> Pitched 3D NYC, extruded buildings, risk
+    hexbins, distributor hubs, recall-trace.</li>
+    <li><code>food.html</code> — 2D fallback · maritime version lives on <code>main</code>.</li>
+  </ul>
+
+  <h2>Where you plug in — pick a lane</h2>
+  <p class="meta" style="margin-bottom:14px">Scope firmed up in person. Three lanes; grab whichever fits.</p>
+  <h3>Frontend / UI</h3>
+  <ul>
+    <li>Polish <code>food3d.html</code> — layout, motion, the C2 aesthetic
+    (<code>docs/design-system.md</code>: amber/cyan on near-black, hairline borders, Plex / JetBrains mono).</li>
+    <li><strong>Agent-swarm panel + GB10 telemetry HUD</strong> — the wow. Static mock first, wire later.</li>
+    <li><strong>SMS / Comms action UI</strong> — the draft + send flow, phone-mockup for the demo.</li>
+    <li>Product / pitch one-pager — <code>mockups/product-concept.html</code> is a start.</li>
+  </ul>
+  <h3>Agent / backend</h3>
+  <ul>
+    <li><strong>The swarm</strong> (Watcher→Tracer→Risk→Briefer→Comms) via <strong>NemoClaw</strong> (primary; OpenClaw for off-box dev) — tool-calls over MongoDB, local Nemotron on the GB10.</li>
+    <li>The recall-response engine — exposure × risk × action (see <code>PRD.JSON</code> M2).</li>
+  </ul>
+  <h3>Data / infra</h3>
+  <ul>
+    <li><strong>MongoDB</strong> — load + index the cached datasets, geospatial + aggregation queries, change-stream watcher (see <code>PRD.JSON</code> M0).</li>
+    <li>Offline vendoring — deck.gl + fonts local for the unplugged demo.</li>
+  </ul>
+
+  <h2>Stack — deliberately dependency-light</h2>
+  <p>deck.gl 9 standalone from unpkg (one <code>&lt;script&gt;</code>), vanilla JS, no framework,
+  no build. Each console is one self-contained <code>.html</code>. Data is static JSON over a local
+  server; Python only for the fetchers.</p>
+  <div class="warn"><b>Offline note:</b> for the GB10 demo, deck.gl + fonts must be
+  <b>vendored locally</b> (still on unpkg now).</div>
+
+  <h2>Run it</h2>
+  <pre><code>git clone https://github.com/TheApexWu/breadcrumbs.git &amp;&amp; cd breadcrumbs
+git checkout food
+cd globe &amp;&amp; python3 -m http.server 8777
+# open http://localhost:8777/food3d.html</code></pre>
+  <p class="meta">Click a distributor in the scorecard → camera traces its establishments. Then hit ⚠ SIMULATE RECALL.</p>
+
+  <h2>Conventions</h2>
+  <ul>
+    <li><strong>Branch off <code>food</code></strong> into your own <code>ui-&lt;name&gt;</code> / <code>assets-&lt;name&gt;</code> to play; PR back into <code>food</code>. The <code>ralph</code> branch is the loop's — don't hand-edit it. Full model + the file-ownership rule: <code>docs/branching.md</code>.</li>
+    <li><strong>Humans own</strong> <code>globe/*.html</code>, <code>globe/assets/</code>, <code>mockups/</code>, <code>docs/</code>. The <strong>loop owns backend</strong> (<code>agent/ sim/ db/ scripts/ bridge/</code>). You meet only at <code>bridge/</code> — the console fetches its JSON.</li>
+    <li>Commit as yourself; small, real messages. Keep consoles self-contained; match the design-system tokens.</li>
+  </ul>
+
+  <div class="note" style="margin-top:40px"><b>First sync:</b> grab Amadeus once you've run
+  <code>food3d.html</code> and skimmed <code>premise.md</code> — we'll split swarm-UI vs console-polish
+  and lock your scope then.</div>
+
+  <div class="rule"></div>
+</div>

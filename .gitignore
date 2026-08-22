@@ -1,9 +1,23 @@
+# internal strategy / notes — keep OUT of the (public) repo
+docs/team-brief.md
+docs/data-feasibility.md
+docs/sanity-recon.md
 
-logs/
+# heavy data assets — not for git (manhattan_buildings.json stays as the tracked demo default)
+data/
+globe/assets/bronx_buildings.json
+globe/assets/brooklyn_buildings.json
+globe/assets/queens_buildings.json
+globe/assets/staten_buildings.json
+
+# tool / loop configs
 opencode.json
-node_modules/
+
+# secrets — never commit
 *.env
-data/*.parquet
-data/*.jsonl
-.opencode/
-data/raw/
+telegram.env
+
+# python / os cruft
+__pycache__/
+*.pyc
+.DS_Store

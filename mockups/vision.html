@@ -1,0 +1,247 @@
+<meta charset="utf-8">
+<title>BREADCRUMBS — the living vision</title>
+<style>
+  :root{--abyss:#060a12;--panel:#0b111c;--panel2:#0e1626;--line:#1b2740;--ink:#c3ccdd;--mut:#6b7a95;--faint:#38455e;
+    --brand:#3fb6c9;--amber:#e0a95a;--nominal:#3fb950;--watch:#d29922;--warn:#e0823d;--critical:#e5484d;--allergen:#c77dff}
+  *{box-sizing:border-box}html,body{margin:0;background:var(--abyss);color:var(--ink)}
+  body{font:15px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .cls{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.3em;color:#6f7d97;text-align:center;padding:8px;border-bottom:1px solid var(--line);background:#0a0e18}
+  h2.sec{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);font-weight:600;margin:0 0 22px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  section{padding:60px 0;border-bottom:1px solid #101826}
+  /* hero */
+  .hero{padding:74px 0 60px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 80% at 82% 15%,rgba(63,182,201,.10),transparent 60%),radial-gradient(50% 70% at 10% 95%,rgba(199,125,255,.07),transparent 60%);pointer-events:none}
+  .brandrow{display:flex;align-items:center;gap:13px}.logo{font-size:26px;color:var(--amber)}
+  .name{font-family:ui-monospace,Menlo,monospace;font-size:24px;letter-spacing:.16em;font-weight:600}
+  .beat{margin-left:10px;display:inline-flex;align-items:center;gap:7px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--nominal)}
+  .hb{width:8px;height:8px;border-radius:50%;background:var(--nominal);animation:beat 1.4s infinite}
+  @keyframes beat{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15);box-shadow:0 0 12px var(--nominal)}}
+  h1{font-size:42px;line-height:1.12;letter-spacing:-.015em;font-weight:600;margin:24px 0 10px;max-width:20ch}
+  h1 .g{color:var(--brand)}h1 .a{color:var(--allergen)}
+  .one{color:var(--mut);font-size:17px;max-width:62ch;margin:0 0 24px}
+  .badges{display:flex;gap:10px;flex-wrap:wrap}
+  .badge{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:7px 12px}
+  /* living feed */
+  .livewrap{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:start}
+  .feed{border:1px solid var(--line);background:var(--panel);border-radius:3px;height:288px;overflow:hidden;position:relative}
+  .feed .fh{padding:9px 13px;border-bottom:1px solid var(--line);font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.14em;color:var(--amber);display:flex;justify-content:space-between}
+  #stream{padding:6px 0}
+  .ev{padding:7px 13px;font-size:12.5px;border-bottom:1px solid #10192a;display:flex;gap:9px;align-items:baseline;animation:slidein .5s ease}
+  @keyframes slidein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .ev .k{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.08em;padding:1px 6px;border-radius:2px;white-space:nowrap}
+  .k.recall{color:var(--critical);border:1px solid var(--critical)}.k.allergen{color:var(--allergen);border:1px solid var(--allergen)}
+  .k.supplier{color:var(--watch);border:1px solid var(--watch)}.k.viol{color:var(--warn);border:1px solid var(--warn)}
+  .ev .tx{color:var(--ink)}.ev .tx b{color:#fff}.ev .mut{color:var(--mut)}
+  .lead{color:var(--mut);font-size:14px}
+  .lead b{color:var(--ink)}
+  /* dimensions */
+  .dims{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .dim{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:16px;border-top:2px solid var(--line)}
+  .dim.d1{border-top-color:var(--critical)}.dim.d2{border-top-color:var(--allergen)}.dim.d3{border-top-color:var(--watch)}.dim.d4{border-top-color:var(--warn)}
+  .dim .n{font-family:ui-monospace,Menlo,monospace;font-size:26px;color:var(--ink)}
+  .dim .t{font-size:14px;margin:6px 0 4px}.dim .d{font-size:12px;color:var(--mut)}
+  /* preference */
+  .prefwrap{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start}
+  .prompt{border:1px solid var(--brand);background:linear-gradient(180deg,rgba(63,182,201,.06),transparent);border-radius:3px;padding:16px}
+  .prompt .lbl{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.14em;color:var(--brand);margin-bottom:8px}
+  .prompt .q{font-size:15px;min-height:48px}.prompt .q .cur{color:var(--brand);animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .chip{font-family:ui-monospace,Menlo,monospace;font-size:10px;padding:4px 9px;border:1px solid var(--line);border-radius:2px;color:var(--mut)}
+  .chip.on{color:var(--amber);border-color:var(--amber)}.chip.al{color:var(--allergen);border-color:var(--allergen)}
+  .toglist .tg{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #10192a;font-size:13px}
+  .tg .v{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--brand)}
+  /* allergen spotlight */
+  .aller{display:grid;grid-template-columns:.9fr 1.1fr;gap:34px;align-items:center}
+  .allercard{border:1px solid var(--allergen);border-radius:3px;background:linear-gradient(180deg,rgba(199,125,255,.07),transparent);padding:20px}
+  .allercard .big{font-family:ui-monospace,Menlo,monospace;font-size:40px;color:var(--allergen)}
+  .flowline{display:flex;align-items:center;gap:10px;font-size:13px;margin:9px 0;color:var(--mut)}
+  .flowline b{color:var(--ink)}.flowline .ar{color:var(--allergen)}
+  /* arch */
+  .arch{display:flex;align-items:stretch;gap:0}
+  .astep{flex:1;border:1px solid var(--line);border-right:none;padding:16px;background:var(--panel)}
+  .astep:last-child{border-right:1px solid var(--line)}
+  .astep .an{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--amber);letter-spacing:.06em}
+  .astep .ad{font-size:12.5px;color:var(--mut);margin-top:6px}
+  footer{padding:34px 0 72px;color:var(--faint);font-size:12px;text-align:center}
+  @media(max-width:860px){.livewrap,.prefwrap,.aller{grid-template-columns:1fr}.dims{grid-template-columns:1fr 1fr}.arch{flex-wrap:wrap}.astep{flex:1 1 45%;border-right:1px solid var(--line)}}
+</style>
+<div class="cls">UNCLASSIFIED // VISION · A LIVING FOOD-SAFETY INTELLIGENCE SYSTEM · US SUPPLY · LOCAL / GB10</div>
+
+<section class="hero"><div class="wrap">
+  <div class="brandrow"><span class="logo">◈</span><span class="name">BREADCRUMBS</span>
+    <span class="beat"><span class="hb"></span>LIVE · watching</span></div>
+  <h1>The living nervous system for <span class="g">US food safety</span> — including the <span class="a">allergen</span> that could kill someone.</h1>
+  <p class="one">Always watching the FDA feed, every supplier, and every one of your locations. It scores
+  risk the moment the world changes, tells only the people who need to know, and runs entirely on a
+  box in your building — your supply data never leaves.</p>
+  <div class="badges">
+    <span class="badge mono">29,310 recalls watched</span>
+    <span class="badge mono">17,204 NYC establishments</span>
+    <span class="badge mono">local · offline · GB10</span>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">It's alive — a continuous risk feed, not a report you pull</h2>
+  <div class="livewrap">
+    <div class="feed"><div class="fh"><span>◈ LIVE RISK STREAM</span><span id="clock">watching…</span></div><div id="stream"></div></div>
+    <div>
+      <p class="lead"><b>A living system.</b> An always-on Watcher subscribes to the recall feed and
+      your own inspection + supplier data. New event → evaluated against your profile in milliseconds →
+      the map breathes, the scorecards shift, and if it matters to <i>you</i>, your phone buzzes.</p>
+      <p class="lead">No dashboards to check. It watches so your team doesn't have to.</p>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">Your city in 3D — risk on the real blocks</h2>
+  <div style="border:1px solid var(--line);background:#060b14;border-radius:3px;overflow:hidden;position:relative">
+    <div class="mono" style="position:absolute;top:10px;left:13px;font-size:10px;letter-spacing:.14em;color:var(--brand);z-index:2">◈ NYC · 3D · LIVE&nbsp;&nbsp;<span style="color:var(--mut)">45,194 buildings · LiDAR heights</span></div>
+    <svg id="iso" viewBox="0 0 1080 480" style="width:100%;display:block">
+      <defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    </svg>
+    <div class="mono" style="position:absolute;bottom:10px;left:13px;font-size:10px;color:var(--mut);z-index:2">
+      <span style="color:var(--critical)">■</span> recall-exposed site&nbsp;&nbsp;<span style="color:var(--amber)">◆</span> distributor hub&nbsp;&nbsp;height = building</div>
+  </div>
+  <p class="lead" style="margin-top:16px">The real console: your own city extruded from LiDAR, exposed
+  sites glowing red on their actual blocks, distributor hubs and supply flow overlaid — not a chart, the
+  place itself. Live deck.gl build in <code>globe/food3d.html</code>.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">Four risk dimensions, scored live — all from real federal + city data</h2>
+  <div class="dims">
+    <div class="dim d1"><div class="n">29,310</div><div class="t">Recall exposure</div><div class="d">FDA recalls × your suppliers × your sites → "am I hit."</div></div>
+    <div class="dim d2"><div class="n">6,896</div><div class="t">Allergen radar</div><div class="d">Undeclared-allergen recalls — the #2 cause — matched to your menu.</div></div>
+    <div class="dim d3"><div class="n">Dole 205</div><div class="t">Supplier risk</div><div class="d">Live distributor recall scorecards (Class-I history).</div></div>
+    <div class="dim d4"><div class="n">155,091</div><div class="t">Establishment risk</div><div class="d">Critical food-handling violations — who's likely to mishandle a bad lot.</div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">You choose what wakes you — prompt it or toggle it</h2>
+  <div class="prefwrap">
+    <div>
+      <div class="prompt">
+        <div class="lbl">TELL THE AGENT, IN PLAIN ENGLISH</div>
+        <div class="q" id="ptype"></div>
+      </div>
+      <div class="chips">
+        <span class="chip on">Class I only</span><span class="chip on">my suppliers</span>
+        <span class="chip al on">undeclared peanut</span><span class="chip al on">tree nut</span>
+        <span class="chip al">sesame</span><span class="chip">within 2 blocks</span>
+        <span class="chip on">Telegram</span><span class="chip">daily digest</span>
+      </div>
+    </div>
+    <div class="toglist">
+      <div class="tg"><span>Severity threshold</span><span class="v">Class I</span></div>
+      <div class="tg"><span>Scope</span><span class="v">my suppliers + 2-block radius</span></div>
+      <div class="tg"><span>Allergens I care about</span><span class="v">peanut · tree-nut · sesame</span></div>
+      <div class="tg"><span>Categories</span><span class="v">leafy greens · dairy · bakery</span></div>
+      <div class="tg"><span>Channel</span><span class="v">Telegram now · else digest</span></div>
+      <div class="tg"><span>Quiet hours</span><span class="v">off for Class I</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="sec">Allergen radar — the one that matters most to a real diner</h2>
+  <div class="aller">
+    <div class="allercard"><div class="big">6,896</div><div style="color:var(--mut);font-size:13px;margin-top:6px">undeclared-allergen recalls on record — 15× more than E. coli. One reaches the wrong plate and it's anaphylaxis + a lawsuit.</div></div>
+    <div>
+      <div class="flowline"><b>Undeclared sesame</b> <span class="ar">▸</span> tahini lot #4471 recalled</div>
+      <div class="flowline"><span class="ar">▸</span> matched to your <b>3 hummus dishes</b> across 2 sites</div>
+      <div class="flowline"><span class="ar">▸</span> <b>pull now</b> · alert kitchen managers · swap supplier</div>
+      <p class="lead" style="margin-top:14px">BREADCRUMBS knows your menu's ingredients, so an allergen recall isn't a PDF to read — it's a
+      list of the exact dishes to pull, before service.</p>
+    </div>
+  </div>
+</div></section>
+
+<section style="border-bottom:none"><div class="wrap">
+  <h2 class="sec">Always-on, always local</h2>
+  <div class="arch">
+    <div class="astep"><div class="an">WATCH</div><div class="ad">A Mongo change-stream Watcher — the recall feed + your data, 24/7.</div></div>
+    <div class="astep"><div class="an">REASON</div><div class="ad">A 5-agent swarm on the GB10 traces exposure, allergens, risk — concurrently.</div></div>
+    <div class="astep"><div class="an">PERSONALIZE</div><div class="ad">Your preference profile filters the noise to what you asked for.</div></div>
+    <div class="astep"><div class="an">ACT</div><div class="ad">Telegram to the right managers · hold + swap · every number grounded, offline.</div></div>
+  </div>
+</div></section>
+
+<footer>◈ BREADCRUMBS · vision concept · all figures from live openFDA + NYC DOHMH data · runs on the GB10, no cloud</footer>
+
+<script>
+  // living clock
+  const clk=document.getElementById('clock');
+  setInterval(()=>{const d=new Date();clk.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2)+' local';},1000);
+  // streaming risk feed
+  const EV=[
+    ['recall','RECALL','<b>Class I</b> · Dole leafy greens · E. coli · 12 states'],
+    ['allergen','ALLERGEN','<b>undeclared peanut</b> · granola bars · <span class="mut">matches 3 menu items</span>'],
+    ['viol','VIOLATION','your <b>Astoria</b> site · improper holding temp <span class="mut">(critical)</span>'],
+    ['supplier','SUPPLIER','<b>Fresh Express</b> · +1 Class-I this week · <span class="mut">scorecard updated</span>'],
+    ['allergen','ALLERGEN','<b>undeclared sesame</b> · tahini lot · <span class="mut">your 3 hummus dishes flagged</span>'],
+    ['recall','RECALL','<b>Class I</b> · Listeria · soft cheese · <span class="mut">2 of your suppliers</span>'],
+    ['supplier','SUPPLIER','<b>Baldor</b> · 0 recalls · <span class="mut">safe swap target</span>'],
+    ['viol','VIOLATION','<b>food from unapproved source</b> · vendor flagged'],
+    ['allergen','ALLERGEN','<b>undeclared milk</b> · dark chocolate lot · <span class="mut">1 dessert menu item</span>'],
+    ['recall','RECALL','<b>Salmonella</b> · onions · <span class="mut">4 sites exposed via distributor</span>'],
+  ];
+  const stream=document.getElementById('stream');let i=0;
+  function push(){
+    const [k,kl,tx]=EV[i%EV.length];i++;
+    const el=document.createElement('div');el.className='ev';
+    el.innerHTML=`<span class="k ${k}">${kl}</span><span class="tx">${tx}</span>`;
+    stream.prepend(el);
+    while(stream.children.length>7)stream.lastChild.remove();
+  }
+  for(let j=0;j<5;j++)push();
+  setInterval(push,2100);
+  // typing preference prompt
+  const P="\"Wake me for any Class-I recall on my suppliers — and ANY undeclared nut allergen within two blocks of my restaurants. Everything else, daily digest.\"";
+  const q=document.getElementById('ptype');let c=0;
+  function type(){q.innerHTML=P.slice(0,c)+'<span class="cur">▋</span>';c++;if(c<=P.length)setTimeout(type,32);}
+  type();
+  // isometric 3D-city preview (self-contained, no CDN)
+  (function(){
+    const svg=document.getElementById('iso'); if(!svg)return;
+    const NS='http://www.w3.org/2000/svg';
+    const GX=28,GY=17,hw=20,hh=10,ox=548,oy=96;
+    const gp=(px,py)=>[ox+(px-py)*hw, oy+(px+py)*hh];
+    function poly(pts,fill,cls){const p=document.createElementNS(NS,'polygon');
+      p.setAttribute('points',pts.map(a=>a[0].toFixed(1)+','+a[1].toFixed(1)).join(' '));
+      p.setAttribute('fill',fill); if(cls)p.setAttribute('class',cls); svg.appendChild(p);}
+    const rand=(x,y)=>{const s=Math.sin(x*12.9898+y*78.233)*43758.5453;return s-Math.floor(s);};
+    const risk=new Set(['15,6','9,11','20,12','12,4','23,8','7,7']);
+    const hubs=[[2,3,'HUNTS PT'],[26,5,'SYSCO'],[4,15,'BALDOR']];
+    const cells=[];for(let x=0;x<GX;x++)for(let y=0;y<GY;y++)cells.push([x,y]);
+    cells.sort((a,b)=>(a[0]+a[1])-(b[0]+b[1]));
+    for(const [x,y] of cells){
+      const A=gp(x,y),B=gp(x+1,y),C=gp(x+1,y+1),D=gp(x,y+1);
+      if(x%6===0||y%5===0){poly([A,B,C,D],'#0a1120');continue;}
+      const key=x+','+y,isRisk=risk.has(key);
+      let H=7+rand(x,y)*66; if(isRisk)H=120+rand(x,y)*45;
+      const up=p=>[p[0],p[1]-H];
+      const shade=Math.round(H/4);
+      const top=isRisk?'#e2564a':`rgb(${26+shade},${34+shade},${52+Math.round(shade*0.8)})`;
+      poly([B,C,up(C),up(B)], isRisk?'#b23c34':'#111b2e');   // right face
+      poly([C,D,up(D),up(C)], isRisk?'#8f2f29':'#0c1424');   // front face
+      poly([up(A),up(B),up(C),up(D)], top, isRisk?'risktop':null); // roof
+    }
+    for(const [x,y,name] of hubs){
+      const g=gp(x,y);
+      poly([[g[0],g[1]-11],[g[0]+9,g[1]],[g[0],g[1]+11],[g[0]-9,g[1]]],'#e0a95a');
+      const t=document.createElementNS(NS,'text');
+      t.setAttribute('x',g[0]+12);t.setAttribute('y',g[1]+3);t.setAttribute('fill','#e0a95a');
+      t.setAttribute('font-size','10.5');t.setAttribute('font-family','ui-monospace,Menlo,monospace');
+      t.textContent=name;svg.appendChild(t);
+    }
+    const st=document.createElementNS(NS,'style');
+    st.textContent='.risktop{filter:url(#glow);animation:rp 1.7s infinite}@keyframes rp{50%{opacity:.62}}';
+    svg.appendChild(st);
+  })();
+</script>
