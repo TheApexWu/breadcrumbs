@@ -18,6 +18,7 @@ The loop NEVER edits `globe/*.html`, `globe/assets/*`, `mockups/`, or `docs/`.
 | GET    | `/operator_sites`             | `operator_sites.json`      | operator portfolio (GeoJSON) |
 | GET    | `/response?recall=<id>`       | `response.json`            | live M2 Response (exposure/risk/action) |
 | GET    | `/transcript?recall=<id>`     | `transcript.json`          | M3 swarm tool-call log |
+| GET    | `/alert?recall=<id>`          | `alert.json`               | M5 Comms alert (Telegram primary, mock-phone fallback) |
 | GET    | `/telemetry`                  | `telemetry.json`           | GB10 telemetry (stub off-box; real NVML on-box M6) |
 | GET    | `/healthz`                    | —                          | liveness |
 
@@ -185,6 +186,63 @@ the GB10. `nvidia-smi` under-reports on GB10 unified memory — M6 reads
   "ts":                  "2026-08-22T16:12:00Z"
 }
 ```
+
+---
+
+## GET /alert?recall=<id> → `alert.json`
+
+The M5 Comms action: the alert the agent FIRES. Two channels, picked by the
+operator alert-preference profile (M1 `profile.channel`):
+
+- **PRIMARY — Telegram Bot API**: a real message lands on a real phone. The
+  bot token + chat_id are read from env (`TELEGRAM_BOT_TOKEN`,
+  `TELEGRAM_CHAT_ID`) ONLY — never committed (V3 grep assertion). Sending is
+  I/O, not inference, so it does not violate the local-inference rule.
+- **FALLBACK — mock phone UI**: fully offline, ZERO network calls. Renders
+  `bridge/out/alert.json` — the human-built console (globe/) reads this static
+  file from the local filesystem (no HTTP), so the pull-the-cable demo works
+  with the network unplugged.
+
+On any Telegram failure or missing creds, the alert falls back to the mock
+phone so it always lands somewhere. The alert text is GROUNDED in the M2
+Response — real product name, exposed count, compounding count, swap target.
+
+```json
+{
+  "recall_number":       "F-0757-2022",      // string — openFDA id
+  "deduped":              false,             // bool — true if prior alert recalled (no re-send)
+  "sent_via":             "mock-phone",      // "telegram" | "mock-phone"
+  "ok":                   true,              // bool — alert dispatched
+  "alert": {                                 // the grounded alert payload (also bridge/out/alert.json)
+    "recall_number":       "F-0757-2022",
+    "recalling_firm":      "DOLE FRESH VEGETABLES INC",  // string — REAL (openFDA)
+    "product_description": "Marketside 12oz Classic Salad ...", // string — REAL (openFDA)
+    "classification":      "Class I",        // string — REAL (openFDA)
+    "reason_for_recall":   "Harvest equipment ...",      // string — REAL (openFDA)
+    "exposed_count":       5,                // int — EQUAL to M2 Response.exposed_count
+    "compounding_count":   5,                // int — EQUAL to M2 Response.compounding_count
+    "swap_to":             "BALDOR",          // string — EQUAL to M2 Response.recommendation.swap_to.firm
+    "sms":                 "ALERT: ...",      // string — <=2-sentence layman alert (SMS-style)
+    "hold_notice":         "HOLD NOTICE ...", // string — supplier hold notice
+    "class":               "grounded",
+    "grounded_in":         "M2 Response (sim.respond)"
+  },
+  "send": {                                  // dispatch result
+    "channel_attempted":   "telegram",       // "telegram" | "digest" | "console" (profile.channel)
+    "sent_via":            "mock-phone",      // actual channel used
+    "ok":                  true,
+    "fallback_reason":     "telegram unconfigured (no token/chat_id)",
+    "mock_phone":          {"path": "bridge/out/alert.json", "network_calls": 0}
+  },
+  "provenance": {"class": "grounded", "source": "M2 Response via agent.comms"}
+}
+```
+
+Provenance: `recalling_firm`, `product_description`, `classification`,
+`reason_for_recall`, `exposed_count` (via M2), `compounding_count` (via M2),
+`swap_to` (via M2) = **real** (openFDA / DOHMH, grounded in the M2 Response).
+`sms`, `hold_notice` = derived text (grounded). Channel dispatch = I/O, not
+inference. The bot token is NEVER in the repo — read from env only.
 
 ---
 

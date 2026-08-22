@@ -339,11 +339,13 @@ def tool_brief(transall, response, adapter=None):
 
 def tool_draft_sms(transall, response, brief):
     """Comms: draft the SMS alert + supplier hold notice, grounded in the
-    Response. (M5 wires the actual send — Telegram or mock phone.)"""
+    Response. The layman alert is <=2 sentences (SMS-style). (M5 wires the
+    actual send via tool_send -> agent.comms.send_alert.)"""
     r = response["recall"]
+    # <=2 sentences: one alert sentence + one action sentence.
     sms = (
-        "ALERT: {product} recalled ({cls}, {reason}). {n} of your sites exposed "
-        "({comp} with prior critical violations). HOLD lot. Swap to {swap}."
+        "ALERT: {product} recalled ({cls}, {reason}) — {n} of your sites exposed "
+        "({comp} with prior critical violations). HOLD lot and swap sourcing to {swap}."
     ).format(
         product=(r.get("product_description") or "")[:80],
         cls=r.get("classification"),
@@ -375,6 +377,25 @@ def tool_draft_sms(transall, response, brief):
                  {"recall_number": r.get("recall_number")},
                  {"sms": sms, "hold_notice": hold[:80] + "..."})
     return payload
+
+
+def tool_send(transall, response, brief, sms_payload, profile=None,
+              adapter=None, out_dir=None):
+    """Comms -> send: dispatch the alert over the channel picked by the
+    operator alert-preference profile (M1). PRIMARY=Telegram (real send,
+    I/O not inference); FALLBACK=mock phone (offline, zero network). The
+    alert is GROUNDED in the M2 Response (real product, exposed count,
+    compounding count, swap target)."""
+    from agent.comms import send_alert
+    res = send_alert(response, brief, sms_payload, profile=profile,
+                     adapter=adapter, out_dir=out_dir)
+    transall.log("Comms", "send",
+                 {"recall_number": response["recall"].get("recall_number"),
+                  "channel": (profile or {}).get("channel", "telegram")},
+                 {"sent_via": res.get("sent_via"), "ok": res.get("ok"),
+                  "channel_attempted": res.get("channel_attempted"),
+                  "fallback_reason": res.get("fallback_reason")})
+    return res
 
 
 # ── the always-on watch (Mongo change stream) ─────────────────────────────────
@@ -423,6 +444,8 @@ def run(recall_number, db=None, adapter=None, force_alert=False):
             "brief": brief, "sms": sms, "response": response,
             "transcript": transcript.as_list(), "memory": mem,
             "deduped": True, "alert_count": alert_count(recall_id, db),
+            "alert": None, "send": {"ok": False, "skipped": True,
+                                     "reason": "deduped: prior alert recalled"},
         }
         return result
 
@@ -451,6 +474,14 @@ def run(recall_number, db=None, adapter=None, force_alert=False):
     brief = tool_brief(transcript, response, adapter)
     sms = tool_draft_sms(transcript, response, brief)
 
+    # Comms -> send (M5): dispatch the alert over the profile's channel.
+    # Telegram (primary) or mock phone (offline fallback). The alert is
+    # grounded in the M2 Response.
+    from sim.operator import preferences as _prefs
+    profile = _prefs()
+    send_res = tool_send(transcript, response, brief, sms, profile=profile,
+                         adapter=None, out_dir=None)
+
     # persist to agent_memory (first alert for this recall)
     mem = record_run(recall_id, "alert sent: hold + swap recommendation",
                      alert_sent=True, response=response, db=db, re_alert=False)
@@ -459,6 +490,8 @@ def run(recall_number, db=None, adapter=None, force_alert=False):
         "brief": brief, "sms": sms, "response": response,
         "transcript": transcript.as_list(), "memory": mem,
         "deduped": False, "alert_count": alert_count(recall_id, db),
+        "alert": send_res.get("alert"),
+        "send": send_res,
     }
 
 

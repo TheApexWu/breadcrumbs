@@ -1,8 +1,8 @@
 # RALPH loop status
 
-- updated: 2026-08-22T16:16:44Z
-- last finished: milestone 4: Bridge — serve the agent/data to the frontend (contract, no console edits)
-- currently working on: (between milestones)
+- updated: 2026-08-22T16:55:00Z
+- last finished: milestone 5: Comms action — Telegram alert (real) + mock phone fallback
+- currently working on: milestone 6: ON-BOX: Nemotron local + real GB10 telemetry (next iteration)
 
 ## Iteration history
 - 2026-08-22T15:23:46Z START iteration 1 -> milestone 0 (Preflight + MongoDB load), attempt 1
@@ -23,5 +23,7 @@
 - M2 Recall-response engine — COMPLETE (evidence in PRD.JSON)
 - M3 Agent swarm — COMPLETE (evidence in PRD.JSON)
 - M4 Bridge — COMPLETE (evidence in PRD.JSON)
-- M5-M8 — pending
-- 2026-08-22T16:16:44Z DONE milestone 4 (Bridge — serve the agent/data to the frontend (contract, no console edits))
+- M5 Comms action (Telegram + mock phone fallback) — COMPLETE (evidence in PRD.JSON)
+- M6-M8 — pending
+- 2026-08-22T16:55:00Z DONE milestone 5 (Comms action — Telegram alert (real) + mock phone fallback)
+- 2026-08-22T16:55:00Z START iteration 6 -> milestone 6 (ON-BOX: Nemotron local + real GB10 telemetry), attempt 1

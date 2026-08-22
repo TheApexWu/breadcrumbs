@@ -4,7 +4,7 @@
   "note": "off-box dev stub; M6 wires real NVML/tegrastats on the GB10",
   "source": "stub",
   "tokens_per_sec": null,
-  "ts": "2026-08-22T16:14:32Z",
+  "ts": "2026-08-22T16:24:50Z",
   "unified_gb": null,
   "unified_gb_total": 128,
   "watts": null

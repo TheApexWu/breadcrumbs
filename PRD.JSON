@@ -169,7 +169,12 @@
         "the bot token is read from env/config only — a grep of the repo finds NO token literal (assert)"
       ],
       "human_gate": false,
-      "completed": false
+      "completed": true,
+      "evidence": [
+        "V1: firing Comms on Dole F-0757-2022 produces alert.payload with product_description='Marketside 12oz Classic Salad ...' (== M2 Response.recall.product_description, REAL openFDA), exposed_count=5 (== Response), compounding_count=5 (== Response), swap_to='BALDOR' (== Response.recommendation.swap_to.firm), recalling_firm='DOLE FRESH VEGETABLES INC' (== Response); class='grounded'; sms is 2 sentences (<=2 per task) and names BALDOR + 5 — asserted by scripts/verify_m5.py (17/17 PASS).",
+        "V2: TelegramAdapter with no token cleanly skips (ok=False, skipped=True, network_calls=0, reason='no token'); with test token + local relay (ThreadingHTTPServer mimicking /bot<token>/sendMessage -> {ok:true}) the adapter POSTs, parses ok:true, status_code=200, network_calls=1; mock_phone_render writes bridge/out/alert.json with ZERO network calls; profile.channel=console -> mock-phone (sent_via=mock-phone, ok=True).",
+        "V3: regex scan of agent/sim/db/scripts/bridge finds NO Telegram bot-token literal (no <digits>:<35+ char> string) and NO literal TELEGRAM_BOT_TOKEN= assignment; adapter reads via os.environ.get(ENV_TOKEN) with ENV_TOKEN='TELEGRAM_BOT_TOKEN' + ENV_CHAT='TELEGRAM_CHAT_ID' constants; .env is gitignored (*.env in .gitignore) — token never committed."
+      ]
     },
     {
       "id": "6",

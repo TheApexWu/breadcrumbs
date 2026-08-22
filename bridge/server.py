@@ -9,6 +9,7 @@ Endpoints (see bridge/CONTRACT.md for the full shapes + provenance):
   GET /operator_sites            -> operator portfolio as GeoJSON (modeled-portfolio)
   GET /response?recall=<id>      -> the live M2 Response (exposure/risk/action)
   GET /transcript?recall=<id>    -> the M3 swarm tool-call log
+  GET /alert?recall=<id>         -> the M5 Comms alert (Telegram primary, mock-phone fallback)
   GET /telemetry                 -> GB10 telemetry (stub off-box; real NVML on-box M6)
   GET /healthz                   -> liveness
 
@@ -111,6 +112,25 @@ def transcript_payload(recall_number, db=None, adapter=None):
     }
 
 
+def alert_payload(recall_number, db=None, adapter=None):
+    """The M5 Comms alert for a recall. Runs the swarm (which dispatches the
+    alert over the profile's channel: Telegram primary, mock-phone fallback)
+    and returns the grounded alert payload. The mock-phone render writes
+    bridge/out/alert.json (zero network) for the offline console."""
+    db = get_db() if db is None else db
+    adapter = adapter if adapter is not None else swarm.ModelAdapter(backend="openrouter")
+    out = swarm.run(recall_number, db=db, adapter=adapter)
+    return {
+        "recall_number": recall_number,
+        "deduped": out.get("deduped"),
+        "sent_via": (out.get("send") or {}).get("sent_via"),
+        "ok": (out.get("send") or {}).get("ok"),
+        "alert": _jsonable(out.get("alert")),
+        "send": _jsonable(out.get("send")),
+        "provenance": {"class": "grounded", "source": "M2 Response via agent.comms"},
+    }
+
+
 def telemetry_payload():
     """GB10 telemetry. Stub off-box (M6 wires real NVML/tegrastats).
     nvidia-smi under-reports on GB10 unified memory — M6 reads tegrastats."""
@@ -164,6 +184,7 @@ def write_out(recall_number=DEFAULT_RECALL, db=None):
         "telemetry.json": telemetry_payload(),
         "brief.json": _jsonable(out.get("brief")),
         "sms.json": _jsonable(out.get("sms")),
+        "alert.json": _jsonable(out.get("alert")),
     }
     for name, payload in payloads.items():
         path = os.path.join(OUT_DIR, name)
@@ -213,11 +234,14 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, transcript_payload(rn))
             elif path == "/telemetry":
                 self._send(200, telemetry_payload())
+            elif path == "/alert":
+                rn = self._param("recall", DEFAULT_RECALL)
+                self._send(200, alert_payload(rn))
             else:
                 self._send(404, {"error": "unknown endpoint: %s" % path,
                                  "endpoints": ["/operator_sites", "/response?recall=<id>",
-                                               "/transcript?recall=<id>", "/telemetry",
-                                               "/healthz"]})
+                                               "/transcript?recall=<id>", "/alert?recall=<id>",
+                                               "/telemetry", "/healthz"]})
         except Exception as e:
             self._send(500, {"error": str(e), "type": type(e).__name__})
 
@@ -228,7 +252,7 @@ class Handler(BaseHTTPRequestHandler):
 def serve(port=PORT):
     httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     print("[bridge] serving on http://127.0.0.1:%d (endpoints: /operator_sites "
-          "/response /transcript /telemetry /healthz)" % port)
+          "/response /transcript /alert /telemetry /healthz)" % port)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

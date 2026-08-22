@@ -21,7 +21,7 @@
         "recall_number": "F-0757-2022"
       },
       "tool": "watch_feed",
-      "ts": "2026-08-22T16:14:26Z"
+      "ts": "2026-08-22T16:24:50Z"
     },
     {
       "agent": "Watcher",
@@ -36,7 +36,7 @@
         "recalling_firm": "DOLE FRESH VEGETABLES INC"
       },
       "tool": "ingest_recall",
-      "ts": "2026-08-22T16:14:26Z"
+      "ts": "2026-08-22T16:24:50Z"
     },
     {
       "agent": "Risk",
@@ -51,7 +51,7 @@
         "recalls": 236
       },
       "tool": "score_risk.distributor",
-      "ts": "2026-08-22T16:14:26Z"
+      "ts": "2026-08-22T16:24:50Z"
     },
     {
       "agent": "Tracer",
@@ -70,7 +70,7 @@
         "exposed_count": 5
       },
       "tool": "trace_forward",
-      "ts": "2026-08-22T16:14:26Z"
+      "ts": "2026-08-22T16:24:50Z"
     },
     {
       "agent": "Risk",
@@ -84,7 +84,7 @@
         "distributor_class1": 205
       },
       "tool": "score_risk",
-      "ts": "2026-08-22T16:14:26Z"
+      "ts": "2026-08-22T16:24:50Z"
     },
     {
       "agent": "Briefer",
@@ -100,7 +100,7 @@
         "swap_to": "BALDOR"
       },
       "tool": "brief",
-      "ts": "2026-08-22T16:14:32Z"
+      "ts": "2026-08-22T16:24:50Z"
     },
     {
       "agent": "Comms",
@@ -110,10 +110,26 @@
       "concurrent": false,
       "result": {
         "hold_notice": "HOLD NOTICE \u2014 DOLE FRESH VEGETABLES INC Marketside 12oz Classic Salad  UPC:6-811...",
-        "sms": "ALERT: Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107 recalled (Class I, Harvest equipment used in harvesting raw iceberg lettuce was). 5 of your sites exposed (5 with prior critical violations). HOLD lot. Swap to BALDOR."
+        "sms": "ALERT: Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107 recalled (Class I, Harvest equipment used in harvesting raw iceberg lettuce was) \u2014 5 of your sites exposed (5 with prior critical violations). HOLD lot and swap sourcing to BALDOR."
       },
       "tool": "draft_sms",
-      "ts": "2026-08-22T16:14:32Z"
+      "ts": "2026-08-22T16:24:50Z"
+    },
+    {
+      "agent": "Comms",
+      "args": {
+        "channel": "telegram",
+        "recall_number": "F-0757-2022"
+      },
+      "concurrent": false,
+      "result": {
+        "channel_attempted": "telegram",
+        "fallback_reason": "telegram unconfigured (no token/chat_id)",
+        "ok": true,
+        "sent_via": "mock-phone"
+      },
+      "tool": "send",
+      "ts": "2026-08-22T16:24:50Z"
     }
   ],
   "provenance": {
