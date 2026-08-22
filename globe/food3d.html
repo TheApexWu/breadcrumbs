@@ -139,7 +139,9 @@ function frame(){
   if(showArcs){const sample=rests.filter((_,k)=>k%110===0);
     L.push(new ArcLayer({id:'arcs',data:sample,getSourcePosition:d=>HUBS[d.hub].pos,getTargetPosition:d=>[d.lon,d.lat],
       getSourceColor:d=>recall&&mapAffected.has(d.i)?[226,86,74,150]:[63,182,201,90],
-      getTargetColor:[63,182,201,12],getHeight:0.28,getWidth:1,updateTriggers:{getSourceColor:recall}}));}
+      getTargetColor:[63,182,201,12],getHeight:0.28,getWidth:1.2,updateTriggers:{getSourceColor:recall}}));
+    const fp=t=>sample.map(d=>{const a=HUBS[d.hub].pos,b=[d.lon,d.lat];return {p:[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],i:d.i};});
+    for(const off of [0,0.5]){const t=(flow+off)%1;L.push(new ScatterplotLayer({id:'flow'+off,data:fp(t),getPosition:d=>d.p,radiusUnits:'meters',getRadius:34,radiusMinPixels:1.5,radiusMaxPixels:4,getFillColor:d=>recall&&mapAffected.has(d.i)?[255,120,90,230]:[120,220,240,200]}));}}
   // supplier hubs (subtle)
   L.push(new ColumnLayer({id:'hubs',data:HUBS,diskResolution:12,radius:150,extruded:true,pickable:true,
     getPosition:d=>d.pos,getElevation:d=>160+d.class1*24+(recall&&recall.key===d.key?pulse*260:0),
@@ -162,8 +164,8 @@ const dk=new DeckGL({container:'deck',views:new MapView({id:'v',repeat:false}),i
     document.getElementById('hint').style.display=zoom>12.6?'none':'block';
     if(rezoom)dk.setProps({layers:frame()});}});
 
-let last=performance.now();
-function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;dk.setProps({layers:frame()});requestAnimationFrame(loop);}
+let last=performance.now(),flow=0;
+function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;flow=(flow+dt/1400)%1;dk.setProps({layers:frame()});requestAnimationFrame(loop);}
 
 // ── lazy borough loading (the anti-crash: fetch only on toggle) ──
 function toggleBoro(key,btn){
@@ -225,6 +227,22 @@ document.getElementById('heat').onclick=e=>{showHeat=!showHeat;e.target.classLis
 document.getElementById('pts').onclick=e=>{showPts=!showPts;e.target.classList.toggle('on',showPts);};
 document.getElementById('arcs').onclick=e=>{showArcs=!showArcs;e.target.classList.toggle('on',showArcs);};
 document.getElementById('reset').onclick=()=>{flyTo({...HOME});};
+
+
+// draggable HUD panels (grab empty areas / labels; controls still click)
+function makeDraggable(el){ if(!el)return; el.style.cursor='grab';
+  let sx,sy,ox,oy,drag=false;
+  el.addEventListener('mousedown',e=>{
+    if(e.target.closest('button,input,.sc,.row,.boro,.x,a'))return;
+    const r=el.getBoundingClientRect(); el.style.right='auto'; el.style.bottom='auto';
+    el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.cursor='grabbing';
+    sx=e.clientX; sy=e.clientY; ox=r.left; oy=r.top; drag=true; e.preventDefault();
+  });
+  window.addEventListener('mousemove',e=>{ if(!drag)return;
+    el.style.left=Math.max(0,ox+e.clientX-sx)+'px'; el.style.top=Math.max(20,oy+e.clientY-sy)+'px'; });
+  window.addEventListener('mouseup',()=>{ if(drag){drag=false; el.style.cursor='grab';} });
+}
+['ctl','right','detail','legend','read'].forEach(id=>makeDraggable(document.getElementById(id)));
 
 Promise.all(['nyc-restaurants.json','distributor-scorecard.json','manhattan_buildings.json'].map(f=>fetch('assets/'+f).then(r=>r.json())))
   .then(([r,sc,man])=>boot(r,sc,man)).catch(e=>{document.getElementById('load').textContent='LOAD FAILED: '+e;});
