@@ -97,7 +97,13 @@
         "for an undeclared-allergen recall, Response.allergen_match names the allergen(s) and flags category exposure labeled MODELED; for a pathogen-only recall, allergen_match is null/empty (control)"
       ],
       "human_gate": false,
-      "completed": false
+      "completed": true,
+      "evidence": [
+        "V1: respond(F-0757-2022 Dole Class I) returns exposed_count=5 (>0), compounding_count=5 == pure compounding() count (5 exposed sites all crit_violations>0: [11,10,8,8,10]), distributor_risk.class1=205 == db.distributors DOLE class1 (real openFDA count), recommendation.swap_to=BALDOR class1=0 — asserted by scripts/verify_m2.py (19/19 PASS).",
+        "V2: respond(dole) run1 == run2 byte-identical (json sort_keys, len=2093) — deterministic.",
+        "V3: Response.provenance separates real=[recall, compounding_count, distributor_risk, origin] from modeled=[exposed_sites, allergen_match, recommendation]; exposed_sites all class:'modeled'; distributor_risk+origin class:'real'; real/modeled sets disjoint — all asserted.",
+        "V4: allergen recall F-1759-2018 (undeclared milk) -> allergen_match={allergens:['milk'], category_exposure:{milk:['Dairy & cheese','Prepared/bakery']}, class:'modeled', roadmap present}; pathogen control (Dole) allergen_match=null; foreign-material control allergen_match=null — both controls asserted."
+      ]
     },
     {
       "id": "3",
