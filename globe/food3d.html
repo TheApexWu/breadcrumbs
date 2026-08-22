@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <title>BREADCRUMBS — NYC food supply intelligence (3D)</title>
 <style>
-  :root{--bg:#05080f;--panel:#0b0f1a;--bd:#1e2a44;--tx:#aeb8cf;--amber:#e0a95a;--red:#e2564a;--grn:#5ac26a;--mut:#5f6b85;--cyan:#3fb6c9}
+  :root{--bg:#070b12;--panel:#0b0f1a;--bd:#1e2a44;--tx:#aeb8cf;--amber:#e0a95a;--red:#e2564a;--grn:#5ac26a;--mut:#5f6b85;--cyan:#3fb6c9}
   html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;font-family:ui-monospace,Menlo,monospace;color:var(--tx)}
   #deck{position:fixed;inset:0}
   .panel{position:fixed;background:rgba(11,15,26,.92);border:1px solid var(--bd);z-index:3;backdrop-filter:blur(3px)}
@@ -18,8 +18,8 @@
   #alerts .al{padding:6px 12px;border-bottom:1px solid #131b2e;display:flex;gap:8px;font-size:11px}.al .sev{font-weight:600}.CRIT .sev{color:var(--red)}.WARN .sev{color:var(--amber)}
   #feed{font-size:10.5px;overflow-y:auto;max-height:118px;padding-bottom:6px}.fe{padding:3px 12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fe .t{color:#39435e}.fe b{color:var(--grn)}.fe .w{color:var(--amber)}
   #ctl{top:56px;left:14px;z-index:4;display:flex;flex-direction:column;gap:7px;width:186px}
-  #ctl button{background:#0b0f1a;color:var(--tx);border:1px solid var(--bd);font-family:inherit;font-size:11px;letter-spacing:.05em;padding:7px 10px;cursor:pointer;text-align:left}#ctl button.on{color:var(--amber);border-color:var(--amber)}#rec.armed{color:var(--red);border-color:var(--red)}
-  #ctl .gp{display:flex;gap:6px}#ctl .gp button{flex:1;text-align:center}
+  #ctl button{background:#0b0f1a;color:var(--tx);border:1px solid var(--bd);font-family:inherit;font-size:11px;letter-spacing:.05em;padding:7px 10px;cursor:pointer;text-align:left}#ctl button.on{color:var(--amber);border-color:var(--amber)}#rec.armed{color:var(--red);border-color:var(--red)}#rec .n{color:var(--mut);font-size:9px}
+  #ctl .gp{display:flex;gap:6px}#ctl .gp button{flex:1;text-align:center}button.boro{text-align:center}
   #legend{left:14px;bottom:14px;width:186px;padding:9px 11px;font-size:10px;letter-spacing:.03em}
   #legend .row{display:flex;align-items:center;gap:6px;margin:3px 0}.sw{width:26px;height:8px;border-radius:1px}
   #detail{right:14px;bottom:14px;width:300px;display:none}.dh{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--bd)}.dh .nm{color:var(--amber);font-size:13px}.x{color:var(--mut);cursor:pointer}#d_tab{width:100%;border-collapse:collapse;font-size:11px}#d_tab td{padding:5px 12px;border-bottom:1px solid #131b2e}#d_tab td.k{color:var(--mut);width:48%}
@@ -27,6 +27,7 @@
   #load{position:fixed;inset:0;background:var(--bg);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mut);font-size:12px;letter-spacing:.16em;text-align:center;gap:12px}
   #load-bar-wrap{width:260px;height:3px;background:#1e2a44;border-radius:2px}
   #load-bar{height:3px;background:var(--amber);border-radius:2px;width:0%;transition:width .3s}
+  #hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:4;font-size:10px;color:var(--mut);background:rgba(11,15,26,.9);border:1px solid var(--bd);padding:5px 12px;border-radius:2px;white-space:nowrap;display:none}
 </style>
 </head>
 <body>
@@ -40,10 +41,13 @@
   <span class="sep">|</span><span>SUPPLY <b id="m_st" style="color:var(--grn)">NOMINAL</b></span></div>
 
 <div id="ctl">
-  <button id="rec">⚠ SIMULATE RECALL</button>
-  <div class="lbl" style="padding-left:2px">CITY</div>
-  <div class="gp"><button id="bk" class="on">◧ Buildings</button><button id="bx">+ Brooklyn</button></div>
-  <div class="gp"><button id="hex" class="on">▲ Risk hexbins</button></div>
+  <button id="rec">⚠ SIMULATE RECALL <span class="n">demo</span></button>
+  <div class="lbl">BOROUGHS · toggle (lazy-loaded)</div>
+  <div class="gp"><button class="boro on" id="bk" data-b="manhattan">Manhattan</button></div>
+  <div class="gp"><button class="boro" id="bx" title="click to load Brooklyn buildings">Brooklyn</button><button class="boro" disabled style="opacity:.4">Queens*</button></div>
+  <div class="gp"><button class="boro" disabled style="opacity:.4">Bronx*</button><button class="boro" disabled style="opacity:.4">Staten*</button></div>
+  <div class="lbl">LAYERS</div>
+  <div class="gp"><button id="hex" class="on">▲ Risk hexbins</button><button id="pts">• Points</button></div>
   <div class="gp"><button id="arcs">↳ Supply flow</button><button id="reset">⟲ View</button></div>
 </div>
 
@@ -64,8 +68,9 @@
   <div class="row" style="color:var(--mut)">supply links = MODELED</div>
 </div>
 <div id="read" class="panel"></div>
+<div id="hint">zoom in to see individual restaurants · click a hub for supplier trace</div>
 <div id="load">
-  <div>EXTRUDING NYC · loading buildings + DOHMH + openFDA …</div>
+  <div>LOADING BREADCRUMBS · Manhattan + DOHMH + openFDA …</div>
   <div id="load-bar-wrap"><div id="load-bar"></div></div>
   <div id="load-status" style="font-size:10px;letter-spacing:.1em;margin-top:4px;color:#39435e">fetching assets…</div>
 </div>
@@ -109,7 +114,7 @@ function boot(rj,scj,man){
   m_est.textContent=rests.length.toLocaleString();
   m_c.textContent=(rj.meta.grades.C||0);
   renderScore();
-  document.getElementById('load').style.display='none';
+  document.getElementById('load').style.display='none';document.getElementById('hint').style.display='block';
   dk.setProps({layers:frame()}); requestAnimationFrame(loop);
 }
 
