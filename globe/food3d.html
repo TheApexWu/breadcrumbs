@@ -70,7 +70,8 @@
 
 <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
 <script>
-const {DeckGL,MapView,PolygonLayer,HeatmapLayer,ScatterplotLayer,ColumnLayer,ArcLayer,TextLayer,GeoJsonLayer,LightingEffect,AmbientLight,_SunLight:SunLight}=deck;
+const {DeckGL,MapView,PolygonLayer,HeatmapLayer,ScatterplotLayer,ColumnLayer,ArcLayer,TextLayer,GeoJsonLayer,LightingEffect,AmbientLight,_SunLight:SunLight,FlyToInterpolator}=deck;
+function flyTo(t){vs={...vs,...t};dk.setProps({initialViewState:{...vs,transitionDuration:1200,transitionInterpolator:new FlyToInterpolator({speed:1.4})}});}
 
 const HUBS=[
   {key:'HUNTS PT PRODUCE', name:'Hunts Point Produce Market', pos:[-73.879,40.807], sk:null},
@@ -153,15 +154,16 @@ function frame(){
 
 let vs={longitude:-73.95,latitude:40.70,zoom:10.6,pitch:48,bearing:-16,minZoom:9.5,maxZoom:17};
 const HOME={...vs};
-const dk=new DeckGL({container:'deck',views:new MapView({id:'v',repeat:false}),viewState:vs,
-  controller:{inertia:220,scrollZoom:{smooth:true}},effects:[lighting],parameters:{clearColor:[.027,.043,.07,1]},layers:[],
+const dk=new DeckGL({container:'deck',views:new MapView({id:'v',repeat:false}),initialViewState:vs,
+  controller:{dragPan:true,dragRotate:true,scrollZoom:{smooth:true},doubleClickZoom:true,touchZoom:true,touchRotate:true,keyboard:true,inertia:220,minPitch:0,maxPitch:85},
+  effects:[lighting],parameters:{clearColor:[.027,.043,.07,1]},layers:[],
   onViewStateChange:({viewState})=>{const rezoom=(viewState.zoom>12.6)!==(zoom>12.6);vs=viewState;zoom=viewState.zoom;
     read.textContent=`Z ${zoom.toFixed(1)} · pitch ${vs.pitch|0}° · NYC`;
     document.getElementById('hint').style.display=zoom>12.6?'none':'block';
     if(rezoom)dk.setProps({layers:frame()});}});
 
 let last=performance.now();
-function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;dk.setProps({viewState:vs,layers:frame()});requestAnimationFrame(loop);}
+function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;dk.setProps({layers:frame()});requestAnimationFrame(loop);}
 
 // ── lazy borough loading (the anti-crash: fetch only on toggle) ──
 function toggleBoro(key,btn){
@@ -188,7 +190,7 @@ function renderScore(){const max=Math.max(...scorecard.map(c=>c.class1),1);
 function feed(h,cls){const t=new Date().toLocaleTimeString('en-GB');document.getElementById('feed').insertAdjacentHTML('afterbegin',`<div class="fe ${cls||''}"><span class="t">${t}</span> ${h}</div>`);}
 function alertln(sev,txt){document.getElementById('alerts').insertAdjacentHTML('afterbegin',`<div class="al ${sev}"><span class="sev">${sev}</span><span>${txt}</span></div>`);}
 function pickHub(key){const h=HUBS.find(x=>x.key===key);if(!h)return;showArcs=true;document.getElementById('arcs').classList.add('on');
-  vs={...vs,longitude:h.pos[0],latitude:h.pos[1]};const served=rests.filter(r=>HUBS[r.hub].key===key);const sr=supRisk(h);
+  flyTo({longitude:h.pos[0],latitude:h.pos[1],zoom:Math.max(vs.zoom,12.5)});const served=rests.filter(r=>HUBS[r.hub].key===key);const sr=supRisk(h);
   feed(`SENTINEL ▸ <b>trace_supplier</b>("${h.name}") → ${served.length} est. [MODELED]`);
   feed(`  quality: ${sr.c1} Class-I recalls · ${sr.lvl} risk`,sr.c1>10?'w':'');}
 
@@ -200,7 +202,7 @@ function select(id,fly){selId=id;const d=rests.find(r=>r.i===id);if(!d)return;co
     <div style="color:var(--amber);margin-top:3px">${hub.name}</div>
     <div class="q">Recall history: <b style="color:${sr.col}">${sr.c1} Class-I</b> / ${sr.recalls} total · <b style="color:${sr.col}">${sr.lvl} risk</b></div>
     ${sr.c1>10?`<div class="q" style="color:var(--grn)">▸ agent recommends swap → ${swap} (0 recalls)</div>`:'<div class="q" style="color:var(--grn)">▸ supplier within tolerance</div>'}`;
-  if(fly)vs={...vs,longitude:d.lon,latitude:d.lat,zoom:Math.max(vs.zoom,14)};}
+  if(fly)flyTo({longitude:d.lon,latitude:d.lat,zoom:Math.max(vs.zoom,14)});}
 d_x.onclick=()=>{selId=null;detail.style.display='none';};
 
 // ── recall sim ──
@@ -211,7 +213,7 @@ document.getElementById('rec').onclick=()=>{const rb=document.getElementById('re
   const served=rests.filter(r=>HUBS[r.hub].key===recall.key);mapAffected=new Set(served.map(r=>r.i));
   const cg=served.filter(r=>r.grade==='C').length;
   rb.classList.add('armed');rb.innerHTML='✓ CLEAR RECALL';m_st.textContent='RECALL ACTIVE';m_st.style.color='var(--red)';
-  vs={...vs,longitude:recall.pos[0],latitude:recall.pos[1]};s_state.textContent='● ACTIVE · Nemotron/local';s_state.style.color='var(--amber)';
+  flyTo({longitude:recall.pos[0],latitude:recall.pos[1]});s_state.textContent='● ACTIVE · Nemotron/local';s_state.style.color='var(--amber)';
   [()=>{alertln('CRIT',`Class I recall — ${recall.name}`);feed('SENTINEL ▸ <b>ingest_recall</b>(openFDA)');},
    ()=>feed(`SENTINEL ▸ <b>match_supplier</b>() → ${recall.name} · ${recall.class1} prior Class-I`,'w'),
    ()=>feed(`SENTINEL ▸ <b>trace_forward</b>() → ${served.length} NYC establishments [MODELED]`),
@@ -222,7 +224,7 @@ document.getElementById('rec').onclick=()=>{const rb=document.getElementById('re
 document.getElementById('heat').onclick=e=>{showHeat=!showHeat;e.target.classList.toggle('on',showHeat);};
 document.getElementById('pts').onclick=e=>{showPts=!showPts;e.target.classList.toggle('on',showPts);};
 document.getElementById('arcs').onclick=e=>{showArcs=!showArcs;e.target.classList.toggle('on',showArcs);};
-document.getElementById('reset').onclick=()=>{vs={...HOME};};
+document.getElementById('reset').onclick=()=>{flyTo({...HOME});};
 
 Promise.all(['nyc-restaurants.json','distributor-scorecard.json','manhattan_buildings.json'].map(f=>fetch('assets/'+f).then(r=>r.json())))
   .then(([r,sc,man])=>boot(r,sc,man)).catch(e=>{document.getElementById('load').textContent='LOAD FAILED: '+e;});
