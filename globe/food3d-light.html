@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
 :root{
-  --bg:#d8dde4;
+  --bg:#000814;
   --panel:#ffffff;
   --bd:#e0e3e8;
   --tx:#1a1c1e;
@@ -22,7 +22,7 @@
   --sh-lg:0 2px 8px rgba(0,0,0,.12),0 8px 32px rgba(0,0,0,.10);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;color:var(--tx);font-size:13px;background:var(--bg)}
+html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;color:var(--tx);font-size:13px;background:linear-gradient(to bottom,#0d1b3e 0%,#050d1f 55%,#000814 100%);background-attachment:fixed}
 #deck{position:fixed;inset:0}
 
 /* ── top bar ── */
@@ -177,7 +177,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;c
 .leg-note{font-size:10px;color:var(--mut);margin-top:8px;padding-top:8px;border-top:1px solid #f0f2f4;line-height:1.5}
 
 /* ── loading ── */
-#load{position:fixed;inset:0;background:#f0f2f5;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#load{position:fixed;inset:0;background:linear-gradient(to bottom,#0d1b3e 0%,#000814 100%);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 .load-brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;color:var(--blue)}
 .load-brand svg{width:26px;height:26px}
 .load-sub{font-size:12px;color:var(--mut);letter-spacing:.06em}
@@ -496,7 +496,7 @@ const HOME={...vs};
 const dk=new DeckGL({
   container:'deck',views:new MapView({id:'v',repeat:false}),viewState:vs,
   controller:{inertia:250,scrollZoom:{smooth:true}},effects:[lighting],
-  parameters:{clearColor:[0.62,0.70,0.82,1]},   /* deep sky — dark buildings read clearly against it */
+  parameters:{clearColor:[0.03,0.07,0.16,1]},   /* deep navy sky to match page gradient */
   layers:[],
   onViewStateChange:({viewState})=>{vs=viewState;}
 });
