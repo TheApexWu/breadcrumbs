@@ -52,7 +52,7 @@ This is the reason the hackathon's "local business agent" brief is satisfied for
 
 ## Demo script — 90 seconds
 - **0:00 Idle watch.** 3D NYC. The operator's ~12 restaurants lit among the city. Sentinel
-  "● watching · local." Supplier scorecard visible: Baldor clean, Dole/Fresh Express/Sysco hot.
+  "● watching · local." Supplier scorecard visible: Dole/Fresh Express/Sysco hot (verified Class-I history); low-history firms marked "unverified", not "clean".
 - **0:15 The local claim.** "This runs entirely on the GB10. No cloud. The supplier list never
   leaves the building."
 - **0:25 Recall drops.** Real openFDA item hits the feed. Alert. Sentinel: `ingest_recall` →
@@ -60,7 +60,7 @@ This is the reason the hackathon's "local business agent" brief is satisfied for
 - **0:40 Trace.** `trace_forward` → the operator's exposed restaurants light red on their actual
   blocks. "3 of your 12 sites source this through [distributor]." [links MODELED — say so]
 - **0:55 Compounding.** `flag_compounding` → "2 of those already carry a C health grade — top priority."
-- **1:05 Brief + act.** "Hold these lots. Swap to Baldor — 0 recalls on record vs Dole's 205 Class-I."
+- **1:05 Brief + act.** "Hold these lots. Swap to a supplier with a verified low Class-I record on file (e.g. Jetro, 0 of 1) — away from Dole (205 Class-I)."
 - **1:20 Why care.** "That trace took 4 seconds. Today it takes 3 days of phone calls — and it ran
   on a box you own, offline." End.
 

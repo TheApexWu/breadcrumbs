@@ -8,3 +8,6 @@ data/*.jsonl
 .opencode/
 data/raw/
 globe/assets/brooklyn_buildings.json
+globe/assets/queens_buildings.json
+globe/assets/bronx_buildings.json
+globe/assets/staten_buildings.json
