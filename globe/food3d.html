@@ -15,7 +15,11 @@
   #ctl button.on .n{color:#8a795a}#ctl button.loading{opacity:.6}
   #ctl .gp{display:flex;gap:6px}#ctl .gp button{flex:1;text-align:center;justify-content:center}
   #q,#ask_q{border-radius:9px}
-  #qlist{position:absolute;top:84px;left:0;width:100%;max-height:238px;overflow-y:auto;z-index:8;display:none;background:var(--panel);border:1px solid var(--bd);border-radius:11px;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+  #chips{display:flex;flex-wrap:wrap;gap:5px;padding:1px 0}
+  .chip{font-size:10px;padding:3px 11px;border-radius:20px;border:1px solid var(--bd);color:var(--mut);cursor:pointer;user-select:none;transition:background .12s,color .12s,border-color .12s}
+  .chip.on{background:rgba(63,182,201,.18);color:var(--cyan);border-color:var(--cyan);font-weight:600}
+  body.light .chip.on{background:#eaf2fe;color:#1a5fb4;border-color:#8fbaee}
+  #qlist{position:absolute;top:116px;left:0;width:100%;max-height:238px;overflow-y:auto;z-index:8;display:none;background:var(--panel);border:1px solid var(--bd);border-radius:11px;box-shadow:0 8px 22px rgba(0,0,0,.45)}
   body.light #qlist{box-shadow:0 8px 22px rgba(28,44,72,.18)}
   #qlist .qi{display:flex;justify-content:space-between;gap:8px;padding:5px 9px;border-bottom:1px solid var(--bd);cursor:pointer;font-size:11px;align-items:center}
   #qlist .qi:hover{background:rgba(120,180,220,.14)}
@@ -76,6 +80,7 @@
   <button id="rec">⚠ SIMULATE RECALL <span class="n">demo</span></button>
   <input id="q" placeholder="search cuisine / name (e.g. pizza)" style="width:100%;box-sizing:border-box;background:#070b14;border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:11px;padding:6px 9px;margin-top:2px"/>
   <div id="qn" style="font-size:9px;color:var(--amber);min-height:11px;padding-left:2px"></div>
+  <div id="chips"><span class="chip on" data-g="">All grades</span><span class="chip" data-g="A">A</span><span class="chip" data-g="B">B</span><span class="chip" data-g="C">C</span></div>
   <div id="qlist"></div>
   <div class="lbl">BOROUGHS · toggle (lazy-loaded)</div>
   <div class="gp"><button class="boro on" data-b="manhattan">Manhattan</button></div>
@@ -101,6 +106,11 @@
   <div class="row" style="color:var(--mut);margin-top:5px">◆ supplier hub · size = recall risk</div>
   <div class="row" style="color:var(--mut)">buildings glow by critical-violation density</div>
   <div class="row" style="color:var(--mut)">supply links = MODELED</div>
+  <div class="row" style="color:var(--mut);letter-spacing:.12em;margin-top:7px">BUILDING TYPE</div>
+  <div class="row"><span class="sw" style="background:rgb(208,184,154)"></span>brownstone · brick</div>
+  <div class="row"><span class="sw" style="background:rgb(218,212,198)"></span>limestone (classic)</div>
+  <div class="row"><span class="sw" style="background:rgb(202,206,209)"></span>concrete (postwar)</div>
+  <div class="row"><span class="sw" style="background:rgb(150,180,210)"></span>glass (tower)</div>
 </div>
 <div id="rpt" class="panel" style="left:14px;top:56px;width:330px;max-height:44%;overflow-y:auto;display:none;padding:12px 14px;z-index:5"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="color:var(--amber);font-size:11px;letter-spacing:.12em">◈ AGENT REPORT</span><span style="display:flex;gap:6px"><button id="tg" style="background:#0b0f1a;color:var(--amber);border:1px solid var(--amber);font-family:inherit;font-size:10px;padding:4px 8px;cursor:pointer">✈ Telegram</button><span id="rpt_x" style="color:var(--mut);cursor:pointer">✕</span></span></div><div id="rpt_body" style="font-size:12px;line-height:1.5"></div><div style="margin-top:9px;border-top:1px solid var(--bd);padding-top:8px"><input id="ask_q" placeholder="ask the agent (local Nemotron on the box)…" style="width:100%;box-sizing:border-box;background:#070b14;border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:11px;padding:5px 8px"/><div id="ask_a" style="font-size:11px;color:var(--grn);margin-top:5px;line-height:1.45;min-height:12px"></div></div></div>
 <div id="read" class="panel"></div>
@@ -137,6 +147,7 @@ function bldMat(d){if(d._m!==undefined)return d._m;const c=(d.p&&d.p[0])||[0,0],
 let rests=[], scorecard=[], scoreByFirm={}, bld={}, blayers={};
 let q='';
 const matchQ=d=>q&&(((d.cuisine||'').toLowerCase().includes(q))||((d.name||'').toLowerCase().includes(q))||((d.boro||'').toLowerCase().includes(q)));
+let gradeF='';const gmatch=d=>!gradeF||(d.grade||'')===gradeF;
 let light=true;  // sim / day theme is the default look
 try{document.body.classList.add('light');}catch(e){}
 let showHeat=true, showPts=true, showArcs=false, recall=null, pulse=0, selId=null, zoom=10.6;
@@ -476,11 +487,11 @@ function frame(){
   // individual restaurants (declutter: only when zoomed in)
   // search halo — soft amber glow under the matches
   if(q)L.push(new ScatterplotLayer({id:'halo',data:rests.filter(matchQ),getPosition:d=>[d.lon,d.lat],radiusUnits:'meters',getRadius:120,radiusMinPixels:5,radiusMaxPixels:22,getFillColor:[255,200,90,45]}));
-  if((showPts && zoom>12.6) || q)L.push(new ScatterplotLayer({id:'pts',data:rests,pickable:true,
+  if((showPts && zoom>12.6) || q || gradeF)L.push(new ScatterplotLayer({id:'pts',data:rests,pickable:true,
     getPosition:d=>[d.lon,d.lat],radiusUnits:'meters',
-    getRadius:d=>d.i===selId?70:(q?(matchQ(d)?80:12):28),radiusMinPixels:q?1:2,radiusMaxPixels:q?10:8,
-    getFillColor:d=>d.i===selId?[255,255,255,255]:(recall&&mapAffected.has(d.i)?[226,86,74,240]:(q?(matchQ(d)?[255,206,100,255]:[80,90,112,14]):[...crCol(d.cv),200])),
-    updateTriggers:{getFillColor:[selId,recall,q],getRadius:[selId,q]},
+    getRadius:d=>d.i===selId?70:(q?(matchQ(d)?80:12):(gradeF?(gmatch(d)?46:8):28)),radiusMinPixels:q?1:2,radiusMaxPixels:q?10:8,
+    getFillColor:d=>d.i===selId?[255,255,255,255]:(recall&&mapAffected.has(d.i)?[226,86,74,240]:(q?(matchQ(d)?[255,206,100,255]:[80,90,112,14]):(gradeF&&!gmatch(d)?[130,140,160,10]:[...crCol(d.cv),200]))),
+    updateTriggers:{getFillColor:[selId,recall,q,gradeF],getRadius:[selId,q,gradeF]},
     onClick:i=>{if(i.object)select(i.object.i);}}));
   // recall-affected: red beacons even when zoomed out
   if(recall){const aff=rests.filter(r=>mapAffected.has(r.i));
@@ -624,6 +635,7 @@ document.getElementById('arcs').onclick=e=>{showArcs=!showArcs;e.target.classLis
 document.getElementById('reset').onclick=()=>{flyTo({...HOME});};
 document.getElementById('mysites').onclick=()=>flyTo(OPFRAME);
 document.getElementById('view3d').onclick=e=>{const top=vs.pitch>10;flyTo({pitch:top?0:52});e.target.textContent=top?'◧ 3D view':'⊞ Top view';e.target.classList.toggle('on',!top);};
+document.querySelectorAll('#chips .chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('#chips .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');gradeF=c.dataset.g;if(gradeF&&!showPts){showPts=true;document.getElementById('pts').classList.add('on');}dk.setProps({layers:frame()});});
 document.getElementById('ask_q').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=e.target.value.trim();if(!q)return;
   const R=BRIDGE.response,rc=R.recall,sw=(R.recommendation&&R.recommendation.swap_to)||{};
   const ctx=`Recall: ${rc.recalling_firm} ${rc.recall_number||''} ${rc.classification}, ${(rc.product_description||'').slice(0,80)}, reason ${(rc.reason_for_recall||'').slice(0,60)}. Exposed: ${R.exposed_count} of the operator's 12 sites; ${R.compounding_count} have prior critical DOHMH violations. Distributor ${R.distributor_risk.firm}: ${R.distributor_risk.class1} Class-I on record. Recommended swap: ${sw.firm||'a verified-record supplier'} (${sw.basis||'verified low record'}).`;
