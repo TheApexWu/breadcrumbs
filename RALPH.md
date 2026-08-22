@@ -1,17 +1,14 @@
-# RALPH.md — loop iteration log
+# RALPH loop status
 
-The autonomous loop appends terse notes here each iteration (what it did, what it left for next).
-Human scaffolding note below; loop entries follow.
+- updated: 2026-08-22T16:05:00Z
+- last finished: milestone 0 — Preflight + MongoDB load
+- currently working on: (idle — next iteration picks M1)
 
----
-## SCAFFOLD (pre-loop, human) — 2026-08-22
-Backend skeleton laid on branch `ralph` BEFORE any loop run (per instruction: no loop yet).
-Created as empty stubs (raise NotImplementedError / exit 1 — a green result can never be faked):
-- `scripts/preflight.sh` (M0), `scripts/load_mongo.py` (M0), `db/queries.py` (M0)
-- `sim/operator.py` (M1), `sim/respond.py` (M2)
-- `agent/swarm.py` (M3)
-- `bridge/server.py` + `bridge/CONTRACT.md` (M4)
-- `requirements.txt`, `evidence/`, `bridge/samples/`
+## Iteration history
+- 2026-08-22T15:23:46Z START iteration 1 -> milestone 0 (Preflight + MongoDB load), attempt 1
+- 2026-08-22T16:05:00Z DONE milestone 0: preflight.sh PASS, Mongo loaded (recalls 29309 / establishments 17204 / distributors 10), 2dsphere indexes built, 16/16 verifications PASS. See docs-notes/m0.md.
 
-Loop owns `agent/ sim/ db/ scripts/ bridge/` only. Do NOT touch `globe/*.html`, `globe/assets/*`,
-`mockups/`, `docs/`. Build against `docs/premise.md` + `PRD.JSON`. Start at M0.
+## Milestones
+- M0 Preflight + MongoDB load — COMPLETE (evidence in PRD.JSON)
+- M1 Operator model (portfolio + modeled supplier links) — next
+- M2-M8 — pending

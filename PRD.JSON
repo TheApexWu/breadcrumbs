@@ -46,7 +46,14 @@
         "recalls are allergen-tagged: db.recalls.count({hazard_class:'allergen'}) is in the thousands (matches openFDA ~6,896 for undeclared/allergen); a sample undeclared-peanut recall has allergens containing 'peanut' — assert against a control recall that is pathogen-only and has hazard_class!='allergen'"
       ],
       "human_gate": false,
-      "completed": false
+      "completed": true,
+      "evidence": [
+        "V1: scripts/preflight.sh exits 0 and prints 'MongoDB serverStatus ok:1' (mongod on localhost:27017; python3.14 .venv + pymongo 4.17).",
+        "V2: db.establishments.count()=17204 (>=15000), db.distributors.count()=10 (>=8), db.recalls.count()=29309 (>=300), Class-I E.coli=349 (>=300) — asserted by scripts/verify_m0.py.",
+        "V3: sampled establishment has crit_violations:int, GeoJSON loc Point, provenance.class='real' (source NYC DOHMH 43nn-pn8j); distributor doc has class1:int=205 + provenance.class='real'.",
+        "V4: $near around US FOODS hub uses 2dsphere index (explain winningPlan IXSCAN indexName=loc_2dsphere) and returns 5 establishments within 1km; exposure() aggregation == pure-python exposure_control() (parity, operator_sites empty in M0 — both []).",
+        "V5: db.recalls.count({hazard_class:'allergen'})=5664 (in the thousands, ~openFDA 6287 undeclared); sampled undeclared-peanut recall has allergens=['peanut']; pathogen-only control has hazard_class='pathogen' with empty allergens."
+      ]
     },
     {
       "id": "1",
