@@ -74,6 +74,16 @@
   <p class="one">"When a food recall drops, BREADCRUMBS tells a NYC operator which of their sites are
   exposed and what to do — on a box in the back office, data never leaving the building."</p>
 
+  <h2>Ground rules · today's clock</h2>
+  <div class="warn"><b>Event constraints (BuilderBase):</b> the agent is built <b>on the day</b>
+  (plans / scaffolds / libraries are fine — that's our data + console); <b>required stack: MongoDB +
+  NemoClaw</b> (≥1 of NemoClaw / OpenClaw / OpenShell); <b>all inference runs local on the GB10</b>, no cloud.</div>
+  <ul>
+    <li><b>09:50</b> hacking starts · <b>14:00</b> lunch</li>
+    <li><b>18:00</b> — submission wall (demo video + project via BuilderBase portal). No coding after this.</li>
+    <li><b>19:30</b> — top-8 teams pitch live, 5 min each · <b>20:30</b> wrap + photo.</li>
+  </ul>
+
   <h2>Why it wins this hackathon</h2>
   <p>Dell/NVIDIA are judging <strong>local AI on their hardware.</strong> Our edge: a buyer's
   supplier list is a trade secret they'd never send to a cloud LLM → the agent <em>must</em> run
@@ -123,7 +133,7 @@
   </ul>
   <h3>Agent / backend</h3>
   <ul>
-    <li><strong>The swarm</strong> (Watcher→Tracer→Risk→Briefer→Comms) via OpenClaw/NemoClaw — tool-calls over MongoDB, local Nemotron on the GB10.</li>
+    <li><strong>The swarm</strong> (Watcher→Tracer→Risk→Briefer→Comms) via <strong>NemoClaw</strong> (primary; OpenClaw for off-box dev) — tool-calls over MongoDB, local Nemotron on the GB10.</li>
     <li>The recall-response engine — exposure × risk × action (see <code>PRD.JSON</code> M2).</li>
   </ul>
   <h3>Data / infra</h3>
@@ -140,7 +150,8 @@
   <b>vendored locally</b> (still on unpkg now).</div>
 
   <h2>Run it</h2>
-  <pre><code>git clone &lt;repo&gt; &amp;&amp; cd straits &amp;&amp; git checkout food
+  <pre><code>git clone https://github.com/TheApexWu/breadcrumbs.git &amp;&amp; cd breadcrumbs
+git checkout food
 cd globe &amp;&amp; python3 -m http.server 8777
 # open http://localhost:8777/food3d.html</code></pre>
   <p class="meta">Click a distributor in the scorecard → camera traces its establishments. Then hit ⚠ SIMULATE RECALL.</p>
