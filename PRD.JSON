@@ -117,16 +117,18 @@
     },
     {
       "id": "5",
-      "name": "Comms action — SMS draft + mock phone send",
+      "name": "Comms action — Telegram alert (real) + mock phone fallback",
       "deps": ["3"],
       "tasks": [
-        "The Comms agent drafts (a) an SMS to affected site managers and (b) a supplier hold notice, both grounded in the M2 Response.",
-        "Render a mock phone UI in the console that 'receives' the SMS when Comms fires — fully offline, no Twilio, no creds.",
-        "The SMS text names the real recall, the # exposed sites, the compounding count, and the swap recommendation."
+        "The Comms agent drafts (a) a short layman alert (SMS-style, <=2 sentences) to affected site managers and (b) a supplier hold notice, both grounded in the M2 Response.",
+        "PRIMARY channel = Telegram Bot API: send via a bot token (read from env/config, NEVER committed) to the operator chat_id — a real message lands on a real phone. Sending is I/O, not inference, so it does not violate the local-inference rule.",
+        "FALLBACK channel = the mock phone UI in the console: fully offline, no network — for the pull-the-cable moment or flaky venue wifi. The operator alert-preference profile (M1) picks the channel.",
+        "The alert text names the real recall, the # exposed sites, the compounding count, and the swap recommendation."
       ],
       "verifications": [
-        "firing Comms on the Dole recall produces an SMS payload containing the real product name, exposed-site count, compounding count, and the swap target — assert the fields are present and equal to the M2 Response",
-        "the mock phone UI renders the SMS on send (DOM check); no network call is made (assert offline)"
+        "firing Comms on the Dole recall produces an alert payload containing the real product name, exposed-site count, compounding count, and swap target — equal to the M2 Response",
+        "the Telegram adapter POSTs to sendMessage and gets ok:true with a test token/chat_id, OR cleanly skips (logs 'no token') when unset; the mock UI renders offline with ZERO network calls",
+        "the bot token is read from env/config only — a grep of the repo finds NO token literal (assert)"
       ],
       "human_gate": false,
       "completed": false
