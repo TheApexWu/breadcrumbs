@@ -34,6 +34,7 @@
         "scripts/preflight.sh: assert node>=18, python3>=3.10, a local MongoDB is reachable (mongod on localhost:27017), and JS/python deps install into LOCAL envs (never system).",
         "scripts/load_mongo.py: load the cached datasets into MongoDB collections — recalls (openFDA), establishments (DOHMH latest-graded + critical-violation count per camis), distributors (scorecard), buildings_meta (counts only, not the geometry). Idempotent (drop+reload). Provenance stamp per doc: source + fetched_at + class ('real').",
         "Add a critical-violation count per establishment: re-derive from DOHMH critical_flag='Critical' rows (NOT the letter grade). Store crit_violations:int on each establishment doc.",
+        "Tag each recall doc: allergens[] parsed from reason_for_recall (undeclared peanut/tree-nut/milk/egg/soy/wheat/fish/shellfish/sesame) + hazard_class (allergen|pathogen|foreign-material|other). Real openFDA text only, no invention. Allergen recalls are ~6,896 — the #2 cause of all food recalls.",
         "Store every geocoded doc (establishments, operator_sites, distributor hubs) with a GeoJSON 'loc' field and build a 2dsphere index on each — so blast-radius/exposure become real $geoWithin/$near queries.",
         "db/queries.py: the analytical primitives as Mongo AGGREGATION pipelines — exposure ($match+$lookup recalls<->distributors<->sites), distributor scorecard ($group), compounding ($match crit_violations>0). These pipelines are what the agent's tools call."
       ],
@@ -41,7 +42,8 @@
         "preflight.sh exits 0 and prints a MongoDB serverStatus ok:1",
         "after load_mongo.py, db.establishments.count() >= 15000 and db.distributors.count() >= 8 and db.recalls.count() >= 300 (E.coli Class-I) — assert via a mongo query script",
         "a random establishment doc has crit_violations (int), a GeoJSON loc, and a 'real' provenance class; a distributor doc has class1 (int) — assert via query",
-        "a $near query around a hub returns nearby establishments (2dsphere index is used — assert via explain() index scan), and the exposure aggregation returns the same set as the pure-python control"
+        "a $near query around a hub returns nearby establishments (2dsphere index is used — assert via explain() index scan), and the exposure aggregation returns the same set as the pure-python control",
+        "recalls are allergen-tagged: db.recalls.count({hazard_class:'allergen'}) is in the thousands (matches openFDA ~6,896 for undeclared/allergen); a sample undeclared-peanut recall has allergens containing 'peanut' — assert against a control recall that is pathogen-only and has hazard_class!='allergen'"
       ],
       "human_gate": false,
       "completed": false
@@ -53,12 +55,14 @@
       "tasks": [
         "sim/operator.py: define the operator's portfolio = ~12 REAL geocoded DOHMH establishments (an illustrative NYC restaurant group; label class:'modeled-portfolio'). Persist to Mongo collection operator_sites.",
         "Assign each site a MODELED primary distributor (nearest-hub rule over the 5 real NYC hubs; store rule + class:'modeled-link'). This is the proprietary edge we cannot get real — label it everywhere.",
+        "operator alert-preference profile (the notification layer): {min_severity, scope (suppliers | radius_m), categories[], allergens[] (which allergens the operator cares about), channel (telegram|digest|console), quiet_hours}. matches(recall, profile) -> bool decides whether a recall alerts. Settable in plain English OR as toggles.",
         "exposure(recall) -> the operator_sites whose distributor matches the recall's distributor; deterministic and pure."
       ],
       "verifications": [
         "operator_sites has exactly 12 real geocoded establishments, each carrying class:'modeled-portfolio' and a modeled distributor link",
         "exposure() for a Dole-linked recall returns a deterministic, non-empty subset of operator_sites (same input -> identical output across runs)",
-        "every modeled doc is tagged class:'modeled-*' — a query proves no modeled doc is mislabeled 'real'"
+        "every modeled doc is tagged class:'modeled-*' — a query proves no modeled doc is mislabeled 'real'",
+        "matches(recall, profile) filters correctly: a Class-I allergen recall matching the profile returns True; a Class-III recall outside the profile's categories/allergens returns False (assert both — a filter that lets everything through fails)"
       ],
       "human_gate": false,
       "completed": false
@@ -70,12 +74,14 @@
       "tasks": [
         "sim/respond.py: given a recall doc, compute EXPOSURE (operator sites via M1), RISK (the distributor's real class1 count + how many exposed sites have crit_violations>0 — the compounding signal), and an ACTION recommendation (hold + swap to the lowest-class1 distributor, e.g. Baldor 0).",
         "Use the recall's REAL product text + reason + firm state for the brief; keep the origin beat (firm state + Comtrade commodity origin) as a supporting field.",
-        "Emit a structured Response object: {recall, exposed_sites, compounding_count, distributor_risk, recommendation, provenance}."
+        "If the recall is an allergen recall (hazard_class='allergen'), add allergen_match: the allergen(s) + which of the operator's categories carry that allergen risk (CATEGORY-level, MODELED — per-menu-item matching needs menu data we don't have, label it roadmap).",
+        "Emit a structured Response object: {recall, exposed_sites, compounding_count, distributor_risk, allergen_match, recommendation, provenance}."
       ],
       "verifications": [
         "for the real Dole leafy-greens Class-I recall, respond.py returns exposed_sites>0, compounding_count = (# exposed with crit_violations>0), distributor_risk.class1 == the real openFDA count, and a swap recommendation naming a 0-class1 distributor",
         "deterministic: same recall doc -> byte-identical Response",
-        "the Response carries provenance separating 'real' fields from 'modeled' (exposure via modeled links) — assert the modeled flag is present"
+        "the Response carries provenance separating 'real' fields from 'modeled' (exposure via modeled links) — assert the modeled flag is present",
+        "for an undeclared-allergen recall, Response.allergen_match names the allergen(s) and flags category exposure labeled MODELED; for a pathogen-only recall, allergen_match is null/empty (control)"
       ],
       "human_gate": false,
       "completed": false

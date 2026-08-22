@@ -64,6 +64,19 @@ This is the reason the hackathon's "local business agent" brief is satisfied for
 - **1:20 Why care.** "That trace took 4 seconds. Today it takes 3 days of phone calls — and it ran
   on a box you own, offline." End.
 
+## Vision expansion — folded Aug 22 (see mockups/vision.html)
+BREADCRUMBS is a **living food-safety system**, not a lookup tool: always-on Watcher → continuous
+risk scoring → personalized alerts. Four live risk dimensions, all real data:
+1. **Recall exposure** (29,310 recalls) · 2. **Allergen radar** (6,896 undeclared-allergen recalls —
+the #2 cause, 15× E. coli) · 3. **Supplier risk** (distributor recall scorecards) · 4. **Establishment
+risk** (155,091 critical food-handling violations).
+- **Allergen radar** = tag recalls by allergen (real); flag the operator's category exposure (modeled;
+  per-menu-item matching needs menu data = roadmap, labeled).
+- **Notification preferences** = the operator sets, in plain English OR toggles, what wakes them
+  {severity, scope, categories, allergens, channel, quiet-hours} → kills alert fatigue.
+- **Channel = Telegram** (real send; I/O not inference, so it's rule-clean) + mock phone fallback offline.
+Folded into the loop: M0 tags recalls by allergen; M1 adds the preference profile; M2 emits allergen_match.
+
 ## Open before ralph loop (morning)
 - Pick the operator's real portfolio (~12 named DOHMH restaurants) → makes "my sites" concrete + real.
 - Name decision.
