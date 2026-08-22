@@ -1,0 +1,314 @@
+<meta charset="utf-8">
+<title>BREADCRUMBS — logo lab</title>
+<style>
+  :root{
+    --abyss:#060a12; --panel:#0b111c; --panel2:#0e1626; --line:#1b2740;
+    --ink:#c3ccdd; --mut:#6b7a95; --faint:#38455e;
+    --cyan:#3fb6c9; --amber:#e0a95a;
+    --nominal:#3fb950; --watch:#d29922; --warn:#e0823d; --critical:#e5484d;
+    --accent:var(--cyan);            /* toggled by the brand switch */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--abyss);color:var(--ink)}
+  body{font:14px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .cls{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.3em;color:#6f7d97;
+    text-align:center;padding:8px;border-bottom:1px solid var(--line);background:#0a0e18}
+  h1{font-family:ui-monospace,Menlo,monospace;font-size:22px;letter-spacing:.14em;font-weight:600;margin:30px 0 4px}
+  .sub{color:var(--mut);font-size:13px;max-width:70ch;margin:0 0 22px}
+  h2.sec{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--mut);font-weight:600;margin:44px 0 18px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+
+  /* decision bar */
+  .bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);
+    background:var(--panel);border-radius:3px;padding:14px 16px;margin-bottom:8px}
+  .bar .lbl{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+  .toggle button{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;background:transparent;
+    color:var(--mut);border:none;padding:7px 14px;cursor:pointer}
+  .toggle button.on{background:var(--accent);color:#04121a}
+  .swatch{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:7px;vertical-align:-1px}
+  .hint{color:var(--faint);font-size:12px}
+
+  /* mark grid */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .card{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:18px 16px 16px;position:relative}
+  .card.rec{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+  .card .c{position:absolute;top:9px;right:11px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.1em;color:var(--faint)}
+  .card .tag{position:absolute;top:8px;left:12px;font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:.16em;
+    color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:2px;padding:2px 6px}
+  .stage{height:120px;display:flex;align-items:center;justify-content:center;margin:14px 0 12px;
+    background:radial-gradient(60% 70% at 50% 45%,rgba(63,182,201,.05),transparent 70%)}
+  .mk{width:66px;height:66px;overflow:visible}
+  .nm{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.1em;color:var(--ink)}
+  .rat{font-size:11.5px;color:var(--mut);margin-top:5px;min-height:52px}
+
+  /* SVG paint classes — recolored by --accent toggle */
+  .a-fill{fill:var(--accent)} .a-str{stroke:var(--accent);fill:none}
+  .i-fill{fill:var(--mut)} .i-str{stroke:var(--faint);fill:none}
+  .crit{fill:var(--critical)} .crit-str{stroke:var(--critical);fill:none}
+  .ink-fill{fill:var(--ink)}
+
+  /* lockups */
+  .lock{display:flex;flex-direction:column;gap:14px}
+  .lockrow{display:flex;align-items:center;gap:18px;border:1px solid var(--line);background:var(--panel);
+    border-radius:3px;padding:20px 22px}
+  .lockrow.light{background:#eef1f5;border-color:#d3d9e2}
+  .wordmark{font-family:ui-monospace,Menlo,monospace;font-weight:600;letter-spacing:.16em;font-size:26px;color:var(--ink)}
+  .lockrow.light .wordmark{color:#0b111c}
+  .tagl{font-style:italic;color:var(--amber);font-size:14px;margin-left:2px}
+  .lockrow.light .tagl{color:#a86f1e}
+  .wm-swap{margin-left:auto;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.1em;color:var(--faint);
+    border:1px dashed var(--line);border-radius:2px;padding:3px 8px}
+
+  /* application: console header + favicons */
+  .apps{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+  .conhead{border:1px solid var(--line);background:var(--panel);border-radius:3px;overflow:hidden}
+  .conhead .top{display:flex;align-items:center;gap:11px;padding:12px 15px;border-bottom:1px solid var(--line)}
+  .conhead .top .wm{font-family:ui-monospace,Menlo,monospace;font-weight:600;letter-spacing:.14em;font-size:15px}
+  .conhead .top .st{margin-left:auto;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;color:var(--nominal);display:flex;gap:7px;align-items:center}
+  .conhead .top .st .pd{width:6px;height:6px;border-radius:50%;background:var(--nominal);box-shadow:0 0 7px var(--nominal)}
+  .conhead .body{height:96px;display:flex;align-items:center;justify-content:center;color:var(--faint);
+    font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.2em}
+  .favs{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:16px}
+  .favs .row{display:flex;align-items:flex-end;gap:16px;margin-bottom:14px}
+  .favbox{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .favbox .cap{font-family:ui-monospace,Menlo,monospace;font-size:9px;color:var(--faint)}
+  .mono-row{display:flex;gap:14px;align-items:center;margin-top:6px}
+  .chip-l{background:#eef1f5;border:1px solid #d3d9e2;border-radius:2px;padding:8px}
+  footer{padding:34px 0 70px;color:var(--faint);font-size:12px}
+  footer b{color:var(--mut)}
+  @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.apps{grid-template-columns:1fr}}
+</style>
+
+<div class="cls">UNCLASSIFIED // DESIGN LAB · BREADCRUMBS IDENTITY · pick a direction, not final</div>
+
+<div class="wrap">
+  <h1>◈ LOGO LAB</h1>
+  <p class="sub">Four marks for the on-prem food-safety agent, drawn to the C2 / instrument aesthetic in
+  <span class="mono">docs/design-system.md</span> (hairline, sharp corners, status-colors-only). Toggle the brand
+  color and the whole set re-paints. Two decisions to make with the team — surfaced below, not assumed.</p>
+
+  <!-- DECISION BAR -->
+  <div class="bar">
+    <span class="lbl">Brand&nbsp;color</span>
+    <div class="toggle" id="tog">
+      <button data-c="cyan" class="on"><span class="swatch" style="background:#3fb6c9"></span>CYAN</button>
+      <button data-c="amber"><span class="swatch" style="background:#e0a95a"></span>AMBER</button>
+    </div>
+    <span class="hint" id="chint">design-system.md recommends <b>cyan</b> (radar / instrument); amber then = WATCH status only. The concept page currently uses amber. Pick one — not both as brand.</span>
+  </div>
+  <div class="bar">
+    <span class="lbl">Wordmark</span>
+    <span class="hint">Name is officially a <b>placeholder</b> (premise.md). Marks are name-agnostic; the wordmark below swaps in one line. Type it to preview:
+      <input id="wmin" value="BREADCRUMBS" spellcheck="false" style="background:#0a0e18;border:1px solid var(--line);color:var(--ink);font-family:ui-monospace,Menlo,monospace;letter-spacing:.12em;padding:5px 9px;border-radius:2px;width:190px">
+    </span>
+  </div>
+
+  <!-- MARK GRID -->
+  <h2 class="sec">The marks</h2>
+  <div class="grid">
+
+    <div class="card rec">
+      <span class="tag">RECOMMENDED</span><span class="c">MARK · A</span>
+      <div class="stage">
+        <svg class="mk" viewBox="0 0 66 66">
+          <!-- source node (left) -->
+          <circle class="a-str" cx="13" cy="33" r="8" stroke-width="1.6"/>
+          <circle class="a-fill" cx="13" cy="33" r="3"/>
+          <!-- connecting hairline -->
+          <line class="i-str" x1="21" y1="33" x2="60" y2="33" stroke-width="1"/>
+          <!-- breadcrumb trail, decreasing -->
+          <circle class="a-fill" cx="31" cy="33" r="4"/>
+          <circle class="i-fill" cx="43" cy="33" r="3"/>
+          <circle class="i-fill" cx="52" cy="33" r="2.2"/>
+          <circle class="i-fill" cx="59" cy="33" r="1.5"/>
+        </svg>
+      </div>
+      <div class="nm">TRAIL</div>
+      <div class="rat">A crumb trail thinning back to a ringed <b>source</b>. Literal to the name and the product — "follow it back to the source." Reads at any size.</div>
+    </div>
+
+    <div class="card rec">
+      <span class="tag">RECOMMENDED</span><span class="c">MARK · B</span>
+      <div class="stage">
+        <svg class="mk" viewBox="0 0 66 66">
+          <!-- recall origin (top) -->
+          <circle class="a-str" cx="33" cy="12" r="6" stroke-width="1.6"/>
+          <circle class="a-fill" cx="33" cy="12" r="2.4"/>
+          <!-- edges to sites -->
+          <line class="i-str" x1="33" y1="18" x2="15" y2="50" stroke-width="1"/>
+          <line class="i-str" x1="33" y1="18" x2="33" y2="52" stroke-width="1"/>
+          <line class="crit-str" x1="33" y1="18" x2="51" y2="50" stroke-width="1.3"/>
+          <!-- site nodes -->
+          <circle class="i-fill" cx="15" cy="52" r="3.4"/>
+          <circle class="i-fill" cx="33" cy="54" r="3.4"/>
+          <!-- exposed site (status red) -->
+          <circle class="crit" cx="51" cy="52" r="4.2"/>
+          <circle class="crit-str" cx="51" cy="52" r="7" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="nm">TRACE</div>
+      <div class="rat">A recall at the origin tracing down to <b>your sites</b> — one lit critical-red (exposed). It literally draws the product: exposure = am I hit.</div>
+    </div>
+
+    <div class="card">
+      <span class="c">MARK · C</span>
+      <div class="stage">
+        <svg class="mk" viewBox="0 0 66 66">
+          <!-- refined ◈ diamond with reticle ticks -->
+          <path class="a-str" d="M33 8 L58 33 L33 58 L8 33 Z" stroke-width="1.6"/>
+          <path class="a-fill" d="M33 22 L44 33 L33 44 L22 33 Z"/>
+          <!-- corner targeting ticks -->
+          <path class="i-str" d="M6 14 V6 H14" stroke-width="1.2"/>
+          <path class="i-str" d="M52 6 H60 V14" stroke-width="1.2"/>
+          <path class="i-str" d="M60 52 V60 H52" stroke-width="1.2"/>
+          <path class="i-str" d="M14 60 H6 V52" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="nm">RETICLE ◈</div>
+      <div class="rat">The current ◈ diamond, sharpened into a monitored target. <b>Continuity</b> with the concept page + zero re-teach, but the least food-specific of the four.</div>
+    </div>
+
+    <div class="card">
+      <span class="c">MARK · D</span>
+      <div class="stage">
+        <svg class="mk" viewBox="0 0 66 66">
+          <!-- watch scope -->
+          <circle class="a-str" cx="33" cy="33" r="19" stroke-width="1.5"/>
+          <!-- crosshair ticks -->
+          <line class="i-str" x1="33" y1="6" x2="33" y2="13" stroke-width="1.2"/>
+          <line class="i-str" x1="33" y1="53" x2="33" y2="60" stroke-width="1.2"/>
+          <line class="i-str" x1="6" y1="33" x2="13" y2="33" stroke-width="1.2"/>
+          <line class="i-str" x1="53" y1="33" x2="60" y2="33" stroke-width="1.2"/>
+          <!-- crumbs under watch -->
+          <circle class="a-fill" cx="33" cy="33" r="4"/>
+          <circle class="i-fill" cx="24" cy="37" r="2"/>
+          <circle class="i-fill" cx="41" cy="29" r="1.7"/>
+        </svg>
+      </div>
+      <div class="nm">SENTINEL</div>
+      <div class="rat">Crumbs held inside an always-on scope — the "● watching · local" idea as a mark. Leans surveillance; strong for the WATCHER agent, softer as the master logo.</div>
+    </div>
+
+  </div>
+
+  <!-- LOCKUPS -->
+  <h2 class="sec">Horizontal lockups (mark + wordmark)</h2>
+  <div class="lock">
+    <div class="lockrow">
+      <svg class="mk" viewBox="0 0 66 66" style="width:46px;height:46px">
+        <circle class="a-str" cx="13" cy="33" r="8" stroke-width="1.6"/><circle class="a-fill" cx="13" cy="33" r="3"/>
+        <line class="i-str" x1="21" y1="33" x2="60" y2="33" stroke-width="1"/>
+        <circle class="a-fill" cx="31" cy="33" r="4"/><circle class="i-fill" cx="43" cy="33" r="3"/>
+        <circle class="i-fill" cx="52" cy="33" r="2.2"/><circle class="i-fill" cx="59" cy="33" r="1.5"/>
+      </svg>
+      <span class="wordmark wm">BREADCRUMBS</span>
+      <span class="tagl">Follow it back to the source.</span>
+      <span class="wm-swap">MARK A · dark</span>
+    </div>
+    <div class="lockrow">
+      <svg class="mk" viewBox="0 0 66 66" style="width:46px;height:46px">
+        <circle class="a-str" cx="33" cy="12" r="6" stroke-width="1.6"/><circle class="a-fill" cx="33" cy="12" r="2.4"/>
+        <line class="i-str" x1="33" y1="18" x2="15" y2="50" stroke-width="1"/><line class="i-str" x1="33" y1="18" x2="33" y2="52" stroke-width="1"/>
+        <line class="crit-str" x1="33" y1="18" x2="51" y2="50" stroke-width="1.3"/>
+        <circle class="i-fill" cx="15" cy="52" r="3.4"/><circle class="i-fill" cx="33" cy="54" r="3.4"/>
+        <circle class="crit" cx="51" cy="52" r="4.2"/><circle class="crit-str" cx="51" cy="52" r="7" stroke-width="1"/>
+      </svg>
+      <span class="wordmark wm">BREADCRUMBS</span>
+      <span class="tagl">Follow it back to the source.</span>
+      <span class="wm-swap">MARK B · dark</span>
+    </div>
+    <div class="lockrow light">
+      <svg class="mk" viewBox="0 0 66 66" style="width:46px;height:46px">
+        <circle style="stroke:#a86f1e;fill:none" cx="13" cy="33" r="8" stroke-width="1.6"/><circle style="fill:#a86f1e" cx="13" cy="33" r="3"/>
+        <line style="stroke:#9aa3b2;fill:none" x1="21" y1="33" x2="60" y2="33" stroke-width="1"/>
+        <circle style="fill:#a86f1e" cx="31" cy="33" r="4"/><circle style="fill:#6b7280" cx="43" cy="33" r="3"/>
+        <circle style="fill:#6b7280" cx="52" cy="33" r="2.2"/><circle style="fill:#6b7280" cx="59" cy="33" r="1.5"/>
+      </svg>
+      <span class="wordmark wm">BREADCRUMBS</span>
+      <span class="tagl">Follow it back to the source.</span>
+      <span class="wm-swap">MARK A · light / print</span>
+    </div>
+  </div>
+
+  <!-- APPLICATION -->
+  <h2 class="sec">In use — console header · favicon · monochrome</h2>
+  <div class="apps">
+    <div class="conhead">
+      <div class="top">
+        <svg class="mk" viewBox="0 0 66 66" style="width:26px;height:26px">
+          <circle class="a-str" cx="13" cy="33" r="8" stroke-width="2"/><circle class="a-fill" cx="13" cy="33" r="3"/>
+          <line class="i-str" x1="21" y1="33" x2="60" y2="33" stroke-width="1.2"/>
+          <circle class="a-fill" cx="31" cy="33" r="4"/><circle class="i-fill" cx="43" cy="33" r="3"/>
+          <circle class="i-fill" cx="52" cy="33" r="2.2"/><circle class="i-fill" cx="59" cy="33" r="1.5"/>
+        </svg>
+        <span class="wm mono">BREADCRUMBS</span>
+        <span class="st"><span class="pd"></span>WATCHING · LOCAL · GB10</span>
+      </div>
+      <div class="body">3D NYC CONSOLE MOUNTS HERE</div>
+    </div>
+    <div class="favs">
+      <div class="row">
+        <div class="favbox">
+          <svg viewBox="0 0 66 66" style="width:32px;height:32px">
+            <circle class="a-str" cx="13" cy="33" r="8" stroke-width="2.4"/><circle class="a-fill" cx="13" cy="33" r="3.4"/>
+            <circle class="a-fill" cx="31" cy="33" r="4.4"/><circle class="i-fill" cx="44" cy="33" r="3"/><circle class="i-fill" cx="55" cy="33" r="2"/>
+          </svg>
+          <span class="cap">32</span>
+        </div>
+        <div class="favbox">
+          <svg viewBox="0 0 66 66" style="width:24px;height:24px">
+            <circle class="a-str" cx="13" cy="33" r="8" stroke-width="3"/><circle class="a-fill" cx="13" cy="33" r="3.6"/>
+            <circle class="a-fill" cx="32" cy="33" r="4.6"/><circle class="i-fill" cx="47" cy="33" r="3"/>
+          </svg>
+          <span class="cap">24</span>
+        </div>
+        <div class="favbox">
+          <svg viewBox="0 0 66 66" style="width:16px;height:16px">
+            <circle class="a-str" cx="14" cy="33" r="9" stroke-width="4"/><circle class="a-fill" cx="14" cy="33" r="4"/>
+            <circle class="a-fill" cx="36" cy="33" r="5.4"/><circle class="i-fill" cx="54" cy="33" r="3.4"/>
+          </svg>
+          <span class="cap">16</span>
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:10px">At favicon sizes the trail collapses to <b>source + 2 crumbs</b> — still legible.</div>
+      <div class="mono-row">
+        <span class="chip-l">
+          <svg viewBox="0 0 66 66" style="width:26px;height:26px">
+            <circle style="stroke:#0b111c;fill:none" cx="13" cy="33" r="8" stroke-width="1.8"/><circle style="fill:#0b111c" cx="13" cy="33" r="3"/>
+            <circle style="fill:#0b111c" cx="31" cy="33" r="4"/><circle style="fill:#5b6474" cx="43" cy="33" r="3"/><circle style="fill:#5b6474" cx="53" cy="33" r="2"/>
+          </svg>
+        </span>
+        <span class="chip-l" style="background:#0b111c;border-color:#1b2740">
+          <svg viewBox="0 0 66 66" style="width:26px;height:26px">
+            <circle style="stroke:#c3ccdd;fill:none" cx="13" cy="33" r="8" stroke-width="1.8"/><circle style="fill:#c3ccdd" cx="13" cy="33" r="3"/>
+            <circle style="fill:#c3ccdd" cx="31" cy="33" r="4"/><circle style="fill:#6b7a95" cx="43" cy="33" r="3"/><circle style="fill:#6b7a95" cx="53" cy="33" r="2"/>
+          </svg>
+        </span>
+        <span class="hint">1-color works both polarities — safe for stamps, slides, swag.</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    ◈ BREADCRUMBS logo lab · <b>assets-nick</b> branch · not committed yet — react first.<br>
+    Next once you pick: I export the chosen mark as clean standalone <b>.svg</b> + <b>favicon</b>, rewrite <b>docs/design-system.md</b> off the maritime "STRAITS" text onto BREADCRUMBS, and drop the lockup into the console header + concept page.
+  </footer>
+</div>
+
+<script>
+  // brand-color toggle
+  const root=document.documentElement, tog=document.getElementById('tog'), chint=document.getElementById('chint');
+  tog.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return;
+    [...tog.children].forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    root.style.setProperty('--accent', b.dataset.c==='amber' ? 'var(--amber)' : 'var(--cyan)');
+    chint.innerHTML = b.dataset.c==='amber'
+      ? 'Amber reads <b>warm / editorial</b>. If you pick it, drop amber as the WATCH status color and use orange→red for the rest of the status ramp.'
+      : 'design-system.md recommends <b>cyan</b> (radar / instrument); amber then = WATCH status only. The concept page currently uses amber. Pick one — not both as brand.';
+  });
+  // live wordmark swap
+  const wmin=document.getElementById('wmin');
+  wmin.addEventListener('input',()=>document.querySelectorAll('.wm').forEach(el=>el.textContent=wmin.value||'BREADCRUMBS'));
+</script>
