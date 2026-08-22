@@ -351,10 +351,10 @@ let activeGrade='all';
 
 function nearHub(lon,lat){let bi=0,bd=1e9;HUBS.forEach((h,i)=>{const d=(h.pos[0]-lon)**2+(h.pos[1]-lat)**2;if(d<bd){bd=d;bi=i;}});return bi;}
 
-/* ── lighting (realistic afternoon NYC) ── */
+/* ── lighting (dramatic late-afternoon NYC) ── */
 const lighting=new LightingEffect({
-  ambient:new AmbientLight({color:[255,250,240],intensity:1.5}),
-  sun:new SunLight({timestamp:new Date('2024-07-15T16:30:00Z').getTime(),color:[255,242,210],intensity:3.0})
+  ambient:new AmbientLight({color:[255,248,235],intensity:1.2}),
+  sun:new SunLight({timestamp:new Date('2024-07-15T17:00:00Z').getTime(),color:[255,235,190],intensity:3.8})
 });
 
 function setLoad(msg,pct){document.getElementById('ls').textContent=msg;if(pct!=null)document.getElementById('lb').style.width=pct+'%';}
@@ -375,18 +375,22 @@ function boot(rj,scj,man){
 
 /* ── realistic building colours ── */
 function bldHash(d){const p=d.p[0];return (Math.abs(Math.round(p[0]*9973)+Math.round(p[1]*9973)))%100;}
+/* Buildings taller: multiply real height by 1.4 so Manhattan reads as imposing skyline */
+const BLD_SCALE=1.4;
 function bldFill(d){
   const h=d.h,v=bldHash(d),j=v*0.35-17;
-  if(h<18)   return[~~(176+j*.6),~~(132+j*.4),~~(104+j*.3),255];   // brownstone
-  if(h<55)   return v<48?[~~(188+j*.4),~~(158+j*.3),~~(128+j*.2),255]:[~~(208+j*.2),~~(200+j*.2),~~(188+j*.15),255]; // brick / limestone
-  if(h<150)  return[~~(200+j*.15),~~(196+j*.15),~~(190+j*.12),255]; // concrete
-  const t=Math.min(1,(h-150)/260);
-  return[~~(180-t*12+j*.1),~~(196-t*4+j*.1),~~(216+t*8),255];       // glass
+  if(h<18)   return[~~(178+j*.7),~~(134+j*.4),~~(106+j*.3),255];   // brownstone
+  if(h<55)   return v<48?[~~(190+j*.5),~~(156+j*.35),~~(126+j*.2),255]:[~~(210+j*.2),~~(202+j*.2),~~(190+j*.15),255]; // brick / limestone
+  if(h<150)  return[~~(196+j*.2),~~(194+j*.18),~~(190+j*.14),255]; // concrete slab
+  const t=Math.min(1,(h-150)/280);
+  return[~~(172-t*14+j*.12),~~(190-t*5+j*.1),~~(218+t*10),255];    // glass curtain wall
 }
 function bldLayer(id,data){
   return new PolygonLayer({id,data,extruded:true,wireframe:false,
-    getPolygon:d=>d.p,getElevation:d=>d.h,getFillColor:bldFill,
-    material:{ambient:.5,diffuse:.85,shininess:100,specularColor:[215,228,248]},
+    getPolygon:d=>d.p,
+    getElevation:d=>d.h*BLD_SCALE,
+    getFillColor:bldFill,
+    material:{ambient:.45,diffuse:.9,shininess:140,specularColor:[210,225,252]},
     pickable:false});
 }
 
@@ -402,14 +406,18 @@ function dotsLayer(){
   });
 }
 
-/* ── full layer stack ── */
+/* ── full layer stack ──
+   ORDER MATTERS: hexbins first (flat ground overlay), then buildings on top.
+   Hexbins are 2D (extruded:false) so they never occlude buildings.            */
 function render(){
   const L=[];
+  // 1 — flat risk zones drawn on ground first
+  if(showHex)L.push(new HexagonLayer({id:'hex',data:rests,radius:140,extruded:false,pickable:false,
+    getPosition:d=>[d.lon,d.lat],getColorWeight:d=>d.rs,colorAggregation:'MEAN',colorRange:HEXCOLS,
+    opacity:.55,coverage:.82}));
+  // 2 — buildings on top (visible through semi-transparent hexbins)
   if(showBld&&bldMan)L.push(bldLayer('man',bldMan));
   if(showBld&&showBk&&bldBk)L.push(bldLayer('bk',bldBk));
-  if(showHex)L.push(new HexagonLayer({id:'hex',data:rests,radius:130,elevationScale:5,extruded:true,pickable:false,
-    getPosition:d=>[d.lon,d.lat],getColorWeight:d=>d.rs,colorAggregation:'MEAN',colorRange:HEXCOLS,
-    getElevationWeight:1,elevationAggregation:'SUM',elevationRange:[0,800],opacity:.7,coverage:.86}));
   if(showDots)L.push(dotsLayer());
   if(recall){
     const aff=rests.filter(r=>affected.has(r.i));
@@ -439,12 +447,12 @@ function render(){
   return L;
 }
 
-let vs={longitude:-73.985,latitude:40.745,zoom:12.4,pitch:52,bearing:-18,minZoom:10,maxZoom:17};
+let vs={longitude:-73.985,latitude:40.745,zoom:12.4,pitch:60,bearing:-18,minZoom:10,maxZoom:17};
 const HOME={...vs};
 const dk=new DeckGL({
   container:'deck',views:new MapView({id:'v',repeat:false}),viewState:vs,
   controller:{inertia:250,scrollZoom:{smooth:true}},effects:[lighting],
-  parameters:{clearColor:[0.80,0.83,0.87,1]},
+  parameters:{clearColor:[0.72,0.78,0.88,1]},   /* deeper sky blue makes towers pop */
   layers:[],
   onViewStateChange:({viewState})=>{vs=viewState;}
 });
