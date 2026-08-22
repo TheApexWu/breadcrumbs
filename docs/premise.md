@@ -1,10 +1,10 @@
-# STRAITS — product premise (LOCKED 2026-08-22, hackathon day)
+# BREADCRUMBS — product premise (LOCKED 2026-08-22, hackathon day)
 
 Name is a placeholder (decide later). This doc is authoritative; the ralph loop / PRD build
 against it, not against the older maritime framing.
 
 ## One-liner
-When a food recall drops, STRAITS tells a NYC operator which of *their* locations are exposed
+When a food recall drops, BREADCRUMBS tells a NYC operator which of *their* locations are exposed
 and what to do — on a box in the back office, data never leaving the building.
 
 ## What it is

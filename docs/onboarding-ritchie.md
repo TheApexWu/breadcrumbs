@@ -1,14 +1,14 @@
-# STRAITS — onboarding (Ritchie, frontend/UI)
+# BREADCRUMBS — onboarding (Ritchie, frontend/UI)
 
 Welcome aboard. This is the Dell × NVIDIA hackathon build (today). One-page catch-up so you can
 start on the frontend without reverse-engineering anything.
 
-## What STRAITS is (30 seconds)
+## What BREADCRUMBS is (30 seconds)
 An always-on, **on-prem food-safety agent** for a NYC food operator. When an FDA recall drops, it
 tells the operator — in seconds, offline, on the GB10 — **which of their locations are exposed, how
 bad, and what to do.** Not a dashboard: an agent that watches, reasons, and acts.
 
-One-liner: *"When a food recall drops, STRAITS tells a NYC operator which of their sites are exposed
+One-liner: *"When a food recall drops, BREADCRUMBS tells a NYC operator which of their sites are exposed
 and what to do — on a box in the back office, data never leaving the building."*
 
 Full premise: `docs/premise.md` (read this second).
