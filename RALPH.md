@@ -1,8 +1,8 @@
 # RALPH loop status
 
-- updated: 2026-08-22T16:35:00Z
+- updated: 2026-08-22T16:02:54Z
 - last finished: milestone 2: Recall-response engine (exposure x risk x action)
-- currently working on: none (loop idle — fire next iteration for milestone 3)
+- currently working on: (between milestones)
 
 ## Iteration history
 - 2026-08-22T15:23:46Z START iteration 1 -> milestone 0 (Preflight + MongoDB load), attempt 1
@@ -19,3 +19,4 @@
 - M2 Recall-response engine — COMPLETE (evidence in PRD.JSON)
 - M3 Agent swarm — next
 - M4-M8 — pending
+- 2026-08-22T16:02:54Z DONE milestone 2 (Recall-response engine (exposure x risk x action))
