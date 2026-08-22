@@ -33,7 +33,7 @@
 <div id="deck"></div>
 <div id="top" class="panel"><span class="brand">◈ BREADCRUMBS</span><span class="sep">|</span>
   <span class="m">ESTABLISHMENTS <b class="v" id="m_est">—</b></span>
-  <span class="m">GRADE-C <b class="v" id="m_c" style="color:var(--red)">—</b></span>
+  <span class="m">HIGH-RISK <b class="v" id="m_c" style="color:var(--red)">—</b></span>
   <span class="m" id="m_af_w">RECALL-EXPOSED <b class="v" id="m_af">0</b></span>
   <span class="m">BUILDINGS <b class="v" id="m_bld">45k</b></span>
   <span class="sep">|</span><span>SUPPLY <b id="m_st" style="color:var(--grn)">NOMINAL</b></span></div>
@@ -60,10 +60,10 @@
   <table id="d_tab"></table><div id="d_sup"></div></div>
 
 <div id="legend" class="panel">
-  <div style="color:var(--mut);letter-spacing:.14em;margin-bottom:4px">RISK GROUND-HEAT</div>
+  <div style="color:var(--mut);letter-spacing:.14em;margin-bottom:4px">RISK · critical food-handling violations</div>
   <div class="row"><span class="sw" style="background:linear-gradient(90deg,#1f6b5e,#e0a95a,#e2564a)"></span>low → high</div>
   <div class="row" style="color:var(--mut);margin-top:5px">◆ supplier hub · size = recall risk</div>
-  <div class="row" style="color:var(--mut)">buildings = neutral · click a • for detail</div>
+  <div class="row" style="color:var(--mut)">buildings glow by critical-violation density</div>
   <div class="row" style="color:var(--mut)">supply links = MODELED</div>
 </div>
 <div id="read" class="panel"></div>
@@ -84,8 +84,8 @@ const HUBS=[
 ];
 const BFILES={manhattan:'manhattan_buildings.json',brooklyn:'brooklyn_buildings.json',queens:'queens_buildings.json',bronx:'bronx_buildings.json',staten:'staten_buildings.json'};
 const BCOUNT={manhattan:45194,brooklyn:330097,queens:460952,bronx:104277,staten:142311};
-const rscore=g=>g==='C'?1:g==='B'?0.5:g==='A'?0.12:0.3;
-const gcol=g=>g==='A'?[90,200,110]:g==='B'?[224,169,90]:g==='C'?[226,86,74]:[110,122,146];
+const crisk=cv=>Math.min(1,(cv||0)/16);  // critical food-handling violations = the risk metric (NOT the letter grade)
+function crCol(cv){const t=crisk(cv),a=[74,180,120],b=[224,169,90],c=[226,86,74];if(t<0.5){const u=t*2;return[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u];}const u=(t-0.5)*2;return[b[0]+(c[0]-b[0])*u,b[1]+(c[1]-b[1])*u,b[2]+(c[2]-b[2])*u];}
 const HEAT=[[31,107,94,0],[47,125,107],[120,150,96],[224,169,90],[226,120,74],[226,86,74]];
 
 let rests=[], scorecard=[], scoreByFirm={}, bld={}, blayers={};
@@ -106,7 +106,7 @@ function supRisk(hub){const sk=hub.sk;const c=sk?scoreByFirm[sk]:null;const c1=c
 // ── per-building risk field: so risk glows ON the buildings, not just the streets ──
 const CELL=0.0022; let riskGrid={}, riskNorm=1;
 function buildRiskGrid(){ riskGrid={};
-  for(const r of rests){ const w=r.grade==='C'?1:r.grade==='B'?0.4:0; if(!w)continue; const k=Math.round(r.lat/CELL)+'_'+Math.round(r.lon/CELL); riskGrid[k]=(riskGrid[k]||0)+w; }
+  for(const r of rests){ const w=crisk(r.cv); if(w<0.25)continue; const k=Math.round(r.lat/CELL)+'_'+Math.round(r.lon/CELL); riskGrid[k]=(riskGrid[k]||0)+w; }
   const vals=Object.values(riskGrid).sort((a,b)=>a-b); riskNorm=(vals[Math.floor(vals.length*0.93)]||1)*0.85 || 1;
 }
 function cellRisk(lat,lon){ let sm=0; const gy=Math.round(lat/CELL),gx=Math.round(lon/CELL);
@@ -116,11 +116,11 @@ function tagBuildings(arr){ for(const b of arr){ const c=b.p&&b.p[0]; b.rk=c?Mat
 function boot(rj,scj,man){
   scorecard=scj.cards; scoreByFirm=Object.fromEntries(scorecard.map(c=>[c.firm,c]));
   for(const h of HUBS){const c=h.sk?scoreByFirm[h.sk]:null;h.class1=c?c.class1:0;}
-  rests=rj.rows.map((r,i)=>({...r,i,hub:nearestHub(r.lon,r.lat),rs:rscore(r.grade)}));
+  rests=rj.rows.map((r,i)=>({...r,i,hub:nearestHub(r.lon,r.lat),cv:r.cv||0,rs:crisk(r.cv)}));
   buildRiskGrid(); tagBuildings(man);
   bld.manhattan=man; blayers.manhattan=true;
   m_est.textContent=rests.length.toLocaleString();
-  m_c.textContent=(rj.meta.grades.C||0);
+  m_c.textContent=rests.filter(r=>r.cv>=12).length;  // sites with 12+ critical violations (p90)
   renderScore(); document.getElementById('load').style.display='none';
   dk.setProps({layers:frame()}); requestAnimationFrame(loop);
 }
@@ -128,7 +128,7 @@ function boot(rj,scj,man){
 function bldLayer(key){
   return new PolygonLayer({id:'bld-'+key,data:bld[key],extruded:true,wireframe:false,
     getPolygon:d=>d.p, getElevation:d=>d.h,
-    getFillColor:d=>{const t=Math.min(1,d.h/130),rk=d.rk||0;const n0=26+t*22,n1=32+t*24,n2=46+t*30;const r0=210,r1=96,r2=64;return [n0+(r0-n0)*rk, n1+(r1-n1)*rk, n2+(r2-n2)*rk];},  // neutral, glowing warm where risk is high
+    getFillColor:d=>{const t=Math.min(1,d.h/130),rk=d.rk||0;const n0=26+t*22,n1=32+t*24,n2=46+t*30;const k=rk*0.6,r0=150,r1=112,r2=86;return [n0+(r0-n0)*k, n1+(r1-n1)*k, n2+(r2-n2)*k];},  // neutral, glowing warm where risk is high
     material:{ambient:0.55,diffuse:0.6,shininess:16,specularColor:[30,38,54]},
     pickable:false, parameters:{depthTest:true}});
 }
@@ -147,7 +147,7 @@ function frame(){
   if((showPts && zoom>12.6) || q)L.push(new ScatterplotLayer({id:'pts',data:rests,pickable:true,
     getPosition:d=>[d.lon,d.lat],radiusUnits:'meters',
     getRadius:d=>d.i===selId?70:(q?(matchQ(d)?80:12):28),radiusMinPixels:q?1:2,radiusMaxPixels:q?10:8,
-    getFillColor:d=>d.i===selId?[255,255,255,255]:(recall&&mapAffected.has(d.i)?[226,86,74,240]:(q?(matchQ(d)?[255,206,100,255]:[80,90,112,14]):[...gcol(d.grade),200])),
+    getFillColor:d=>d.i===selId?[255,255,255,255]:(recall&&mapAffected.has(d.i)?[226,86,74,240]:(q?(matchQ(d)?[255,206,100,255]:[80,90,112,14]):[...crCol(d.cv),200])),
     updateTriggers:{getFillColor:[selId,recall,q],getRadius:[selId,q]},
     onClick:i=>{if(i.object)select(i.object.i);}}));
   // recall-affected: red beacons even when zoomed out
@@ -217,7 +217,7 @@ function pickHub(key){const h=HUBS.find(x=>x.key===key);if(!h)return;showArcs=tr
 
 function select(id,fly){selId=id;const d=rests.find(r=>r.i===id);if(!d)return;const hub=HUBS[d.hub];const sr=supRisk(hub);
   detail.style.display='block';d_nm.textContent=d.name;
-  d_tab.innerHTML=[['DOHMH grade',d.grade||'pending'],['Cuisine',d.cuisine||'—'],['Borough',d.boro],['Last inspection',d.date||'—']].map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('');
+  d_tab.innerHTML=[['Critical violations',(d.cv||0)+(d.cv>=12?' (high)':d.cv>=6?' (elevated)':'')],['DOHMH grade (context)',d.grade||'pending'],['Cuisine',d.cuisine||'—'],['Borough',d.boro]].map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('');
   const _sw=scorecard.filter(c=>c.class1===0&&c.recalls>0).sort((a,b)=>a.recalls-b.recalls)[0];const swap=_sw?_sw.firm:'a lower-risk supplier';const swapLbl=_sw?('0 Class-I of '+_sw.recalls+' on file'):'verified low';
   d_sup.innerHTML=`<div class="k" style="color:var(--mut)">SUPPLIER (modeled) · agent read</div>
     <div style="color:var(--amber);margin-top:3px">${hub.name}</div>
