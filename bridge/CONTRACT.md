@@ -15,7 +15,22 @@ The M2 Response. TODO(M2): `{recall, exposed_sites[], compounding_count, distrib
 origin, recommendation, provenance{real[], modeled[]}}`.
 
 ## GET /transcript  → `transcript.json`
-The M3 swarm tool-call log. TODO(M3): ordered `[{agent, tool, args, result, ts}]`.
+The M3 swarm tool-call log. Ordered list, one entry per tool-call:
+```json
+[{
+  "agent": "Watcher|Tracer|Risk|Briefer|Comms",
+  "tool": "watch_feed|ingest_recall|trace_forward|score_risk|brief|draft_sms",
+  "args": {…},
+  "result": {…},
+  "ts": "YYYY-MM-DDTHH:MM:SSZ",
+  "concurrent": false
+}]
+```
+Canonical order: `watch_feed → ingest_recall → trace_forward → score_risk → brief → draft_sms`
+(`trace_forward` and the distributor-risk lookup run concurrently; the canonical
+subsequence is preserved). `agent_memory` decisions are NOT in the transcript —
+they live in the `agent_memory` Mongo collection (run_id, recall_id, decision,
+alert_sent, ts).
 
 ## GET /telemetry  → `telemetry.json`
 TODO(M4/M6): `{model, tokens_per_sec, unified_gb, watts, agents_concurrent, source:'stub'|'nvml'}`.

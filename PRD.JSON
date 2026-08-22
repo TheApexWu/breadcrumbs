@@ -123,7 +123,13 @@
         "agent_memory persists across restart: after a swarm run, db.agent_memory holds the run's decisions/alerts with timestamps; running the SAME recall again reads prior state and does NOT re-alert (assert alert_sent stays 1, not 2) — a memory that re-alerts every run fails this"
       ],
       "human_gate": false,
-      "completed": false
+      "completed": true,
+      "evidence": [
+        "V1: swarm.run('F-0757-2022') brief.exposed_count=5, compounding_count=5, distributor_class1=205, swap_to=BALDOR — all EQUAL the M2 Response fields (no drift); brief carries provenance {real:[recall,compounding_count,distributor_risk,origin], modeled:[exposed_sites,allergen_match,recommendation]} and class='instrument-not-oracle' — asserted by scripts/verify_m3.py (22/22 PASS).",
+        "V2: transcript canonical subsequence == [watch_feed, ingest_recall, trace_forward, score_risk, brief, draft_sms] (concurrent extras preserved); every entry logs args+result+ts; trace_forward logged exposed=5 (firm=DOLE FRESH VEGETABLES INC); score_risk logged compounding=5 + distributor_class1=205; Tracer+Risk ran concurrently (>=2 concurrent=True entries).",
+        "V3: RUNTIME='OpenClaw' (one of OpenClaw/NemoClaw/OpenShell); ModelAdapter.complete is the single interface for backend='openrouter' (off-box) <-> backend='nemotron' (on-box); complete() dispatches on `backend` (one swap point — the M6 on-box swap is one line); off-box adapter returns a string (fallback on no-key; GLM content:null falls back to reasoning).",
+        "V4: after a swarm run db.agent_memory holds the run's decisions/alerts (run_id, recall_id, decision, alert_sent=1, ts, response_summary); re-running the SAME recall reads prior state (deduped=True) and does NOT re-alert — alert_count stays 1 (not 2); the re-run is recorded with alert_sent=0; a different recall still alerts (per-recall dedup)."
+      ]
     },
     {
       "id": "4",
