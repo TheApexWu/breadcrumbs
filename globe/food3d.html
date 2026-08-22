@@ -88,8 +88,8 @@
   <div class="gp"><button class="boro" data-b="bronx">Bronx</button><button class="boro" data-b="staten">Staten</button></div>
   <div class="lbl">LAYERS</div>
   <div class="gp"><button id="heat" class="on">⬡ Risk hexbins</button><button id="pts" class="on">• Restaurants</button></div>
-  <div class="gp"><button id="mysites" class="on">◈ My 45 sites</button><button id="arcs">↳ Supply flow</button><button id="reset">⟲ City</button></div>
-  <div class="gp"><button id="view3d">⊞ Top view</button><button id="lite" class="on">☾ Dark / night</button></div>
+  <div class="gp"><button id="mysites" class="on">◈ My 45 sites</button><button id="arcs" class="on">↳ Supply flow</button><button id="reset">⟲ City</button></div>
+  <div class="gp"><button id="view3d">⊞ Top view</button><button id="lite">☀ Light / day</button></div>
 </div>
 
 <div id="right" class="panel"><div class="sh"><span>◈ SENTINEL AGENT</span><span id="s_state" style="color:var(--grn)">● IDLE · local</span></div>
@@ -141,7 +141,7 @@ const HEAT_D=HEAT.slice(1);
 const HEAT_L=[[250,238,200,0],[246,212,150],[238,178,120],[230,138,100],[222,100,84],[214,72,66]];
 // varied building materials: brownstone · brick · limestone · concrete · glass (light + dark tones)
 const BLD_L=[[168,96,58],[196,116,80],[222,208,172],[165,176,187],[104,162,208]];
-const BLD_D=[[68,54,44],[84,54,48],[76,76,64],[54,58,64],[42,66,84]];
+const BLD_D=[[200,120,72],[218,142,96],[228,214,180],[150,162,176],[152,194,228]];
 function bldMat(d){if(d._m!==undefined)return d._m;const c=(d.p&&d.p[0])||[0,0],h=d.h||0;
   d._m=h>125?4:h>82?3:h>46?2:(Math.abs(Math.round(c[0]*713)+Math.round(c[1]*911))%2);return d._m;}
 
@@ -149,9 +149,8 @@ let rests=[], scorecard=[], scoreByFirm={}, bld={}, blayers={};
 let q='';
 const matchQ=d=>q&&(((d.cuisine||'').toLowerCase().includes(q))||((d.name||'').toLowerCase().includes(q))||((d.boro||'').toLowerCase().includes(q)));
 let gradeF='';const gmatch=d=>!gradeF||(d.grade||'')===gradeF;
-let light=true;  // sim / day theme is the default look
-try{document.body.classList.add('light');}catch(e){}
-let showHeat=true, showPts=true, showArcs=false, recall=null, pulse=0, selId=null, zoom=10.6;
+let light=false;  // Siri's look is dark-navy; buildings glow on it (light toggle still available)
+let showHeat=true, showPts=true, showArcs=true, recall=null, pulse=0, selId=null, zoom=10.6;
 let mapAffected=new Set();
 // ── the food business's OWN 12 sites (real DOHMH establishments; supplier links MODELED) ──
 const OPERATOR=[{"id":"40359480","name":"1 EAST 66TH STREET KITCHEN","lon":-73.96958,"lat":40.76855,"cv":1,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40364347","name":"METROPOLITAN CLUB","lon":-73.97231,"lat":40.7648,"cv":7,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40364389","name":"OLD TOWN BAR","lon":-73.98965,"lat":40.7376,"cv":4,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40364443","name":"CRIMINAL COURT BLDG CAFETERIA","lon":-74.00142,"lat":40.71608,"cv":10,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"Z","exp":1},{"id":"40364467","name":"NYAC MAIN DINING ROOM","lon":-73.97874,"lat":40.76672,"cv":2,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40364531","name":"CAFE ATELIER (ART STUDENTS LEAGUE)","lon":-73.9809,"lat":40.76589,"cv":4,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40364581","name":"JUNIOR'S","lon":-73.98162,"lat":40.6902,"cv":19,"cuisine":"American","boro":"Brooklyn","dist":"DOLE FRESH VEGETABLES INC","grade":"Z","exp":1},{"id":"40364715","name":"OLD HOMESTEAD","lon":-74.00504,"lat":40.74137,"cv":1,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40365239","name":"DORRIAN'S RED HAND","lon":-73.9528,"lat":40.7764,"cv":12,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40365644","name":"JOE ALLEN","lon":-73.98888,"lat":40.76018,"cv":6,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40367189","name":"KENN'S BROOME STREET BAR","lon":-74.00312,"lat":40.72312,"cv":4,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40367338","name":"TAP ROOM, GRAB & GO","lon":-73.97874,"lat":40.76672,"cv":4,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40367339","name":"COCKTAIL LOUNGE (NYAC)","lon":-73.97874,"lat":40.76672,"cv":0,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40367365","name":"THE FLAME DINER","lon":-73.98534,"lat":40.76843,"cv":4,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40367752","name":"GRIFFIS FACULTY CLUB","lon":-73.95528,"lat":40.76416,"cv":4,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40368271","name":"CHERRY TAVERN","lon":-73.9852,"lat":40.726,"cv":7,"cuisine":"American","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A","exp":1},{"id":"40368313","name":"RED FLAME DINER","lon":-73.98194,"lat":40.75563,"cv":14,"cuisine":"American","boro":"Manhattan","dist":"FRESH EXPRESS INCORPORATED","grade":"A","exp":0},{"id":"40368318","name":"MAGGIE'S PLACE","lon":-73.97739,"lat":40.75616,"cv":5,"cuisine":"American","boro":"Manhattan","dist":"TAYLOR FARMS, INC.","grade":"A","exp":0},{"id":"40368338","name":"BRADY'S","lon":-73.95353,"lat":40.77543,"cv":4,"cuisine":"American","boro":"Manhattan","dist":"SYSCO","grade":"A","exp":0},{"id":"40368581","name":"MARIE'S CRISIS","lon":-74.00329,"lat":40.73314,"cv":1,"cuisine":"American","boro":"Manhattan","dist":"RESTAURANT DEPOT","grade":"A","exp":0},{"id":"40369165","name":"REIF'S TAVERN","lon":-73.94858,"lat":40.78151,"cv":8,"cuisine":"American","boro":"Manhattan","dist":"US FOODS","grade":"A","exp":0},{"id":"40369619","name":"MUDVILLE9","lon":-74.00879,"lat":40.7153,"cv":7,"cuisine":"American","boro":"Manhattan","dist":"FRESH EXPRESS INCORPORATED","grade":"A","exp":0},{"id":"40370463","name":"THREE GUYS","lon":-73.96384,"lat":40.77397,"cv":19,"cuisine":"American","boro":"Manhattan","dist":"TAYLOR FARMS, INC.","grade":"A","exp":0},{"id":"40370856","name":"OLIVE TREE CAFE & COMEDY CELLAR","lon":-74.00039,"lat":40.73013,"cv":1,"cuisine":"American","boro":"Manhattan","dist":"SYSCO","grade":"A","exp":0},{"id":"40371718","name":"ZAFI'S LUNCHEONETTE","lon":-73.98261,"lat":40.71474,"cv":6,"cuisine":"American","boro":"Manhattan","dist":"RESTAURANT DEPOT","grade":"A","exp":0},{"id":"40371805","name":"TY'S","lon":-74.00548,"lat":40.73319,"cv":5,"cuisine":"American","boro":"Manhattan","dist":"US FOODS","grade":"A","exp":0},{"id":"30191841","name":"D.J. REYNOLDS","lon":-73.98431,"lat":40.76733,"cv":6,"cuisine":"Irish","boro":"Manhattan","dist":"FRESH EXPRESS INCORPORATED","grade":"A","exp":0},{"id":"40363920","name":"NEW GOLDEN BILLION","lon":-73.92718,"lat":40.66214,"cv":1,"cuisine":"Chinese","boro":"Brooklyn","dist":"TAYLOR FARMS, INC.","grade":"A","exp":0},{"id":"40364335","name":"PETER LUGER STEAKHOUSE","lon":-73.96251,"lat":40.70998,"cv":3,"cuisine":"Steakhouse","boro":"Brooklyn","dist":"SYSCO","grade":"A","exp":0},{"id":"40364373","name":"ISLE OF CAPRI","lon":-73.96575,"lat":40.76271,"cv":4,"cuisine":"Italian","boro":"Manhattan","dist":"RESTAURANT DEPOT","grade":"N","exp":0},{"id":"40364439","name":"SEVILLA","lon":-74.00297,"lat":40.73491,"cv":6,"cuisine":"Spanish","boro":"Manhattan","dist":"US FOODS","grade":"A","exp":0},{"id":"40364572","name":"DONOHUE'S STEAK HOUSE","lon":-73.96577,"lat":40.76551,"cv":2,"cuisine":"Steakhouse","boro":"Manhattan","dist":"FRESH EXPRESS INCORPORATED","grade":"A","exp":0},{"id":"40364691","name":"THE GEORGIAN SUITE KITCHEN","lon":-73.96444,"lat":40.77558,"cv":1,"cuisine":"Continental","boro":"Manhattan","dist":"TAYLOR FARMS, INC.","grade":"A","exp":0},{"id":"40365387","name":"ARTURO'S","lon":-74.00052,"lat":40.72723,"cv":2,"cuisine":"Italian","boro":"Manhattan","dist":"SYSCO","grade":"A","exp":0},{"id":"40365789","name":"PATSY'S ITALIAN RESTAURANT","lon":-73.9824,"lat":40.76562,"cv":7,"cuisine":"Italian","boro":"Manhattan","dist":"RESTAURANT DEPOT","grade":"Z","exp":0},{"id":"40365904","name":"MEE SUM CAFE","lon":-73.9982,"lat":40.71486,"cv":32,"cuisine":"Coffee/Tea","boro":"Manhattan","dist":"US FOODS","grade":"B","exp":0},{"id":"40366652","name":"FASCATI'S PIZZERIA","lon":-73.99255,"lat":40.69844,"cv":1,"cuisine":"Pizza","boro":"Brooklyn","dist":"FRESH EXPRESS INCORPORATED","grade":"A","exp":0},{"id":"40367373","name":"JACKSON HOLE","lon":-73.96346,"lat":40.76431,"cv":3,"cuisine":"Hamburgers","boro":"Manhattan","dist":"TAYLOR FARMS, INC.","grade":"A","exp":0},{"id":"40367728","name":"MIMI'S","lon":-73.96753,"lat":40.75622,"cv":4,"cuisine":"Italian","boro":"Manhattan","dist":"SYSCO","grade":"A","exp":0},{"id":"40368555","name":"IL CORTILE","lon":-73.99811,"lat":40.71789,"cv":4,"cuisine":"Italian","boro":"Manhattan","dist":"RESTAURANT DEPOT","grade":"A","exp":0},{"id":"40369016","name":"VIAND COFFEE SHOP","lon":-73.97042,"lat":40.76492,"cv":5,"cuisine":"Greek","boro":"Manhattan","dist":"US FOODS","grade":"A","exp":0},{"id":"40369418","name":"CAFFE REGGIO","lon":-74.00032,"lat":40.73021,"cv":5,"cuisine":"Italian","boro":"Manhattan","dist":"FRESH EXPRESS INCORPORATED","grade":"A","exp":0},{"id":"40369667","name":"WHITE CASTLE","lon":-73.93226,"lat":40.66349,"cv":3,"cuisine":"Hamburgers","boro":"Brooklyn","dist":"TAYLOR FARMS, INC.","grade":"A","exp":0},{"id":"40369958","name":"SPARKS STEAKHOUSE","lon":-73.9721,"lat":40.7531,"cv":1,"cuisine":"Steakhouse","boro":"Manhattan","dist":"SYSCO","grade":"A","exp":0},{"id":"40370436","name":"ROSSINI'S","lon":-73.97894,"lat":40.74935,"cv":6,"cuisine":"Italian","boro":"Manhattan","dist":"RESTAURANT DEPOT","grade":"A","exp":0}];
@@ -480,9 +479,10 @@ function bldLayer(key){
 function frame(){
   const L=[];
   // ground-heat (risk wash) — flat, calm
-  if(showHeat)L.push(new HexagonLayer({id:'risk',data:rests,radius:125,extruded:false,pickable:false,
+  if(showHeat)L.push(new HexagonLayer({id:'risk',data:rests,radius:125,extruded:true,elevationScale:5,elevationRange:[0,650],
+    getElevationWeight:1,elevationAggregation:'SUM',pickable:false,
     getPosition:d=>[d.lon,d.lat],getColorWeight:d=>d.rs,colorAggregation:'MEAN',
-    colorRange:HEXCOLORS,opacity:light?0.5:0.72,coverage:0.9}));
+    colorRange:HEXCOLORS,opacity:light?0.5:0.85,coverage:0.86}));
   // neutral buildings, per enabled borough
   for(const k in blayers){ if(blayers[k]&&bld[k]) L.push(bldLayer(k)); }
   // individual restaurants (declutter: only when zoomed in)
@@ -522,9 +522,12 @@ function frame(){
     getFillColor:d=>eset.has(d.id)?[226,86,74,150]:(light?[38,128,168,55]:[70,150,190,70]),
     updateTriggers:{getLineColor:[recall,light],getFillColor:[recall,light],getRadius:[recall,pulse]},
     onClick:i=>{if(i.object){const r=rests.find(x=>String(x.id)===String(i.object.id));if(r)select(r.i,true);}}}));
-  L.push(new TextLayer({id:'opT',data:OPERATOR,getPosition:d=>[d.lon,d.lat],getText:d=>d.name,getSize:10.5,sizeUnits:'pixels',
-    getColor:d=>eset.has(d.id)?(light?[196,40,30,255]:[255,180,170,255]):(light?[14,78,104,255]:[150,228,255,235]),getPixelOffset:[0,-16],getTextAnchor:'middle',fontFamily:'monospace',
-    outlineWidth:2.5,outlineColor:light?[246,250,253,235]:[3,6,12,235],fontSettings:{sdf:true},billboard:true,updateTriggers:{getColor:[recall,light]}}));
+  const opLabels=recall?OPERATOR.filter(s=>eset.has(s.id)):(zoom>13.2?OPERATOR:[]);
+  L.push(new TextLayer({id:'opT',data:opLabels,getPosition:d=>[d.lon,d.lat],getText:d=>d.name,getSize:11.5,sizeUnits:'pixels',
+    getColor:[255,255,255,255],getPixelOffset:[0,-17],getTextAnchor:'middle',fontFamily:"-apple-system,'Helvetica Neue',Arial,sans-serif",fontWeight:600,
+    background:true,getBackgroundColor:d=>eset.has(d.id)?[201,54,42,242]:(light?[27,63,110,232]:[10,18,32,232]),backgroundPadding:[6,3,6,3],
+    getBorderColor:[255,255,255,55],getBorderWidth:1,billboard:true,fontSettings:{sdf:true},
+    updateTriggers:{getBackgroundColor:recall}}));
   return L;
 }
 
@@ -532,7 +535,7 @@ let vs={longitude:-73.95,latitude:40.70,zoom:10.6,pitch:48,bearing:-16,minZoom:9
 const HOME={...vs};
 const dk=new DeckGL({container:'deck',views:new MapView({id:'v',repeat:false}),initialViewState:vs,
   controller:{dragPan:true,dragRotate:true,scrollZoom:{smooth:true},doubleClickZoom:true,touchZoom:true,touchRotate:true,keyboard:true,inertia:220,minPitch:0,maxPitch:85},
-  effects:[lighting],parameters:{clearColor:[.788,.831,.871,1]},layers:[],
+  effects:[lighting],parameters:{clearColor:[.03,.055,.11,1]},layers:[],
   onViewStateChange:({viewState})=>{const rezoom=(viewState.zoom>12.6)!==(zoom>12.6);vs=viewState;zoom=viewState.zoom;
     read.textContent=`Z ${zoom.toFixed(1)} · pitch ${vs.pitch|0}° · NYC`;
     document.getElementById('hint').style.display=zoom>12.6?'none':'block';
