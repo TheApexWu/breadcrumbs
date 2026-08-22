@@ -1,0 +1,334 @@
+{
+  "count": 12,
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          -73.98948,
+          40.75051
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50017041",
+        "crit_violations": 11,
+        "cuisine": "Salads",
+        "distributor": "DOLE FRESH VEGETABLES INC",
+        "distributor_rule": "produce-supplier",
+        "grade": "A",
+        "hub_distance_m": 6214.9,
+        "name": "JUST SALAD",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.9795,
+          40.6694
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Brooklyn",
+        "camis": "50035721",
+        "crit_violations": 10,
+        "cuisine": "Salads",
+        "distributor": "DOLE FRESH VEGETABLES INC",
+        "distributor_rule": "produce-supplier",
+        "grade": "A",
+        "hub_distance_m": 6365.2,
+        "name": "JUST SALAD",
+        "primary_hub": "RESTAURANT DEPOT",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.98209,
+          40.74607
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50088095",
+        "crit_violations": 8,
+        "cuisine": "Salads",
+        "distributor": "DOLE FRESH VEGETABLES INC",
+        "distributor_rule": "produce-supplier",
+        "grade": "A",
+        "hub_distance_m": 6623.6,
+        "name": "SWEETGREEN",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.9884,
+          40.71814
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50161809",
+        "crit_violations": 10,
+        "cuisine": "Salads",
+        "distributor": "DOLE FRESH VEGETABLES INC",
+        "distributor_rule": "produce-supplier",
+        "grade": "C",
+        "hub_distance_m": 5882.1,
+        "name": "SALAD DON",
+        "primary_hub": "RESTAURANT DEPOT",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.9941,
+          40.74113
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50125151",
+        "crit_violations": 8,
+        "cuisine": "Salads",
+        "distributor": "DOLE FRESH VEGETABLES INC",
+        "distributor_rule": "produce-supplier",
+        "grade": "A",
+        "hub_distance_m": 5497.2,
+        "name": "JUST SALAD",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -74.01567,
+          40.71153
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50008140",
+        "crit_violations": 1,
+        "cuisine": "Salads",
+        "distributor": "FRESH EXPRESS INCORPORATED",
+        "distributor_rule": "produce-supplier",
+        "grade": "A",
+        "hub_distance_m": 3935.2,
+        "name": "CHOP'T",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.98183,
+          40.76131
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "41315226",
+        "crit_violations": 1,
+        "cuisine": "Salads",
+        "distributor": "FRESH EXPRESS INCORPORATED",
+        "distributor_rule": "produce-supplier",
+        "grade": "A",
+        "hub_distance_m": 7336.3,
+        "name": "CHOP'T",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.98787,
+          40.74391
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50179229",
+        "crit_violations": 1,
+        "cuisine": "Salads",
+        "distributor": "TAYLOR FARMS, INC.",
+        "distributor_rule": "produce-supplier",
+        "grade": "A",
+        "hub_distance_m": 6087.3,
+        "name": "THISBOWL NOMAD",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.92327,
+          40.70681
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Brooklyn",
+        "camis": "50124505",
+        "crit_violations": 1,
+        "cuisine": "American",
+        "distributor": "RESTAURANT DEPOT",
+        "distributor_rule": "nearest-hub",
+        "grade": "A",
+        "hub_distance_m": 274.1,
+        "name": "THE ONYX ROOM",
+        "primary_hub": "RESTAURANT DEPOT",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.96478,
+          40.7108
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Brooklyn",
+        "camis": "41016607",
+        "crit_violations": 1,
+        "cuisine": "American",
+        "distributor": "RESTAURANT DEPOT",
+        "distributor_rule": "nearest-hub",
+        "grade": "A",
+        "hub_distance_m": 3765.5,
+        "name": "EAST RIVER",
+        "primary_hub": "RESTAURANT DEPOT",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.99871,
+          40.71388
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50011908",
+        "crit_violations": 5,
+        "cuisine": "Vegetarian",
+        "distributor": "SYSCO",
+        "distributor_rule": "nearest-hub",
+        "grade": "A",
+        "hub_distance_m": 5157.2,
+        "name": "BUDDHA BODAI",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          -73.99773,
+          40.74631
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "boro": "Manhattan",
+        "camis": "50129823",
+        "crit_violations": 4,
+        "cuisine": "Vegetarian",
+        "distributor": "SYSCO",
+        "distributor_rule": "nearest-hub",
+        "grade": "A",
+        "hub_distance_m": 5392.8,
+        "name": "ANIXI",
+        "primary_hub": "SYSCO",
+        "provenance": {
+          "class": "modeled-portfolio",
+          "fetched_at": "2026-08-22",
+          "source": "NYC DOHMH (real establishment) + modeled supplier link"
+        }
+      },
+      "type": "Feature"
+    }
+  ],
+  "provenance": {
+    "class": "modeled-portfolio",
+    "note": "real DOHMH establishments; supplier->site links are MODELED (FSMA-204 gap)"
+  },
+  "type": "FeatureCollection"
+}

@@ -28,6 +28,9 @@
   #read{right:14px;bottom:14px;padding:4px 10px;font-size:10px;color:var(--mut);letter-spacing:.06em}
   #load{position:fixed;inset:0;background:var(--bg);z-index:9;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px;letter-spacing:.16em;text-align:center}
   #hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:4;font-size:10px;color:var(--mut);background:rgba(11,15,26,.9);border:1px solid var(--bd);padding:5px 12px;border-radius:2px}
+  body.light{--bg:#dbe3ec;--panel:#eef3f8;--bd:#c2cfdb;--tx:#26313f;--mut:#6a7686;--amber:#b26a1e;--grn:#2f7d4a}
+  body.light #cls{background:#e6ecf3;color:#5a6675;border-color:#cfd8e2}
+  body.light .panel{background:rgba(238,243,248,.94)}
 </style>
 <div id="cls">UNCLASSIFIED // SIMULATION · BREADCRUMBS · NYC FOOD-SUPPLY RISK · LOCAL / GB10</div>
 <div id="deck"></div>
@@ -49,6 +52,7 @@
   <div class="lbl">LAYERS</div>
   <div class="gp"><button id="heat" class="on">◍ Risk heat</button><button id="pts" class="on">• Restaurants</button></div>
   <div class="gp"><button id="arcs">↳ Supply flow</button><button id="reset">⟲ View</button></div>
+  <div class="gp"><button id="lite">☀ Light / day</button></div>
 </div>
 
 <div id="right" class="panel"><div class="sh"><span>◈ SENTINEL AGENT</span><span id="s_state" style="color:var(--grn)">● IDLE · local</span></div>
@@ -66,6 +70,7 @@
   <div class="row" style="color:var(--mut)">buildings glow by critical-violation density</div>
   <div class="row" style="color:var(--mut)">supply links = MODELED</div>
 </div>
+<div id="rpt" class="panel" style="left:14px;top:56px;width:330px;max-height:44%;overflow-y:auto;display:none;padding:12px 14px;z-index:5"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="color:var(--amber);font-size:11px;letter-spacing:.12em">\u25c8 AGENT REPORT</span><span style="display:flex;gap:6px"><button id="tg" style="background:#0b0f1a;color:var(--amber);border:1px solid var(--amber);font-family:inherit;font-size:10px;padding:4px 8px;cursor:pointer">\u2708 Telegram</button><span id="rpt_x" style="color:var(--mut);cursor:pointer">\u2715</span></span></div><div id="rpt_body" style="font-size:12px;line-height:1.5"></div></div>
 <div id="read" class="panel"></div>
 <div id="hint">zoom in to see individual restaurants · click one for supplier quality</div>
 <div id="load">LOADING BREADCRUMBS · Manhattan + DOHMH + openFDA …</div>
@@ -91,8 +96,284 @@ const HEAT=[[31,107,94,0],[47,125,107],[120,150,96],[224,169,90],[226,120,74],[2
 let rests=[], scorecard=[], scoreByFirm={}, bld={}, blayers={};
 let q='';
 const matchQ=d=>q&&(((d.cuisine||'').toLowerCase().includes(q))||((d.name||'').toLowerCase().includes(q)));
+let light=false;
 let showHeat=true, showPts=true, showArcs=false, recall=null, pulse=0, selId=null, zoom=10.6;
 let mapAffected=new Set();
+const BRIDGE={response:{
+  "allergen_match": null,
+  "compounding_count": 5,
+  "distributor_risk": {
+    "class": "real",
+    "class1": 205,
+    "firm": "DOLE",
+    "recalls": 236
+  },
+  "exposed_count": 5,
+  "exposed_sites": [
+    {
+      "boro": "Manhattan",
+      "camis": "50017041",
+      "class": "modeled",
+      "crit_violations": 11,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "JUST SALAD"
+    },
+    {
+      "boro": "Brooklyn",
+      "camis": "50035721",
+      "class": "modeled",
+      "crit_violations": 10,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "JUST SALAD"
+    },
+    {
+      "boro": "Manhattan",
+      "camis": "50088095",
+      "class": "modeled",
+      "crit_violations": 8,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "SWEETGREEN"
+    },
+    {
+      "boro": "Manhattan",
+      "camis": "50125151",
+      "class": "modeled",
+      "crit_violations": 8,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "JUST SALAD"
+    },
+    {
+      "boro": "Manhattan",
+      "camis": "50161809",
+      "class": "modeled",
+      "crit_violations": 10,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "SALAD DON"
+    }
+  ],
+  "origin": {
+    "class": "real",
+    "commodity_category": "Leafy greens",
+    "commodity_origin": [],
+    "firm_state": "CA",
+    "note": "firm state from openFDA; commodity category inferred from product text; origin from UN Comtrade US-imports preview"
+  },
+  "provenance": {
+    "modeled": [
+      "exposed_sites",
+      "allergen_match",
+      "recommendation"
+    ],
+    "real": [
+      "recall",
+      "compounding_count",
+      "distributor_risk",
+      "origin"
+    ]
+  },
+  "recall": {
+    "allergens": [],
+    "classification": "Class I",
+    "hazard_class": "pathogen",
+    "product_description": "Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107",
+    "reason_for_recall": "Harvest equipment used in harvesting raw iceberg lettuce was tested by  Dole and found to contain Listeria monocytogenes.",
+    "recall_number": "F-0757-2022",
+    "recalling_firm": "DOLE FRESH VEGETABLES INC",
+    "state": "CA"
+  },
+  "recommendation": {
+    "action": "hold",
+    "class": "modeled",
+    "rationale": "hold the recalled lot; swap sourcing to the lowest-class1 distributor to minimize repeat-recall risk",
+    "swap_to": {
+      "basis": "0 Class-I of 1 recalls on file",
+      "class": "real",
+      "class1": 0,
+      "firm": "JETRO",
+      "recalls": 1
+    }
+  }
+},transcript:{
+  "alert_count": 1,
+  "canonical_order": [
+    "watch_feed",
+    "ingest_recall",
+    "trace_forward",
+    "score_risk",
+    "brief",
+    "draft_sms"
+  ],
+  "deduped": false,
+  "entries": [
+    {
+      "agent": "Watcher",
+      "args": {
+        "recall_number": "F-0757-2022"
+      },
+      "concurrent": false,
+      "result": {
+        "fired": true,
+        "recall_number": "F-0757-2022"
+      },
+      "tool": "watch_feed",
+      "ts": "2026-08-22T17:31:14Z"
+    },
+    {
+      "agent": "Watcher",
+      "args": {
+        "recall_number": "F-0757-2022"
+      },
+      "concurrent": false,
+      "result": {
+        "classification": "Class I",
+        "hazard_class": "pathogen",
+        "recall_number": "F-0757-2022",
+        "recalling_firm": "DOLE FRESH VEGETABLES INC"
+      },
+      "tool": "ingest_recall",
+      "ts": "2026-08-22T17:31:14Z"
+    },
+    {
+      "agent": "Risk",
+      "args": {
+        "recalling_firm": "DOLE FRESH VEGETABLES INC"
+      },
+      "concurrent": true,
+      "result": {
+        "class": "real",
+        "class1": 205,
+        "firm": "DOLE",
+        "recalls": 236
+      },
+      "tool": "score_risk.distributor",
+      "ts": "2026-08-22T17:31:14Z"
+    },
+    {
+      "agent": "Tracer",
+      "args": {
+        "recalling_firm": "DOLE FRESH VEGETABLES INC"
+      },
+      "concurrent": true,
+      "result": {
+        "camis_list": [
+          "50017041",
+          "50035721",
+          "50088095",
+          "50125151",
+          "50161809"
+        ],
+        "exposed_count": 5
+      },
+      "tool": "trace_forward",
+      "ts": "2026-08-22T17:31:14Z"
+    },
+    {
+      "agent": "Risk",
+      "args": {
+        "exposed_count": 5
+      },
+      "concurrent": false,
+      "result": {
+        "class": "real",
+        "compounding_count": 5,
+        "distributor_class1": 205
+      },
+      "tool": "score_risk",
+      "ts": "2026-08-22T17:31:14Z"
+    },
+    {
+      "agent": "Briefer",
+      "args": {
+        "recall_number": "F-0757-2022"
+      },
+      "concurrent": false,
+      "result": {
+        "compounding_count": 5,
+        "distributor_class1": 205,
+        "exposed_count": 5,
+        "headline": "DOLE FRESH VEGETABLES INC Class I recall: 5 of your sites exposed (modeled links), 5 with prior critical violations.",
+        "swap_to": "JETRO"
+      },
+      "tool": "brief",
+      "ts": "2026-08-22T17:31:20Z"
+    },
+    {
+      "agent": "Comms",
+      "args": {
+        "recall_number": "F-0757-2022"
+      },
+      "concurrent": false,
+      "result": {
+        "hold_notice": "HOLD NOTICE \u2014 DOLE FRESH VEGETABLES INC Marketside 12oz Classic Salad  UPC:6-811...",
+        "sms": "ALERT: Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107 recalled (Class I, Harvest equipment used in harvesting raw iceberg lettuce was) \u2014 5 of your sites exposed (5 with prior critical violations). HOLD lot and swap sourcing to JETRO."
+      },
+      "tool": "draft_sms",
+      "ts": "2026-08-22T17:31:20Z"
+    },
+    {
+      "agent": "Comms",
+      "args": {
+        "channel": "telegram",
+        "recall_number": "F-0757-2022"
+      },
+      "concurrent": false,
+      "result": {
+        "channel_attempted": "telegram",
+        "fallback_reason": "telegram unconfigured (no token/chat_id)",
+        "ok": true,
+        "sent_via": "mock-phone"
+      },
+      "tool": "send",
+      "ts": "2026-08-22T17:31:20Z"
+    }
+  ],
+  "provenance": {
+    "class": "real",
+    "source": "agent.swarm transcript log"
+  },
+  "recall_number": "F-0757-2022"
+},brief:{
+  "class": "instrument-not-oracle",
+  "classification": "Class I",
+  "compounding_count": 5,
+  "distributor_class1": 205,
+  "distributor_recalls": 236,
+  "exposed_count": 5,
+  "grounded_in": "M2 Response (sim.respond)",
+  "headline": "DOLE FRESH VEGETABLES INC Class I recall: 5 of your sites exposed (modeled links), 5 with prior critical violations.",
+  "provenance": {
+    "modeled": [
+      "exposed_sites",
+      "allergen_match",
+      "recommendation"
+    ],
+    "real": [
+      "recall",
+      "compounding_count",
+      "distributor_risk",
+      "origin"
+    ]
+  },
+  "recall_number": "F-0757-2022",
+  "recalling_firm": "DOLE FRESH VEGETABLES INC",
+  "recommendation": "hold",
+  "swap_to": "JETRO",
+  "swap_to_class1": 0
+},sms:{
+  "class": "grounded",
+  "compounding_count": 5,
+  "exposed_count": 5,
+  "hold_notice": "HOLD NOTICE \u2014 DOLE FRESH VEGETABLES INC Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107\nRecall: F-0757-2022 (Class I)\nAction: hold all inventory from this supplier; do not serve.\nReason: Harvest equipment used in harvesting raw iceberg lettuce was tested by  Dole and found to contain Listeria monocytogenes.\nAffected sites: 5 (modeled links)",
+  "sms": "ALERT: Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107 recalled (Class I, Harvest equipment used in harvesting raw iceberg lettuce was) \u2014 5 of your sites exposed (5 with prior critical violations). HOLD lot and swap sourcing to JETRO.",
+  "swap_to": "JETRO"
+}};
+function fmtR(x){if(!x)return'';if(typeof x==='string')return x.slice(0,64);if(x.camis_list)return x.camis_list.length+' sites: '+x.camis_list.slice(0,3).join(', ')+'…';if(x.firm)return x.firm+' · '+(x.class1||0)+' Class-I / '+(x.recalls||0);if(x.compounding_count!=null)return x.compounding_count+' with critical violations';if(x.classification)return x.classification+' · '+(x.hazard_class||'');if(x.recall_number)return 'recall '+x.recall_number+' fired';if(x.headline)return x.headline;return JSON.stringify(x).slice(0,64);}
+
 
 const lighting=new LightingEffect({ambient:new AmbientLight({color:[255,255,255],intensity:1.05}),
   sun:new SunLight({timestamp:1553990400000,color:[255,240,220],intensity:1.1})});
@@ -128,7 +409,8 @@ function boot(rj,scj,man){
 function bldLayer(key){
   return new PolygonLayer({id:'bld-'+key,data:bld[key],extruded:true,wireframe:false,
     getPolygon:d=>d.p, getElevation:d=>d.h,
-    getFillColor:d=>{const t=Math.min(1,d.h/130),rk=d.rk||0;const n0=26+t*22,n1=32+t*24,n2=46+t*30;const k=rk*0.6,r0=150,r1=112,r2=86;return [n0+(r0-n0)*k, n1+(r1-n1)*k, n2+(r2-n2)*k];},  // neutral, glowing warm where risk is high
+    getFillColor:d=>{const t=Math.min(1,d.h/130),rk=d.rk||0;const n0=light?188-t*40:26+t*22,n1=light?194-t*38:32+t*24,n2=light?204-t*34:46+t*30;const k=rk*0.6,r0=light?196:150,r1=light?128:112,r2=light?110:86;return [n0+(r0-n0)*k, n1+(r1-n1)*k, n2+(r2-n2)*k];},
+    updateTriggers:{getFillColor:light},  // neutral, glowing warm where risk is high
     material:{ambient:0.55,diffuse:0.6,shininess:16,specularColor:[30,38,54]},
     pickable:false, parameters:{depthTest:true}});
 }
@@ -229,23 +511,40 @@ d_x.onclick=()=>{selId=null;detail.style.display='none';};
 // ── recall sim ──
 let ramp=null;
 document.getElementById('rec').onclick=()=>{const rb=document.getElementById('rec');
-  if(recall){recall=null;mapAffected=new Set();rb.classList.remove('armed');rb.innerHTML='⚠ SIMULATE RECALL <span class="n">demo</span>';m_st.textContent='NOMINAL';m_st.style.color='var(--grn)';m_af_w.classList.remove('crit');m_af.textContent='0';clearInterval(ramp);document.getElementById('alerts').innerHTML='';s_state.textContent='● IDLE · local';s_state.style.color='var(--grn)';return;}
-  const cand=HUBS.filter(h=>rests.some(r=>HUBS[r.hub].key===h.key)).sort((a,b)=>b.class1-a.class1);recall=cand[0];
-  const served=rests.filter(r=>HUBS[r.hub].key===recall.key);mapAffected=new Set(served.map(r=>r.i));
-  const cg=served.filter(r=>r.grade==='C').length;
-  rb.classList.add('armed');rb.innerHTML='✓ CLEAR RECALL';m_st.textContent='RECALL ACTIVE';m_st.style.color='var(--red)';
-  flyTo({longitude:recall.pos[0],latitude:recall.pos[1]});s_state.textContent='● ACTIVE · Nemotron/local';s_state.style.color='var(--amber)';
-  [()=>{alertln('CRIT',`Class I recall — ${recall.name}`);feed('SENTINEL ▸ <b>ingest_recall</b>(openFDA)');},
-   ()=>feed(`SENTINEL ▸ <b>match_supplier</b>() → ${recall.name} · ${recall.class1} prior Class-I`,'w'),
-   ()=>feed(`SENTINEL ▸ <b>trace_forward</b>() → ${served.length} NYC establishments [MODELED]`),
-   ()=>{alertln('WARN',`${cg} exposed sites carry a C grade`);feed(`SENTINEL ▸ <b>flag_compounding</b>() → ${cg} grade-C`,'w');},
-   ()=>{feed(`SENTINEL ▸ <b>brief</b>() → "${served.length} exposed. Hold the lot; swap to a supplier with a lower Class-I rate on file."`);s_state.textContent='● WATCHING · local';s_state.style.color='var(--grn)';},
-  ].forEach((f,i)=>setTimeout(f,i*750));
-  m_af_w.classList.add('crit');let n=0;const N=served.length;ramp=setInterval(()=>{n=Math.min(N,n+Math.ceil(N/40));m_af.textContent=n.toLocaleString();if(n>=N)clearInterval(ramp);},40);};
+  if(recall){recall=null;mapAffected=new Set();rb.classList.remove('armed');rb.innerHTML='\u26a0 SIMULATE RECALL <span class="n">live</span>';m_st.textContent='NOMINAL';m_st.style.color='var(--grn)';m_af_w.classList.remove('crit');m_af.textContent='0';clearInterval(ramp);document.getElementById('alerts').innerHTML='';document.getElementById('feed').innerHTML='';s_state.textContent='\u25cf IDLE \u00b7 local';s_state.style.color='var(--grn)';document.getElementById('rpt').style.display='none';return;}
+  const R=BRIDGE.response, rc=R.recall, camis=new Set(R.exposed_sites.map(x=>String(x.camis)));
+  const exposed=rests.filter(r=>camis.has(String(r.id)));
+  recall={name:rc.recalling_firm,key:'DOLE',class1:R.distributor_risk.class1,pos:exposed.length?[exposed[0].lon,exposed[0].lat]:HUBS[0].pos};
+  mapAffected=new Set();
+  rb.classList.add('armed');rb.innerHTML='\u2713 CLEAR RECALL';m_st.textContent='RECALL ACTIVE';m_st.style.color='var(--red)';
+  s_state.textContent='\u25cf ACTIVE \u00b7 Nemotron/local';s_state.style.color='var(--amber)';
+  if(exposed.length){const clat=exposed.reduce((a,r)=>a+r.lat,0)/exposed.length,clon=exposed.reduce((a,r)=>a+r.lon,0)/exposed.length;flyTo({longitude:clon,latitude:clat,zoom:13.4});}
+  alertln('CRIT',`Class I \u00b7 ${rc.recalling_firm}: ${(rc.reason_for_recall||'').slice(0,54)}\u2026`);
+  // REAL agent transcript from the swarm (bridge/transcript.json)
+  const T=BRIDGE.transcript.entries||[];
+  T.forEach((e,idx)=>setTimeout(()=>{const who=e.agent||e.tool||'agent';feed(`SENTINEL \u25b8 <b>${who}</b> \u2192 ${fmtR(e.result||e.args)}`, who==='Risk'?'w':'');}, idx*600));
+  // infection SPREADS across the real exposed sites
+  exposed.forEach((r,idx)=>setTimeout(()=>{mapAffected.add(r.i);m_af.textContent=mapAffected.size;}, 700+idx*450));
+  m_af_w.classList.add('crit');
+  setTimeout(()=>{m_af.textContent=R.exposed_count;s_state.textContent='\u25cf WATCHING \u00b7 local';s_state.style.color='var(--grn)';showReport();}, 900+exposed.length*450+400);
+};
+function showReport(){const R=BRIDGE.response,b=BRIDGE.brief,rc=R.recall,rp=document.getElementById('rpt');
+  rp.style.display='block';
+  document.getElementById('rpt_body').innerHTML=
+    `<div style="color:var(--red);font-size:11px;letter-spacing:.1em">FDA CLASS I \u00b7 EXPOSURE REPORT \u00b7 ${rc.recall_number||''}</div>`+
+    `<div style="margin:6px 0;color:var(--tx)"><b>${rc.recalling_firm}</b> \u2014 ${(rc.reason_for_recall||'').slice(0,120)}</div>`+
+    `<div style="color:var(--mut)">Exposed sites: <b style="color:var(--red)">${R.exposed_count}</b> \u00b7 with critical violations: <b>${R.compounding_count}</b></div>`+
+    `<div style="color:var(--mut)">Supplier risk: ${R.distributor_risk.firm} \u2014 ${R.distributor_risk.class1} Class-I recalls on file</div>`+
+    `<div style="margin-top:6px;color:var(--grn)">\u25b8 ${(b&&b.recommendation)||'Hold the lot; swap to a verified-record supplier'}</div>`+
+    `<div style="margin-top:6px;font-size:10px;color:var(--mut)">Measures: hold + segregate the recalled lot; do not serve; notify DOHMH; per FDA 21 CFR 7 / FSMA 204 traceability. <span style="color:#4a566e">[real: recalls, violations, distributor \u00b7 modeled: site links]</span></div>`;}
+document.getElementById('rec').onclick=document.getElementById('rec').onclick;
 document.getElementById('heat').onclick=e=>{showHeat=!showHeat;e.target.classList.toggle('on',showHeat);};
 document.getElementById('pts').onclick=e=>{showPts=!showPts;e.target.classList.toggle('on',showPts);};
 document.getElementById('arcs').onclick=e=>{showArcs=!showArcs;e.target.classList.toggle('on',showArcs);};
 document.getElementById('reset').onclick=()=>{flyTo({...HOME});};
+document.getElementById('rpt_x').onclick=()=>{document.getElementById('rpt').style.display='none';};
+document.getElementById('tg').onclick=()=>{const t=document.getElementById('tg');t.textContent='\u2708 sending\u2026';fetch('http://localhost:8899/alert',{method:'POST'}).then(()=>t.textContent='\u2713 sent').catch(()=>{t.textContent=(BRIDGE.sms.sms||'drafted').slice(0,18)+'\u2026 (bot pending)';});};
+document.getElementById('lite').onclick=e=>{light=!light;document.body.classList.toggle('light',light);e.target.classList.toggle('on',light);e.target.textContent=light?'\u263e Dark / night':'\u2600 Light / day';dk.setProps({parameters:{clearColor:light?[.86,.90,.94,1]:[.027,.043,.07,1]}});};
 document.getElementById('q').oninput=e=>{q=e.target.value.trim().toLowerCase();const n=q?rests.filter(matchQ).length:0;document.getElementById('qn').textContent=q?(n+' match'+(n===1?'':'es')+' glowing'):'';};
 
 
