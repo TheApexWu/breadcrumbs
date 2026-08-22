@@ -211,21 +211,11 @@ What looks like time isn't:
 What's rendered is latest-state: DOHMH latest grade per establishment, distributor **lifetime**
 recall counts.
 
-### The engine already exists, one file over
+### A time axis would be new work
 
-`globe/index.html` (maritime, frozen on `main`) has a **complete sim clock** that the food fork dropped:
-
-```
-DAY0 / STRIKE / simT          sim time base
-playing, speed                play-pause
-SPEEDS=[120,600,1800,7200]    4 speed multipliers
-advance()                     per-frame vessel interpolation + visibility window
-triggerStrike()               event fires when simT crosses a timestamp
-clock + progress bar          scrub UI
-```
-
-It replays real AIS tracks across a 24-hour day and detonates the Key Bridge allision at the right
-moment. Porting that pattern to food is a **known-good path, not new invention.**
+There is no sim clock anywhere in the food consoles — no `simT`, no play/pause, no speed
+multiplier, no scrub UI. Building a timelapse means building that from scratch against the recall
+corpus. Scope it as new work, not as a port.
 
 ### The data has dates — but nothing persists a history
 
@@ -234,7 +224,7 @@ moment. Porting that pattern to food is a **known-good path, not new invention.*
 | `nyc-restaurants.json` | `date` (e.g. `2026-08-18`) | **one** date per establishment — 5,873 in 2025, 11,331 in 2026 |
 | `distributor-scorecard.json` | `recent` (e.g. `20240208` DOLE) | **one** date per firm — lifetime counts otherwise undated |
 | `food-types.json` | none | categorized text counts |
-| raw openFDA recalls | not cached at all | M0's job |
+| `data/recalls.json` | `recall_initiation_date` on all **29,309** rows | **full history — M0 cached it.** This is the timelapse corpus. |
 
 `scripts/fetch_nyc_food.py:31` queries DOHMH `43nn-pn8j` with `$order=inspection_date DESC
 &$limit=50000` and then keeps **the latest graded row per establishment** — the history is fetched and

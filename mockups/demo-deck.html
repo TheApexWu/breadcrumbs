@@ -1,0 +1,773 @@
+<meta charset="utf-8">
+<title>Breadcrumbs Demo Deck</title>
+<style>
+:root{
+  --paper:#fbfbfc; --card:#ffffff; --ink:#12171f; --ink2:#4a5666; --faint:#8894a4;
+  --rule:#dde2e8; --rule2:#eceff3;
+  --brand:#2b8fa1; --brand-soft:#e6f4f6;
+  --real:#2b8fa1; --modeled:#a8770f; --modeled-soft:#fdf6e4;
+  --crit:#c8383d; --crit-soft:#fdeced; --ok:#2c8f42;
+  --note-bg:#f4f6f8; --note-rule:#c9d2dc;
+  --screen:#070b12; --screen-panel:#0b111c; --screen-line:#1b2740; --screen-ink:#c3ccdd;
+  --screen-mut:#6b7a95; --screen-brand:#3fb6c9; --screen-amber:#e0a95a; --screen-crit:#e5484d;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1319; --card:#141a22; --ink:#e3e8ee; --ink2:#a4b0bf; --faint:#6f7d8d;
+    --rule:#28313c; --rule2:#1d242d;
+    --brand:#4fbdd0; --brand-soft:#11242a;
+    --real:#4fbdd0; --modeled:#d29922; --modeled-soft:#2a2211;
+    --crit:#e5484d; --crit-soft:#2c1416; --ok:#3fb950;
+    --note-bg:#171e26; --note-rule:#39434f;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1319; --card:#141a22; --ink:#e3e8ee; --ink2:#a4b0bf; --faint:#6f7d8d;
+  --rule:#28313c; --rule2:#1d242d;
+  --brand:#4fbdd0; --brand-soft:#11242a;
+  --real:#4fbdd0; --modeled:#d29922; --modeled-soft:#2a2211;
+  --crit:#e5484d; --crit-soft:#2c1416; --ok:#3fb950;
+  --note-bg:#171e26; --note-rule:#39434f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:48px 24px 120px;display:flex;flex-direction:column;gap:56px}
+
+/* ---- masthead ---- */
+.mast{display:flex;flex-direction:column;gap:10px;padding-bottom:28px;border-bottom:2px solid var(--ink)}
+.mast h1{margin:0;font-size:30px;line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
+.mast .sub{color:var(--ink2);max-width:65ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.meta span{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink2);border:1px solid var(--rule);padding:3px 8px}
+
+/* ---- slide ---- */
+.slide{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule);background:var(--card)}
+.shead{display:flex;align-items:baseline;gap:14px;padding:16px 22px;border-bottom:1px solid var(--rule)}
+.snum{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.1em;flex:none}
+.shead h2{margin:0;font-size:20px;line-height:1.25;letter-spacing:-.005em;flex:1;text-wrap:balance}
+.stime{font-family:var(--mono);font-size:11px;color:var(--faint);flex:none;letter-spacing:.06em}
+.sbody{padding:26px 22px;display:flex;flex-direction:column;gap:22px}
+.sbody > p{margin:0;max-width:65ch;color:var(--ink2)}
+.sbody > p.lead{color:var(--ink);font-size:18px;max-width:60ch}
+
+/* ---- speaker notes ---- */
+.notes{border-top:1px solid var(--note-rule);background:var(--note-bg);padding:18px 22px;
+  display:flex;flex-direction:column;gap:10px}
+.notes h3{margin:0;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint);font-weight:600}
+.notes p{margin:0;font-size:14.5px;line-height:1.6;color:var(--ink2);max-width:70ch}
+.notes p.say{color:var(--ink);border-left:3px solid var(--brand);padding-left:12px}
+.notes p.say em{font-style:normal;color:var(--brand)}
+.notes p.beat{font-family:var(--mono);font-size:12.5px;color:var(--ink2)}
+.notes p.beat b{color:var(--crit)}
+.notes ul{margin:0;padding-left:18px;font-size:14.5px;color:var(--ink2);line-height:1.6}
+.notes ul li{margin:3px 0}
+
+/* ---- figure ---- */
+figure{margin:0;display:flex;flex-direction:column;gap:8px}
+figure > .fig{overflow-x:auto;border:1px solid var(--rule2);background:var(--paper)}
+figure svg{display:block;width:100%;height:auto;min-width:520px}
+figcaption{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em}
+.fig.screen{background:var(--screen);border-color:#000}
+
+/* ---- bits ---- */
+code,.m{font-family:var(--mono);font-size:.88em}
+code{background:var(--rule2);padding:1px 5px;border:1px solid var(--rule2)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule2);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);font-weight:600;border-bottom:1px solid var(--rule)}
+td.num{text-align:right;font-family:var(--mono)}
+.tw{overflow-x:auto}
+.big{display:flex;flex-wrap:wrap;gap:28px}
+.big div{display:flex;flex-direction:column;gap:2px}
+.big .n{font-family:var(--mono);font-size:34px;line-height:1;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.big .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 7px;border:1px solid currentColor;white-space:nowrap}
+.t-real{color:var(--real)} .t-mod{color:var(--modeled)} .t-crit{color:var(--crit)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.panel{border:1px solid var(--rule);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.panel h4{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);font-weight:600}
+.panel ul{margin:0;padding-left:17px;font-size:14px;color:var(--ink2);line-height:1.55}
+.warn{border-left:3px solid var(--crit);background:var(--crit-soft);padding:12px 14px;font-size:14.5px}
+.warn b{color:var(--crit)}
+.slot{border:2px dashed var(--rule);padding:14px 16px;font-family:var(--mono);font-size:12px;
+  color:var(--faint);line-height:1.6}
+.slot b{color:var(--ink2)}
+hr.thin{border:none;border-top:1px solid var(--rule2);margin:0}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <h1>BREADCRUMBS — demo deck</h1>
+  <p class="sub">Speaker script and diagrams for the Dell&nbsp;×&nbsp;NVIDIA AI Factory hackathon.
+  Every figure is drawn from committed data. Speaker notes sit directly under each slide.</p>
+  <div class="meta">
+    <span>Aug 22 2026</span><span>90-sec video → 18:00</span><span>Top-8 pitch → 19:30, 5 min</span>
+    <span>ralph e22220b · food 0ce1d32</span><span>12 slides + 2 internal</span>
+  </div>
+</header>
+
+<!-- ═══════════════ 1 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">01</span><h2>Forty-eight million</h2><span class="stime">0:00–0:40</span></div>
+  <div class="sbody">
+    <div class="big">
+      <div><span class="n" style="color:var(--crit)">48,000,000</span><span class="l">sickened per year · CDC</span></div>
+      <div><span class="n" style="color:var(--crit)">3,000</span><span class="l">deaths per year</span></div>
+      <div><span class="n">~3 days</span><span class="l">to trace exposure today</span></div>
+      <div><span class="n" style="color:var(--ok)">seconds</span><span class="l">with breadcrumbs, offline</span></div>
+    </div>
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 190" role="img" aria-label="Timeline comparing three days of phone calls against a seconds-long trace">
+          <text x="0" y="16" font-family="ui-monospace,monospace" font-size="11" fill="var(--faint)" letter-spacing="1.4">TODAY</text>
+          <line x1="0" y1="46" x2="820" y2="46" stroke="var(--rule)" stroke-width="1"/>
+          <g font-family="ui-monospace,monospace" font-size="11" fill="var(--ink2)">
+            <circle cx="4" cy="46" r="4" fill="var(--crit)"/><text x="0" y="68">recall posts</text>
+            <circle cx="210" cy="46" r="4" fill="var(--modeled)"/><text x="180" y="68">call distributor</text>
+            <circle cx="420" cy="46" r="4" fill="var(--modeled)"/><text x="386" y="68">wait for invoices</text>
+            <circle cx="630" cy="46" r="4" fill="var(--modeled)"/><text x="600" y="68">cross-ref by hand</text>
+            <circle cx="818" cy="46" r="4" fill="var(--ok)"/><text x="762" y="68">answer</text>
+          </g>
+          <text x="836" y="50" font-family="ui-monospace,monospace" font-size="13" fill="var(--crit)">72h</text>
+          <text x="0" y="120" font-family="ui-monospace,monospace" font-size="11" fill="var(--faint)" letter-spacing="1.4">BREADCRUMBS</text>
+          <line x1="0" y1="150" x2="46" y2="150" stroke="var(--real)" stroke-width="6"/>
+          <line x1="46" y1="150" x2="820" y2="150" stroke="var(--rule2)" stroke-width="1" stroke-dasharray="3 5"/>
+          <circle cx="4" cy="150" r="4" fill="var(--crit)"/>
+          <circle cx="46" cy="150" r="4" fill="var(--ok)"/>
+          <text x="0" y="174" font-family="ui-monospace,monospace" font-size="11" fill="var(--ink2)">recall posts → traced, briefed, alert sent</text>
+          <text x="836" y="154" font-family="ui-monospace,monospace" font-size="13" fill="var(--ok)">sec</text>
+        </svg>
+      </div>
+      <figcaption>The gap the product closes. Same event, two clocks.</figcaption>
+    </figure>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“Forty-eight million Americans get sick from food every year. When the FDA announces a recall, the clock starts — and for the restaurant group that bought that lot, the first question is stupidly simple. <em>Did we get any of it?</em>”</p>
+    <p class="say">“Right now, answering that takes three days of phone calls to distributors. Federal law — FSMA Rule 204 — says they have to be able to answer it. The data to answer it doesn’t flow. That’s the gap.”</p>
+    <p class="beat"><b>BEAT.</b> Land “three days of phone calls” and stop. Let it sit for two seconds before slide 2.</p>
+    <p>⚠️ Verify the 48M CDC figure and put the year on the slide before you go on stage. It is the one number here that isn’t ours.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 2 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">02</span><h2>Why it has to be local</h2><span class="stime">0:40–1:25</span></div>
+  <div class="sbody">
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 260" role="img" aria-label="What the agent must know versus what no operator will send to a cloud model">
+          <rect x="0" y="24" width="380" height="212" fill="none" stroke="var(--rule)"/>
+          <text x="16" y="48" font-family="ui-monospace,monospace" font-size="11" fill="var(--faint)" letter-spacing="1.4">WHAT THE AGENT MUST KNOW</text>
+          <g font-family="ui-monospace,monospace" font-size="14" fill="var(--ink)">
+            <text x="16" y="86">supplier contracts</text>
+            <text x="16" y="118">unit margins</text>
+            <text x="16" y="150">sourcing routes</text>
+            <text x="16" y="182">site violation history</text>
+            <text x="16" y="214">which lot went where</text>
+          </g>
+          <rect x="520" y="24" width="380" height="212" fill="none" stroke="var(--crit)"/>
+          <text x="536" y="48" font-family="ui-monospace,monospace" font-size="11" fill="var(--crit)" letter-spacing="1.4">WHAT NO OPERATOR WILL POST TO A CLOUD LLM</text>
+          <text x="536" y="106" font-family="ui-monospace,monospace" font-size="16" fill="var(--crit)">all of it</text>
+          <text x="536" y="146" font-family="ui-monospace,monospace" font-size="12" fill="var(--ink2)">trade secrets, every line</text>
+          <text x="536" y="170" font-family="ui-monospace,monospace" font-size="12" fill="var(--ink2)">and they are right not to</text>
+          <line x1="392" y1="130" x2="508" y2="130" stroke="var(--rule)" stroke-width="1.5"/>
+          <path d="M498 124 l10 6 -10 6" fill="none" stroke="var(--rule)" stroke-width="1.5"/>
+          <g stroke="var(--crit)" stroke-width="3"><line x1="434" y1="112" x2="466" y2="148"/><line x1="466" y1="112" x2="434" y2="148"/></g>
+          <text x="404" y="176" font-family="ui-monospace,monospace" font-size="11" fill="var(--crit)">the product cannot exist in the cloud</text>
+        </svg>
+      </div>
+      <figcaption>Not a preference. A structural constraint — and the reason this is a GB10 product.</figcaption>
+    </figure>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“To answer that question the agent has to know your supplier contracts, your margins, your sourcing. That is the most sensitive data a food business owns. No operator is pasting it into a cloud model, and they’re right not to.”</p>
+    <p class="say">“So the choice isn’t <em>local is nice</em>. It’s local or it doesn’t exist. Always-on, watching a live feed, holding trade secrets, answering in seconds — that combination is only possible on a box they own. That’s why this is a GB10 product and not a SaaS dashboard.”</p>
+    <p class="beat"><b>PACE.</b> This is the strategic claim. Slow down. Everything after it is evidence for it.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 3 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">03</span><h2>Four risk dimensions, scored live</h2><span class="stime">1:25–1:50</span></div>
+  <div class="sbody">
+    <p class="lead">Not a report you pull. A continuous feed, all four axes from real federal and city data.</p>
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 260" role="img" aria-label="Four live risk dimensions with their record counts">
+          <g font-family="ui-monospace,monospace">
+            <rect x="0" y="14" width="210" height="130" fill="none" stroke="var(--real)"/>
+            <text x="14" y="52" font-size="26" fill="var(--real)">29,309</text>
+            <text x="14" y="74" font-size="11" fill="var(--ink)">Recall exposure</text>
+            <text x="14" y="96" font-size="9.5" fill="var(--ink2)">FDA recalls × your suppliers</text>
+            <text x="14" y="112" font-size="9.5" fill="var(--ink2)">× your sites → “am I hit”</text>
+            <text x="14" y="134" font-size="9" fill="var(--faint)">openFDA food/enforcement</text>
+
+            <rect x="230" y="14" width="210" height="130" fill="none" stroke="#a24fd0"/>
+            <text x="244" y="52" font-size="26" fill="#a24fd0">6,896</text>
+            <text x="244" y="74" font-size="11" fill="var(--ink)">Allergen radar</text>
+            <text x="244" y="96" font-size="9.5" fill="var(--ink2)">Undeclared-allergen recalls —</text>
+            <text x="244" y="112" font-size="9.5" fill="var(--ink2)">the #2 cause, 15× E. coli</text>
+            <text x="244" y="134" font-size="9" fill="var(--faint)">tagged at load, real</text>
+
+            <rect x="460" y="14" width="210" height="130" fill="none" stroke="var(--crit)"/>
+            <text x="474" y="52" font-size="26" fill="var(--crit)">205</text>
+            <text x="474" y="74" font-size="11" fill="var(--ink)">Supplier risk</text>
+            <text x="474" y="96" font-size="9.5" fill="var(--ink2)">Dole Class-I history. Fresh</text>
+            <text x="474" y="112" font-size="9.5" fill="var(--ink2)">Express 110 · Sysco 24</text>
+            <text x="474" y="134" font-size="9" fill="var(--faint)">live distributor scorecards</text>
+
+            <rect x="690" y="14" width="210" height="130" fill="none" stroke="var(--modeled)"/>
+            <text x="704" y="52" font-size="26" fill="var(--modeled)">155,091</text>
+            <text x="704" y="74" font-size="11" fill="var(--ink)">Establishment risk</text>
+            <text x="704" y="96" font-size="9.5" fill="var(--ink2)">Critical food-handling</text>
+            <text x="704" y="112" font-size="9.5" fill="var(--ink2)">violations across 26,386 sites</text>
+            <text x="704" y="134" font-size="9" fill="var(--faint)">NYC DOHMH</text>
+          </g>
+          <line x1="0" y1="172" x2="900" y2="172" stroke="var(--rule)"/>
+          <g font-family="ui-monospace,monospace" font-size="10" fill="var(--ink2)">
+            <text x="0" y="196" fill="var(--faint)" font-size="9" letter-spacing="1.4">AND YOU CHOOSE WHAT WAKES YOU — IN PLAIN ENGLISH OR TOGGLES</text>
+            <text x="0" y="220">severity <tspan fill="var(--ink)">Class I only</tspan></text>
+            <text x="200" y="220">scope <tspan fill="var(--ink)">my suppliers + 2 blocks</tspan></text>
+            <text x="470" y="220">allergens <tspan fill="var(--ink)">peanut · tree-nut · sesame</tspan></text>
+            <text x="0" y="242">channel <tspan fill="var(--ink)">Telegram now, else digest</tspan></text>
+            <text x="270" y="242">quiet hours <tspan fill="var(--ink)">off for Class I</tspan></text>
+            <text x="560" y="242" fill="var(--faint)">→ kills alert fatigue</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>Every count is a real record in the local corpus. The preference profile is <span class="m">sim/operator.py::preferences()</span>.</figcaption>
+    </figure>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“It isn’t one query. Four risk dimensions run continuously, all from real federal and city data: recall exposure, allergen radar, supplier history, and the receiving site’s own handling record.”</p>
+    <p class="say">“And you tell it what wakes you — in plain English. Class One only, my suppliers, undeclared sesame, Telegram. That’s what makes always-on survivable instead of alert fatigue.”</p>
+    <p><b>155,091 vs 26,386</b> — those are violation <em>records</em> and distinct <em>sites</em>. Both are correct; don’t let them get conflated if someone asks.</p>
+    <p>The concept pages say 29,310 recalls. The cache holds <b>29,309</b>. Use the cache number; it’s the one you can show.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 4 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">04</span><h2>Pull the cable</h2><span class="stime">demo · 0:12–0:22</span></div>
+  <div class="sbody">
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 250" role="img" aria-label="Everything the demo needs is cached on the box; the only external calls happened once, before the demo">
+          <text x="0" y="14" font-family="ui-monospace,monospace" font-size="11" fill="var(--faint)" letter-spacing="1.4">FETCHED ONCE — BEFORE THE DEMO</text>
+          <g font-family="ui-monospace,monospace" font-size="11" fill="var(--ink2)">
+            <rect x="0" y="26" width="150" height="30" fill="none" stroke="var(--rule)"/><text x="10" y="45">openFDA</text>
+            <rect x="0" y="62" width="150" height="30" fill="none" stroke="var(--rule)"/><text x="10" y="81">DOHMH Socrata</text>
+            <rect x="0" y="98" width="150" height="30" fill="none" stroke="var(--rule)"/><text x="10" y="117">UN Comtrade</text>
+            <rect x="0" y="134" width="150" height="30" fill="none" stroke="var(--rule)"/><text x="10" y="153">NYC buildings</text>
+          </g>
+          <g stroke="var(--rule)" stroke-width="1" fill="none">
+            <path d="M150 41 H210 V95"/><path d="M150 77 H210"/><path d="M150 113 H210 V95"/><path d="M150 149 H210 V95"/>
+          </g>
+          <line x1="210" y1="95" x2="268" y2="95" stroke="var(--rule)"/>
+          <path d="M258 89 l10 6 -10 6" fill="none" stroke="var(--rule)"/>
+          <rect x="270" y="60" width="180" height="70" fill="var(--brand-soft)" stroke="var(--real)"/>
+          <text x="360" y="88" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--real)">local disk + MongoDB</text>
+          <text x="360" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink2)">29,309 · 17,204 · 45,194</text>
+          <g stroke="var(--crit)" stroke-width="2.5" stroke-linecap="round">
+            <line x1="228" y1="176" x2="252" y2="200"/><line x1="252" y1="176" x2="228" y2="200"/>
+          </g>
+          <text x="150" y="222" font-family="ui-monospace,monospace" font-size="11" fill="var(--crit)">network cut here — nothing downstream notices</text>
+          <line x1="450" y1="95" x2="508" y2="95" stroke="var(--rule)"/>
+          <path d="M498 89 l10 6 -10 6" fill="none" stroke="var(--rule)"/>
+          <rect x="510" y="34" width="180" height="122" fill="none" stroke="var(--rule)"/>
+          <text x="600" y="56" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="var(--faint)" letter-spacing="1.2">ON THE BOX</text>
+          <g font-family="ui-monospace,monospace" font-size="11" fill="var(--ink)">
+            <text x="600" y="82" text-anchor="middle">Nemotron / NemoClaw</text>
+            <text x="600" y="104" text-anchor="middle">the swarm</text>
+            <text x="600" y="126" text-anchor="middle">bridge :8899</text>
+            <text x="600" y="148" text-anchor="middle">3D console</text>
+          </g>
+          <line x1="690" y1="95" x2="748" y2="95" stroke="var(--rule)"/>
+          <path d="M738 89 l10 6 -10 6" fill="none" stroke="var(--rule)"/>
+          <rect x="750" y="60" width="150" height="70" fill="none" stroke="var(--ok)"/>
+          <text x="825" y="90" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--ok)">answer</text>
+          <text x="825" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink2)">seconds, offline</text>
+        </svg>
+      </div>
+      <figcaption>Hard rule 4: every dataset fetched once and cached. Demo-time network is decorative.</figcaption>
+    </figure>
+    <div class="warn"><b>Highest-risk item in the whole demo.</b> <span class="m">globe/food3d.html:73</span> still loads deck.gl from <span class="m">unpkg.com</span>. Pull the cable with that line in place and the screen goes white. Vendor it locally before you record.</div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“It runs entirely on the GB10. No cloud. Their supplier list never leaves the building — and I’m about to unplug the network to prove it.”</p>
+    <p class="beat"><b>DO IT ON CAMERA.</b> Physically pull the cable in frame. Everything after this point has to survive it, so rehearse the whole run at least once with the cable actually out.</p>
+    <p>If Telegram is at all uncertain on the night, the mock-phone fallback writes <span class="m">bridge/out/alert.json</span> with zero network and looks identical on camera. Decide which one you’re using before you record, not during.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 5 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">05</span><h2>A recall lands</h2><span class="stime">demo · 0:22–0:52</span></div>
+  <div class="sbody">
+    <div class="cols">
+      <div class="panel">
+        <h4>The recall — real openFDA</h4>
+        <table>
+          <tr><td>id</td><td class="m">F-0757-2022</td></tr>
+          <tr><td>firm</td><td class="m">DOLE FRESH VEGETABLES INC</td></tr>
+          <tr><td>class</td><td class="m" style="color:var(--crit)">Class I</td></tr>
+          <tr><td>hazard</td><td class="m">pathogen</td></tr>
+          <tr><td>state</td><td class="m">CA</td></tr>
+        </table>
+        <p style="margin:0;font-size:13.5px;color:var(--ink2)">“Marketside 12oz Classic Salad · UPC 6-81131-32894-4 · SKU 3107” — harvest equipment for raw iceberg lettuce tested positive for <em>Listeria monocytogenes</em>.</p>
+      </div>
+      <div class="panel">
+        <h4>The join that answers it</h4>
+        <div class="fig" style="border:none">
+          <svg viewBox="0 0 380 190" role="img" aria-label="The exposure join matches recall recalling_firm to operator_sites distributor">
+            <rect x="0" y="10" width="170" height="52" fill="none" stroke="var(--real)"/>
+            <text x="10" y="30" font-family="ui-monospace,monospace" font-size="9" fill="var(--real)">recalls</text>
+            <text x="10" y="48" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink)">.recalling_firm</text>
+            <rect x="210" y="10" width="170" height="52" fill="none" stroke="var(--modeled)"/>
+            <text x="220" y="30" font-family="ui-monospace,monospace" font-size="9" fill="var(--modeled)">operator_sites</text>
+            <text x="220" y="48" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink)">.distributor</text>
+            <line x1="170" y1="36" x2="210" y2="36" stroke="var(--ink2)" stroke-width="1.5"/>
+            <text x="190" y="30" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--ink2)">=</text>
+            <line x1="190" y1="62" x2="190" y2="96" stroke="var(--rule)"/>
+            <path d="M184 86 l6 10 6 -10" fill="none" stroke="var(--rule)"/>
+            <rect x="60" y="98" width="260" height="34" fill="var(--modeled-soft)" stroke="var(--modeled)"/>
+            <text x="190" y="120" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="var(--modeled)">5 of 12 sites exposed</text>
+            <text x="190" y="152" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--faint)">the link is MODELED — say so out loud</text>
+            <text x="190" y="172" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--faint)">in reality it is proprietary. that is the gap.</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 210" role="img" aria-label="The five agent roles with Tracer and Risk running concurrently">
+          <g font-family="ui-monospace,monospace" font-size="10">
+            <rect x="0" y="70" width="120" height="42" fill="none" stroke="var(--rule)"/>
+            <text x="60" y="88" text-anchor="middle" fill="var(--faint)" font-size="9">WATCHER</text>
+            <text x="60" y="104" text-anchor="middle" fill="var(--ink)">watch_feed</text>
+            <line x1="120" y1="91" x2="152" y2="91" stroke="var(--rule)"/><path d="M144 86 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+            <rect x="154" y="70" width="124" height="42" fill="none" stroke="var(--rule)"/>
+            <text x="216" y="88" text-anchor="middle" fill="var(--faint)" font-size="9">WATCHER</text>
+            <text x="216" y="104" text-anchor="middle" fill="var(--ink)">ingest_recall</text>
+            <path d="M278 91 H310 V38 H342" fill="none" stroke="var(--real)" stroke-width="1.5"/>
+            <path d="M278 91 H310 V144 H342" fill="none" stroke="var(--real)" stroke-width="1.5"/>
+            <path d="M334 33 l8 5 -8 5" fill="none" stroke="var(--real)" stroke-width="1.5"/>
+            <path d="M334 139 l8 5 -8 5" fill="none" stroke="var(--real)" stroke-width="1.5"/>
+            <rect x="344" y="17" width="164" height="42" fill="none" stroke="var(--real)"/>
+            <text x="426" y="35" text-anchor="middle" fill="var(--real)" font-size="9">TRACER</text>
+            <text x="426" y="51" text-anchor="middle" fill="var(--ink)">trace_forward</text>
+            <rect x="344" y="123" width="164" height="42" fill="none" stroke="var(--real)"/>
+            <text x="426" y="141" text-anchor="middle" fill="var(--real)" font-size="9">RISK</text>
+            <text x="426" y="157" text-anchor="middle" fill="var(--ink)">score_risk.distributor</text>
+            <text x="426" y="98" text-anchor="middle" fill="var(--real)" font-size="10" letter-spacing="1.4">CONCURRENT</text>
+            <text x="426" y="112" text-anchor="middle" fill="var(--faint)" font-size="8.5">ThreadPoolExecutor(max_workers=2)</text>
+            <path d="M508 38 H540 V91" fill="none" stroke="var(--rule)"/>
+            <path d="M508 144 H540 V91" fill="none" stroke="var(--rule)"/>
+            <line x1="540" y1="91" x2="572" y2="91" stroke="var(--rule)"/><path d="M564 86 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+            <rect x="574" y="70" width="104" height="42" fill="none" stroke="var(--rule)"/>
+            <text x="626" y="88" text-anchor="middle" fill="var(--faint)" font-size="9">RISK</text>
+            <text x="626" y="104" text-anchor="middle" fill="var(--ink)">score_risk</text>
+            <line x1="678" y1="91" x2="710" y2="91" stroke="var(--rule)"/><path d="M702 86 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+            <rect x="712" y="70" width="86" height="42" fill="none" stroke="var(--rule)"/>
+            <text x="755" y="88" text-anchor="middle" fill="var(--faint)" font-size="9">BRIEFER</text>
+            <text x="755" y="104" text-anchor="middle" fill="var(--ink)">brief</text>
+            <line x1="798" y1="91" x2="826" y2="91" stroke="var(--rule)"/><path d="M818 86 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+            <rect x="828" y="70" width="72" height="42" fill="none" stroke="var(--ok)"/>
+            <text x="864" y="88" text-anchor="middle" fill="var(--faint)" font-size="9">COMMS</text>
+            <text x="864" y="104" text-anchor="middle" fill="var(--ok)">send</text>
+          </g>
+          <text x="0" y="200" font-family="ui-monospace,monospace" font-size="9" fill="var(--faint)">agent/swarm.py — six canonical tool-calls, one genuine fork</text>
+        </svg>
+      </div>
+      <figcaption>Point at the fork on screen when it fires. It is the hardware flex and it is real, not staged.</figcaption>
+    </figure>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“A real recall lands. Dole, Class One. Listeria on the harvest equipment for raw iceberg lettuce. That’s the actual FDA text — recall F-0757-2022.”</p>
+    <p class="say">“Two agents go at once. One traces forward: five of their twelve sites source this. Those supplier links are modeled — in the real world they’re proprietary, and that gap is the whole problem. The other pulls Dole’s history: two hundred and five Class-One recalls on file.”</p>
+    <p class="beat"><b>POINT AT THE TWO LINES.</b> Tracer and Risk fire on the same timestamp in the transcript. That is the concurrency claim, visible.</p>
+    <p>Say “modeled” in the same breath as “five of twelve.” Don’t let the number land unqualified and then walk it back — qualifying it up front is what makes the honesty read as confidence rather than hedging.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 6 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">06</span><h2>All five were already fragile</h2><span class="stime">demo · 0:52–1:06</span></div>
+  <div class="sbody">
+    <p class="lead">The trace tells you who got the lot. The compounding signal tells you where it turns into someone in a hospital.</p>
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 250" role="img" aria-label="The five exposed sites and their real critical violation counts">
+          <text x="0" y="14" font-family="ui-monospace,monospace" font-size="11" fill="var(--faint)" letter-spacing="1.4">EXPOSED SITES — REAL DOHMH CRITICAL FOOD-HANDLING VIOLATIONS</text>
+          <g font-family="ui-monospace,monospace" font-size="12">
+            <text x="0" y="52" fill="var(--ink)">JUST SALAD</text><text x="150" y="52" fill="var(--faint)" font-size="10">Manhattan</text>
+            <rect x="250" y="41" width="330" height="14" fill="var(--crit)"/><text x="592" y="52" fill="var(--crit)">11</text>
+            <text x="0" y="86" fill="var(--ink)">JUST SALAD</text><text x="150" y="86" fill="var(--faint)" font-size="10">Brooklyn</text>
+            <rect x="250" y="75" width="300" height="14" fill="var(--crit)"/><text x="562" y="86" fill="var(--crit)">10</text>
+            <text x="0" y="120" fill="var(--ink)">SALAD DON</text><text x="150" y="120" fill="var(--faint)" font-size="10">Manhattan</text>
+            <rect x="250" y="109" width="300" height="14" fill="var(--crit)"/><text x="562" y="120" fill="var(--crit)">10</text>
+            <text x="0" y="154" fill="var(--ink)">SWEETGREEN</text><text x="150" y="154" fill="var(--faint)" font-size="10">Manhattan</text>
+            <rect x="250" y="143" width="240" height="14" fill="var(--modeled)"/><text x="502" y="154" fill="var(--modeled)">8</text>
+            <text x="0" y="188" fill="var(--ink)">JUST SALAD</text><text x="150" y="188" fill="var(--faint)" font-size="10">Manhattan</text>
+            <rect x="250" y="177" width="240" height="14" fill="var(--modeled)"/><text x="502" y="188" fill="var(--modeled)">8</text>
+          </g>
+          <line x1="0" y1="206" x2="900" y2="206" stroke="var(--rule)"/>
+          <text x="0" y="228" font-family="ui-monospace,monospace" font-size="12" fill="var(--crit)">5 of 5 exposed sites carry prior critical violations</text>
+          <text x="0" y="244" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--faint)">unapproved source · improper holding temperature · contaminated food-contact surface · vermin in food</text>
+        </svg>
+      </div>
+      <figcaption>Not letter grades. Letter grades are a composite of vermin, facility, paperwork and temperature.</figcaption>
+    </figure>
+    <div class="warn"><b>Never say “C health grade” on stage.</b> PRD hard rule 6 forbids claiming a letter grade measures ingredient safety, and the built system deliberately does not use it. The console’s own demo string still says it — that string is a mock, not the backend.</div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“Then the part that matters. All five of those sites already carry critical food-handling violations — eleven, ten, eight, eight, ten. Not letter grades. Critical violations: wrong holding temperature, contaminated contact surface, unapproved source. These are the sites most likely to turn a recalled lot into someone in a hospital.”</p>
+    <p class="beat"><b>THIS IS THE INSIGHT.</b> Everyone builds the trace. Almost nobody crosses it with the receiving site’s own handling history. Slow down here — this is where the product stops being a lookup tool.</p>
+    <p>If asked how many sites have violations city-wide: 16,656 of the 17,204 loaded establishments have at least one. The signal isn’t rare — the <em>intersection</em> with an active recall is.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 6b ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">07</span><h2>Allergen radar — the one that kills</h2><span class="stime">optional · 30 s</span></div>
+  <div class="sbody">
+    <div class="big">
+      <div><span class="n" style="color:#a24fd0">6,896</span><span class="l">undeclared-allergen recalls on record</span></div>
+      <div><span class="n" style="color:#a24fd0">15×</span><span class="l">more than E. coli</span></div>
+    </div>
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 170" role="img" aria-label="An undeclared sesame recall traced to specific dishes on the menu">
+          <g font-family="ui-monospace,monospace" font-size="11">
+            <rect x="0" y="24" width="196" height="54" fill="none" stroke="#a24fd0"/>
+            <text x="12" y="46" fill="#a24fd0" font-size="9">RECALL · REAL</text>
+            <text x="12" y="66" fill="var(--ink)">undeclared sesame</text>
+            <line x1="196" y1="51" x2="240" y2="51" stroke="var(--rule)"/><path d="M232 46 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+            <rect x="242" y="24" width="196" height="54" fill="none" stroke="var(--real)"/>
+            <text x="254" y="46" fill="var(--real)" font-size="9">LOT · REAL</text>
+            <text x="254" y="66" fill="var(--ink)">tahini lot #4471</text>
+            <line x1="438" y1="51" x2="482" y2="51" stroke="var(--rule)"/><path d="M474 46 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+            <rect x="484" y="24" width="196" height="54" fill="none" stroke="var(--modeled)"/>
+            <text x="496" y="46" fill="var(--modeled)" font-size="9">MENU MATCH · MODELED</text>
+            <text x="496" y="66" fill="var(--ink)">3 hummus dishes, 2 sites</text>
+            <line x1="680" y1="51" x2="724" y2="51" stroke="var(--rule)"/><path d="M716 46 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+            <rect x="726" y="24" width="174" height="54" fill="none" stroke="var(--crit)"/>
+            <text x="738" y="46" fill="var(--crit)" font-size="9">ACTION</text>
+            <text x="738" y="66" fill="var(--crit)">pull before service</text>
+          </g>
+          <line x1="0" y1="104" x2="900" y2="104" stroke="var(--rule)"/>
+          <text x="0" y="128" font-family="ui-monospace,monospace" font-size="11" fill="var(--ink2)">Not a PDF to read. A list of the exact dishes to pull.</text>
+          <text x="0" y="150" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--faint)">today: category-level matching (leafy greens, dairy, bakery). per-dish needs menu data — roadmap, and we label it.</text>
+        </svg>
+      </div>
+      <figcaption>Recalls are tagged by allergen at load — real. The menu match is modeled and says so.</figcaption>
+    </figure>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“Undeclared allergens are the second-biggest cause of food recalls — nearly seven thousand on record, fifteen times more than E. coli. One reaches the wrong plate and it’s anaphylaxis.”</p>
+    <p class="say">“So the agent doesn’t hand you a PDF. It hands you the dishes to pull, before service.”</p>
+    <p><b>Be precise about what ships today.</b> Category-level matching is built and real; per-menu-item needs the operator’s menu data and is roadmap. Say “category today, per-dish once they give us the menu” — don’t demo a capability we labelled as roadmap.</p>
+    <p><b>Cut this slide first if you’re over time</b> in the 5-minute. It is the strongest expansion story but the recall trace is the pitch.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 7 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">08</span><h2>Hold, swap, and tell someone</h2><span class="stime">demo · 1:06–1:30</span></div>
+  <div class="sbody">
+    <div class="cols">
+      <div class="panel">
+        <h4>The alert that fires</h4>
+        <p style="margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:var(--ink)">ALERT: Marketside 12oz Classic Salad recalled (Class&nbsp;I, Listeria on harvest equipment) — <b>5 of your sites exposed</b> (5 with prior critical violations). HOLD lot and swap sourcing.</p>
+        <p style="margin:0;font-size:13.5px;color:var(--ink2)">Telegram Bot API, token from env. Falls back to a rendered mock phone with <b>zero network calls</b> if the channel is unavailable. It always lands.</p>
+      </div>
+      <div class="panel">
+        <h4>Where every number came from</h4>
+        <table>
+          <tr><td>exposed 5</td><td><span class="tag t-mod">modeled link</span></td></tr>
+          <tr><td>compounding 5</td><td><span class="tag t-real">real</span></td></tr>
+          <tr><td>Dole 205 / 236</td><td><span class="tag t-real">real</span></td></tr>
+          <tr><td>hold + swap</td><td><span class="tag t-mod">modeled</span></td></tr>
+        </table>
+        <p style="margin:0;font-size:13.5px;color:var(--ink2)"><code>swarm.run()</code> asserts its own numbers against <code>respond()</code> before briefing. It crashes rather than drift.</p>
+      </div>
+    </div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“The brief is written locally. Hold the lot. Switch sourcing — and it names a distributor with an actual clean record on file, not one the FDA has simply never heard of. Then it fires the alert to the affected managers.”</p>
+    <p class="say">“That trace took seconds. Today it’s three days of phone calls. And every bit of it ran on a box they own, with the network on the floor.”</p>
+    <p>If someone asks whether the LLM made the decision: no. Every number comes from a deterministic Python function; the model writes one sentence around them, and the swarm asserts the two agree. Say that as a strength — it is the difference between an instrument and a slot machine.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 8 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">09</span><h2>Zero recalls is not a clean record</h2><span class="stime">3:50–4:25</span></div>
+  <div class="sbody">
+    <p class="lead">We shipped a bug that recommended the safest-looking supplier. It was an artifact. Here is what we did about it.</p>
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 260" role="img" aria-label="Before and after the swap-target honesty fix">
+          <text x="0" y="14" font-family="ui-monospace,monospace" font-size="11" fill="var(--crit)" letter-spacing="1.4">BEFORE — “lowest class1 wins”</text>
+          <g font-family="ui-monospace,monospace" font-size="11">
+            <text x="0" y="42" fill="var(--ink)">BALDOR</text><text x="150" y="42" fill="var(--faint)">0 Class-I / 0 recalls</text>
+            <rect x="330" y="30" width="150" height="16" fill="var(--crit-soft)" stroke="var(--crit)"/>
+            <text x="405" y="42" text-anchor="middle" fill="var(--crit)">RECOMMENDED</text>
+            <text x="500" y="42" fill="var(--crit)">← openFDA has no record of this firm at all</text>
+            <text x="0" y="70" fill="var(--faint)">US FOODS</text><text x="150" y="70" fill="var(--faint)">0 / 0</text>
+            <text x="0" y="94" fill="var(--faint)">JETRO</text><text x="150" y="94" fill="var(--faint)">0 / 1</text>
+            <text x="0" y="118" fill="var(--faint)">RESTAURANT DEPOT</text><text x="150" y="118" fill="var(--faint)">0 / 3</text>
+          </g>
+          <line x1="0" y1="140" x2="900" y2="140" stroke="var(--rule)"/>
+          <text x="0" y="166" font-family="ui-monospace,monospace" font-size="11" fill="var(--ok)" letter-spacing="1.4">AFTER — “prefer a firm with a verified record”</text>
+          <g font-family="ui-monospace,monospace" font-size="11">
+            <text x="0" y="194" fill="var(--faint)">BALDOR</text><text x="150" y="194" fill="var(--faint)">0 / 0</text>
+            <rect x="330" y="182" width="150" height="16" fill="none" stroke="var(--rule)"/>
+            <text x="405" y="194" text-anchor="middle" fill="var(--faint)">unverified</text>
+            <text x="0" y="222" fill="var(--ink)">JETRO</text><text x="150" y="222" fill="var(--ink2)">0 Class-I / 1 recall on file</text>
+            <rect x="330" y="210" width="150" height="16" fill="var(--brand-soft)" stroke="var(--ok)"/>
+            <text x="405" y="222" text-anchor="middle" fill="var(--ok)">RECOMMENDED</text>
+            <text x="500" y="222" fill="var(--ink2)">← a real record, and its Class-I count is zero</text>
+          </g>
+          <text x="0" y="252" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--faint)">sim/respond.py::_swap_target — absence of evidence is labeled, not presented as safety</text>
+        </svg>
+      </div>
+      <figcaption>Fixed on the backend (<span class="m">e22220b</span>) and independently in the console (<span class="m">ad9f5f6</span>), an hour apart.</figcaption>
+    </figure>
+    <div class="cols">
+      <div class="panel"><h4>Real</h4><ul><li>openFDA recalls — 29,309</li><li>Distributor recall history</li><li>DOHMH critical violations</li><li>NYC buildings, LiDAR heights</li><li>Comtrade origin (partial)</li></ul></div>
+      <div class="panel"><h4>Modeled — labeled everywhere</h4><ul><li>Supplier → site links</li><li>This operator’s 12-site portfolio</li><li>Allergen → category exposure</li><li>The covers/day multiplier</li></ul></div>
+    </div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“One thing we won’t do, which is claim more than we have. The recalls are real. The violation histories are real. The buildings are real. The supplier links are modeled — and I want to be precise about why. In the real world those links are proprietary; the operator has them, we don’t. That’s not a shortcut in our demo, <em>that’s the FSMA-204 gap itself.</em> Give the agent the real links and the modeled label goes away.”</p>
+    <p class="say">“And it refuses to overclaim in a way you can check. We had a bug where it recommended switching to a distributor with zero recalls — except zero meant the FDA had never heard of them. Absence of evidence, not a clean record. We fixed it to prefer a supplier with an actual record on file, and to say <em>unverified</em> when it can’t tell.”</p>
+    <p class="beat"><b>DO NOT CUT THIS FOR TIME.</b> It is the strongest thirty seconds in the pitch — it demonstrates the honesty claim instead of asserting it. If you’re over, cut slide 9 instead.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 9 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">10</span><h2>How it’s built</h2><span class="stime">3:00–3:50</span></div>
+  <div class="sbody">
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 300" role="img" aria-label="Full pipeline from cached datasets through MongoDB and the swarm to the bridge and console">
+          <g font-family="ui-monospace,monospace" font-size="10" fill="var(--ink2)">
+            <text x="0" y="12" fill="var(--faint)" font-size="9" letter-spacing="1.4">CACHED, OFFLINE</text>
+            <rect x="0" y="22" width="176" height="24" fill="none" stroke="var(--real)"/><text x="8" y="38" fill="var(--ink)">29,309 openFDA recalls</text>
+            <rect x="0" y="50" width="176" height="24" fill="none" stroke="var(--real)"/><text x="8" y="66" fill="var(--ink)">17,204 DOHMH sites</text>
+            <rect x="0" y="78" width="176" height="24" fill="none" stroke="var(--real)"/><text x="8" y="94" fill="var(--ink)">26,386 violation records</text>
+            <rect x="0" y="106" width="176" height="24" fill="none" stroke="var(--real)"/><text x="8" y="122" fill="var(--ink)">10 distributor histories</text>
+            <rect x="0" y="134" width="176" height="24" fill="none" stroke="var(--real)"/><text x="8" y="150" fill="var(--ink)">45,194 buildings</text>
+          </g>
+          <path d="M176 90 H206" stroke="var(--rule)"/><path d="M198 85 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+          <rect x="208" y="34" width="150" height="112" fill="var(--brand-soft)" stroke="var(--real)"/>
+          <text x="283" y="56" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="var(--real)">local MongoDB</text>
+          <g font-family="ui-monospace,monospace" font-size="9" fill="var(--ink2)">
+            <text x="283" y="78" text-anchor="middle">2dsphere geo indexes</text>
+            <text x="283" y="96" text-anchor="middle">aggregation pipelines</text>
+            <text x="283" y="114" text-anchor="middle">= the agent’s tools</text>
+            <text x="283" y="134" text-anchor="middle" fill="var(--real)">change stream = Watcher</text>
+          </g>
+          <path d="M358 90 H388" stroke="var(--rule)"/><path d="M380 85 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+          <rect x="390" y="34" width="164" height="112" fill="none" stroke="var(--rule)"/>
+          <text x="472" y="56" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="var(--ink)">the swarm</text>
+          <g font-family="ui-monospace,monospace" font-size="9" fill="var(--ink2)">
+            <text x="472" y="76" text-anchor="middle">Watcher → Tracer ∥ Risk</text>
+            <text x="472" y="92" text-anchor="middle">→ Briefer → Comms</text>
+            <text x="472" y="114" text-anchor="middle" fill="var(--real)">Nemotron via NemoClaw</text>
+            <text x="472" y="132" text-anchor="middle">agent_memory dedup</text>
+          </g>
+          <path d="M554 90 H584" stroke="var(--rule)"/><path d="M576 85 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+          <rect x="586" y="34" width="140" height="112" fill="none" stroke="var(--rule)"/>
+          <text x="656" y="56" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="var(--ink)">bridge :8899</text>
+          <g font-family="ui-monospace,monospace" font-size="9" fill="var(--ink2)">
+            <text x="656" y="76" text-anchor="middle">/operator_sites</text>
+            <text x="656" y="92" text-anchor="middle">/response</text>
+            <text x="656" y="108" text-anchor="middle">/transcript</text>
+            <text x="656" y="124" text-anchor="middle">/telemetry</text>
+            <text x="656" y="140" text-anchor="middle" fill="var(--faint)">+ static mirror</text>
+          </g>
+          <path d="M726 90 H756" stroke="var(--rule)"/><path d="M748 85 l8 5 -8 5" fill="none" stroke="var(--rule)"/>
+          <rect x="758" y="34" width="142" height="112" fill="none" stroke="var(--rule)"/>
+          <text x="829" y="56" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="var(--ink)">3D console</text>
+          <g font-family="ui-monospace,monospace" font-size="9" fill="var(--ink2)">
+            <text x="829" y="78" text-anchor="middle">deck.gl, no basemap</text>
+            <text x="829" y="94" text-anchor="middle">45k extruded buildings</text>
+            <text x="829" y="110" text-anchor="middle">risk ground-heat</text>
+            <text x="829" y="130" text-anchor="middle">exposure on real blocks</text>
+          </g>
+          <line x1="0" y1="180" x2="900" y2="180" stroke="var(--rule)"/>
+          <text x="0" y="204" font-family="ui-monospace,monospace" font-size="9" fill="var(--faint)" letter-spacing="1.4">WHAT RUNS WHERE</text>
+          <g font-family="ui-monospace,monospace" font-size="10">
+            <text x="0" y="228" fill="var(--ink2)">off-box (dev)</text>
+            <text x="200" y="228" fill="var(--faint)">OpenRouter · OpenClaw · telemetry stub</text>
+            <text x="0" y="252" fill="var(--ink)">on-box (GB10)</text>
+            <text x="200" y="252" fill="var(--real)">Nemotron · NemoClaw · NVML/tegrastats · 128 GB unified · ~140 W</text>
+            <text x="0" y="278" fill="var(--faint)" font-size="9">one ModelAdapter, one dispatch branch — moving on-box is a one-line change</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>Mongo isn’t a JSON store here: geo indexes make blast radius a real query, and a change stream <em>is</em> the Watcher.</figcaption>
+    </figure>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“Everything is cached locally — twenty-nine thousand FDA recalls, seventeen thousand New York establishments, twenty-six thousand with critical violation records, and forty-five thousand buildings at real LiDAR heights.”</p>
+    <p class="say">“Mongo isn’t a JSON dump here. Geospatial indexes make blast radius a real query, the agents’ tools <em>are</em> aggregation pipelines, and a change stream on the recalls collection is literally the Watcher — a new recall insert fires the swarm.”</p>
+    <p class="say">“Five roles: Watcher, Tracer, Risk, Briefer, Comms. Tracer and Risk run genuinely concurrently. Nemotron does the reasoning on the box, through NemoClaw.”</p>
+    <p><b>This is the cuttable slide.</b> If you’re over time, compress to one sentence — “everything cached, Mongo does the geospatial work, five agents, Nemotron on the box” — and give the seconds to slide 8.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 9b ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">11</span><h2>Prove the box, don’t assert it</h2><span class="stime">3:50–4:05</span></div>
+  <div class="sbody">
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 190" role="img" aria-label="Live GB10 telemetry HUD: tokens per second, unified memory, power, concurrent agents">
+          <text x="0" y="14" font-family="ui-monospace,monospace" font-size="9" fill="var(--faint)" letter-spacing="1.4">LIVE GB10 TELEMETRY — READ FROM NVML / TEGRASTATS ON THE BOX</text>
+          <g font-family="ui-monospace,monospace">
+            <rect x="0" y="26" width="168" height="86" fill="none" stroke="var(--rule)"/>
+            <text x="14" y="60" font-size="24" fill="var(--ink)">Nemotron</text>
+            <text x="14" y="84" font-size="9.5" fill="var(--faint)">MODEL · LOCAL</text>
+            <rect x="184" y="26" width="160" height="86" fill="none" stroke="var(--real)"/>
+            <text x="198" y="62" font-size="28" fill="var(--real)">66</text>
+            <text x="198" y="84" font-size="9.5" fill="var(--faint)">TOKENS / SEC</text>
+            <rect x="360" y="26" width="160" height="86" fill="none" stroke="var(--real)"/>
+            <text x="374" y="62" font-size="28" fill="var(--real)">71 GB</text>
+            <text x="374" y="84" font-size="9.5" fill="var(--faint)">UNIFIED MEMORY OF 128</text>
+            <rect x="536" y="26" width="160" height="86" fill="none" stroke="var(--modeled)"/>
+            <text x="550" y="62" font-size="28" fill="var(--modeled)">128 W</text>
+            <text x="550" y="84" font-size="9.5" fill="var(--faint)">SOC POWER</text>
+            <rect x="712" y="26" width="188" height="86" fill="none" stroke="var(--ok)"/>
+            <text x="726" y="62" font-size="28" fill="var(--ok)">5 / 5</text>
+            <text x="726" y="84" font-size="9.5" fill="var(--faint)">AGENTS CONCURRENT</text>
+          </g>
+          <line x1="0" y1="134" x2="900" y2="134" stroke="var(--rule)"/>
+          <text x="0" y="158" font-family="ui-monospace,monospace" font-size="10.5" fill="var(--ink2)">128 GB unified memory holds reasoning a laptop can’t — and a cloud you can’t trust with the supplier list.</text>
+          <text x="0" y="178" font-family="ui-monospace,monospace" font-size="9" fill="var(--crit)">nvidia-smi under-reports unified memory on GB10 — read tegrastats.</text>
+        </svg>
+      </div>
+      <figcaption>Hard rule 9. The concurrency number is the hardware flex, and it is the one the audience can see happening.</figcaption>
+    </figure>
+    <div class="warn"><b>These four values are mockup targets, not measurements.</b> Off-box telemetry is a stub — every field is <code>null</code> until M6 wires NVML/tegrastats on the GB10. Read whatever the HUD actually shows on the night, or say nothing.</div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“And we don’t assert it runs on the box — we show it. Tokens per second, unified memory, SoC watts, and five agents concurrent, read live off the hardware.”</p>
+    <p class="beat"><b>NEVER rehearse a number you haven’t seen on the box.</b> If M6 telemetry isn’t live at demo time, point at the concurrency in the transcript instead — that one is real either way, and two agents on the same timestamp is visible proof.</p>
+    <p>If asked why not a laptop: 128 GB unified is the answer — the swarm holds the corpus and five concurrent contexts without paging.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 10 ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">12</span><h2>The ask</h2><span class="stime">4:25–4:50</span></div>
+  <div class="sbody">
+    <p class="lead">An always-on food-safety agent that runs in the back office and answers <em>am I hit, how bad, what do I do</em> in seconds, offline.</p>
+    <div class="big">
+      <div><span class="n" style="color:var(--brand)">1</span><span class="l">restaurant group</span></div>
+      <div><span class="n" style="color:var(--brand)">30</span><span class="l">days</span></div>
+      <div><span class="n" style="color:var(--brand)">real</span><span class="l">supplier list</span></div>
+    </div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes</h3>
+    <p class="say">“BREADCRUMBS is an always-on food-safety agent that runs in the back office and answers <em>am I hit, how bad, what do I do</em> in seconds, offline.”</p>
+    <p class="say">“Next is the pilot: one restaurant group, their real supplier list, thirty days. The modeled edge becomes real on day one — and then we find out how many recalls a year they’ve been absorbing without ever knowing they were exposed.”</p>
+    <p class="beat"><b>END ON THE QUESTION.</b> Don’t add a thank-you slide. The last thing in the room should be “how many have they been absorbing without knowing.”</p>
+  </div>
+</section>
+
+<!-- ═══════════════ APPENDIX ═══════════════ -->
+<section class="slide">
+  <div class="shead"><span class="snum">A1</span><h2>Internal — the console and the backend have never met</h2><span class="stime">not for stage</span></div>
+  <div class="sbody">
+    <figure>
+      <div class="fig">
+        <svg viewBox="0 0 900 210" role="img" aria-label="The backend computes the real answer while the console narrates an invented one">
+          <rect x="0" y="24" width="400" height="150" fill="none" stroke="var(--real)"/>
+          <text x="16" y="46" font-family="ui-monospace,monospace" font-size="10" fill="var(--real)" letter-spacing="1.2">BACKEND — computed</text>
+          <g font-family="ui-monospace,monospace" font-size="11" fill="var(--ink)">
+            <text x="16" y="76">DOLE FRESH VEGETABLES INC</text>
+            <text x="16" y="100">5 of 12 sites</text>
+            <text x="16" y="124">crit_violations 11/10/10/8/8</text>
+            <text x="16" y="148">Mongo aggregation + assertions</text>
+          </g>
+          <rect x="500" y="24" width="400" height="150" fill="none" stroke="var(--crit)"/>
+          <text x="516" y="46" font-family="ui-monospace,monospace" font-size="10" fill="var(--crit)" letter-spacing="1.2">CONSOLE — invented in-browser</text>
+          <g font-family="ui-monospace,monospace" font-size="11" fill="var(--ink2)">
+            <text x="516" y="76">Sysco Metro NY</text>
+            <text x="516" y="100">714 establishments</text>
+            <text x="516" y="124">18 “grade-C”</text>
+            <text x="516" y="148">nearestHub() + setTimeout strings</text>
+          </g>
+          <text x="450" y="104" text-anchor="middle" font-family="ui-monospace,monospace" font-size="22" fill="var(--crit)">≠</text>
+          <text x="0" y="198" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--faint)">grep '8899|bridge/|operator_sites|transcript' globe/food3d.html → no matches</text>
+        </svg>
+      </div>
+      <figcaption>Both screenshots are real. They are of two systems that do not talk to each other.</figcaption>
+    </figure>
+    <div class="warn"><b>Do not put a console number on a slide.</b> The console’s “714 exposed / 18 grade-C / Sysco” comes from <span class="m">nearestHub()</span> geometry and five <span class="m">setTimeout</span> template strings. Only <span class="m">bridge/out/*.json</span> and <span class="m">respond()</span> carry the real answer.</div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes — internal only</h3>
+    <p>If the console is still unwired at demo time, run it for the city and show the transcript from <span class="m">bridge/out/transcript.json</span> in a second window, and <b>say</b> they are two views onto the same computation. Do not imply the console computed it.</p>
+    <p>Closing the gap is contract-shaped and small: swap the <span class="m">setTimeout</span> array for a fetch of <span class="m">/transcript</span>, <span class="m">nearestHub()</span> for <span class="m">/operator_sites</span>, and the invented counts for <span class="m">/response</span>.</p>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="shead"><span class="snum">A2</span><h2>Internal — run-book, before you record and again before 19:30</h2><span class="stime">not for stage</span></div>
+  <div class="sbody">
+    <div class="tw"><table>
+      <tr><th style="width:34px">#</th><th>Do</th><th>Or else</th></tr>
+      <tr><td class="num">1</td><td><code>db.agent_memory.drop()</code></td><td>Second run dedups and silently sends no alert. Looks broken on camera.</td></tr>
+      <tr><td class="num">2</td><td><code>build_portfolio()</code> if <code>load_mongo.py</code> re-ran</td><td><code>operator_sites</code> is empty; exposure returns <code>[]</code> and the demo reports zero hits with no error.</td></tr>
+      <tr><td class="num">3</td><td><code>bridge/server.py --write-out</code></td><td>Committed offline payloads predate the swap-target fix and still say <span class="m">BALDOR</span>. Live and offline disagree.</td></tr>
+      <tr><td class="num">4</td><td><b>Vendor deck.gl locally</b></td><td><span class="m">food3d.html:73</span> loads from unpkg. The pull-the-cable moment is a white screen.</td></tr>
+      <tr><td class="num">5</td><td>Confirm <code>TELEGRAM_BOT_TOKEN</code> + chat, phone in frame</td><td>Fall back to the mock phone — zero network, identical on camera.</td></tr>
+      <tr><td class="num">6</td><td>Full dry run with the cable actually out</td><td>Everything above is theory until you do.</td></tr>
+    </table></div>
+    <hr class="thin">
+    <h4 style="margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Do not say</h4>
+    <div class="tw"><table>
+      <tr><th>❌</th><th>✅</th><th>Why</th></tr>
+      <tr><td>“Swap to Baldor — zero recalls vs Dole’s 205”</td><td>“A distributor with a verified record on file”</td><td>Baldor’s zero is no openFDA name-match. That is the artifact we removed — don’t reintroduce it as a talking point.</td></tr>
+      <tr><td>“Two carry a C health grade”</td><td>“All five carry critical violations — 11, 10, 10, 8, 8”</td><td>Hard rule 6. Grades are a composite; claiming they measure ingredient safety is the overclaim we say we don’t make.</td></tr>
+      <tr><td>“Three of your twelve sites”</td><td>“Five of twelve”</td><td><span class="m">premise.md</span> predates the built backend. The computed answer is 5.</td></tr>
+      <tr><td>“The agent decided…”</td><td>“The agent computed… and wrote the brief around it”</td><td>Numbers come from <code>respond()</code>; the assertions crash on drift. That’s a strength — say it.</td></tr>
+      <tr><td>“It predicts outbreaks”</td><td>“It reports who is exposed and who is already fragile”</td><td>Instrument, not oracle. There is no prediction anywhere in the system.</td></tr>
+      <tr><td>A rehearsed tokens/sec number</td><td>Read it off the HUD, or skip it</td><td>Telemetry is a stub off-box — all <code>null</code>. Real numbers land at M6.</td></tr>
+    </table></div>
+  </div>
+  <div class="notes">
+    <h3>Speaker notes — internal only</h3>
+    <p>Items 3 and 4 are the two that will actually bite. Item 4 is the single highest-risk thing between here and a working demo.</p>
+    <p>Full traced walkthrough in <span class="m">docs/END-TO-END.md</span>; the written script this deck follows is <span class="m">docs/pitch-script.md</span>.</p>
+  </div>
+</section>
+
+</div>

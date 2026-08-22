@@ -223,7 +223,7 @@ separate branches (full rules in `docs/branching.md`).
 
 | Branch | Owner | Rule |
 |---|---|---|
-| `main` | — | maritime fallback, frozen. Ignore. |
+| `main` | — | frozen pre-pivot fallback. Not part of the product. Ignore. |
 | `food` | everyone | shared base. Branch off it; PR back when green. **Demo runs from here.** |
 | `ralph` | the loop | autonomous backend build; auto-commits + force-pushes. **Never hand-edit.** |
 | `ui-<name>` | you | frontend playground, off `food`. |
@@ -274,7 +274,7 @@ work — see `bridge/CONTRACT.md` and [`END-TO-END.md`](END-TO-END.md) §7.
 - **`docs/premise.md`'s 90-second script is superseded** — its Baldor line is the artifact that
   was just removed, and its "C health grade" line contradicts hard rule 6. Corrected script in
   [`pitch-script.md`](pitch-script.md).
-- `docs/design-system.md` still reads **"STRAITS / maritime"**. Brand color is settled by
+- `docs/design-system.md` is pre-pivot and needs a full rewrite for BREADCRUMBS. Brand color is settled by
   `mockups/vision.html` (`--brand:#3fb6c9` cyan, amber demoted, plus a new `--allergen:#c77dff`);
   `theme-lab.html` now offers eight alternates. Logo mark still unpicked (`mockups/logo-lab.html`).
 - `amadeus@100.106.203.57ure.py` still on `ralph` (cleaned on `food`).
@@ -293,7 +293,7 @@ work — see `bridge/CONTRACT.md` and [`END-TO-END.md`](END-TO-END.md) §7.
 | `docs/END-TO-END.md` | the traced start-to-finish walkthrough (code, not milestone notes) |
 | `docs/pitch-script.md` | the 90-sec video + 5-min pitch script, run-book, and do-not-say list |
 | `docs/context-nick.md` | this lane's standing brief |
-| `docs/design-system.md` | visual tokens *(currently stale — maritime)* |
+| `docs/design-system.md` | visual tokens *(stale — pre-pivot, needs rewrite)* |
 | `docs/onboarding.md` | new-teammate catch-up |
 | `docs/ideas.md` | team idea log — suggestions not yet in the PRD |
 | `mockups/vision.html` | the send-ready vision page (4 risk dimensions, allergen radar) |
