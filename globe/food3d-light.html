@@ -169,12 +169,12 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;c
 .hub-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--blue-lt);color:var(--blue);border-radius:10px;font-size:11px;font-weight:600}
 
 /* ── legend ── */
-#legend{position:fixed;right:14px;bottom:14px;background:var(--panel);border-radius:12px;box-shadow:var(--sh);padding:10px 13px;font-size:11px;z-index:7;line-height:1}
+#legend{position:fixed;right:14px;bottom:14px;background:var(--panel);border-radius:12px;box-shadow:var(--sh-lg);padding:12px 14px;font-size:11px;z-index:7;line-height:1;width:220px}
 .leg-hd{font-size:9px;letter-spacing:.12em;color:var(--mut);font-weight:600;text-transform:uppercase;margin-bottom:8px}
-.leg-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:var(--tx2)}
+.leg-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:var(--tx2);font-size:11px}
 .leg-row:last-child{margin-bottom:0}
-.lsw{width:18px;height:5px;border-radius:2px;flex-shrink:0}
-.leg-note{font-size:10px;color:var(--mut);margin-top:8px;padding-top:7px;border-top:1px solid #f0f2f4;line-height:1.5}
+.lsw{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+.leg-note{font-size:10px;color:var(--mut);margin-top:8px;padding-top:8px;border-top:1px solid #f0f2f4;line-height:1.5}
 
 /* ── loading ── */
 #load{position:fixed;inset:0;background:#f0f2f5;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
@@ -296,11 +296,23 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;c
 
 <!-- legend (bottom right) -->
 <div id="legend">
-  <div class="leg-hd">Risk hexbin</div>
-  <div class="leg-row"><span class="lsw" style="background:#2f7d6b"></span>Grade A cluster</div>
-  <div class="leg-row"><span class="lsw" style="background:#e0a95a"></span>Mixed grades</div>
-  <div class="leg-row"><span class="lsw" style="background:#c5221f"></span>Grade C cluster</div>
-  <div class="leg-note">Height = dining volume<br>◆ Column height = recall risk</div>
+  <div class="leg-hd">Health risk heatmap</div>
+  <!-- gradient bar -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+    <span style="font-size:10px;color:var(--mut);white-space:nowrap">Low risk</span>
+    <div style="flex:1;height:10px;border-radius:4px;background:linear-gradient(to right,rgb(18,110,90),rgb(52,168,100),rgb(130,200,80),rgb(240,200,40),rgb(240,130,20),rgb(220,60,20),rgb(180,20,20))"></div>
+    <span style="font-size:10px;color:var(--mut);white-space:nowrap">High risk</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--mut);margin-bottom:10px;padding:0 1px">
+    <span>Grade A</span><span>Mixed</span><span>Grade C</span>
+  </div>
+  <div class="leg-hd" style="margin-top:2px">Building type</div>
+  <div class="leg-row"><span class="lsw" style="background:#6e3c2a"></span>Brownstone (low-rise)</div>
+  <div class="leg-row"><span class="lsw" style="background:#944e36"></span>Brick (prewar)</div>
+  <div class="leg-row"><span class="lsw" style="background:#9b907e"></span>Limestone (classic)</div>
+  <div class="leg-row"><span class="lsw" style="background:#505560"></span>Concrete (postwar)</div>
+  <div class="leg-row"><span class="lsw" style="background:#344c70"></span>Glass (tower)</div>
+  <div class="leg-note">◆ Column height = distributor recall risk</div>
 </div>
 
 <!-- loading -->
@@ -341,7 +353,17 @@ const HUBS=[
   {key:'SYSCO',           name:'Sysco Metro NY',            pos:[-73.720,40.752],kind:'dist'},
 ];
 const SKEYS={'HUNTS PT PRODUCE':null,'BALDOR':'BALDOR','RESTAURANT DEPOT':'RESTAURANT DEPOT','US FOODS':'US FOODS','SYSCO':'SYSCO'};
-const HEXCOLS=[[47,125,107,175],[92,162,120,175],[176,168,96,178],[224,169,90,182],[226,120,74,188],[197,34,31,195]];
+/* Heatmap: vivid 7-stop ramp — deep teal → lime → gold → orange → crimson
+   Each stop is clearly distinct so any neighbourhood reads its grade band at a glance */
+const HEXCOLS=[
+  [18, 110,  90, 200],   // 1 — deep teal      (all grade A)
+  [52, 168, 100, 200],   // 2 — medium green
+  [130, 200,  80, 200],  // 3 — yellow-green
+  [240, 200,  40, 210],  // 4 — bright amber
+  [240, 130,  20, 215],  // 5 — orange
+  [220,  60,  20, 220],  // 6 — red-orange
+  [180,  20,  20, 230],  // 7 — deep crimson   (dense grade C)
+];
 
 /* ── state ── */
 let rests=[],scorecard=[],scoreByFirm={},bldMan=null,bldBk=null;
@@ -373,24 +395,46 @@ function boot(rj,scj,man){
   requestAnimationFrame(loop);
 }
 
-/* ── realistic building colours ── */
+/* ── building colours — 5 clearly distinct material families ──────────────────
+   Each category uses a base colour + small per-building hash variation (~±15 RGB)
+   so individual buildings differ slightly while the category reads clearly.
+
+   1. BROWNSTONE   dark reddish-brown   low walk-ups  (h < 20 m)
+   2. BRICK        burnt terracotta      prewar        (20–55 m)
+   3. LIMESTONE    warm grey-tan         classic       (55–120 m)
+   4. CONCRETE     dark slate            postwar slab  (120–220 m)
+   5. GLASS        deep navy-steel       supertall     (220 m+)
+   ─────────────────────────────────────────────────────────────────────────── */
 function bldHash(d){const p=d.p[0];return (Math.abs(Math.round(p[0]*9973)+Math.round(p[1]*9973)))%100;}
-/* Buildings taller: multiply real height by 1.4 so Manhattan reads as imposing skyline */
-const BLD_SCALE=1.4;
+const BLD_SCALE=1.45;
 function bldFill(d){
-  const h=d.h,v=bldHash(d),j=v*0.35-17;
-  if(h<18)   return[~~(178+j*.7),~~(134+j*.4),~~(106+j*.3),255];   // brownstone
-  if(h<55)   return v<48?[~~(190+j*.5),~~(156+j*.35),~~(126+j*.2),255]:[~~(210+j*.2),~~(202+j*.2),~~(190+j*.15),255]; // brick / limestone
-  if(h<150)  return[~~(196+j*.2),~~(194+j*.18),~~(190+j*.14),255]; // concrete slab
-  const t=Math.min(1,(h-150)/280);
-  return[~~(172-t*14+j*.12),~~(190-t*5+j*.1),~~(218+t*10),255];    // glass curtain wall
+  const h=d.h, v=bldHash(d), j=v*0.30-15;   // j in range -15..+15
+  if(h<20){
+    // 1 · BROWNSTONE — dark reddish-brown
+    return[~~Math.min(255,100+j),~~Math.min(255,60+j*.7),~~Math.min(255,42+j*.5),255];
+  }
+  if(h<55){
+    // 2 · BRICK — burnt terracotta
+    return[~~Math.min(255,148+j),~~Math.min(255,78+j*.7),~~Math.min(255,54+j*.5),255];
+  }
+  if(h<120){
+    // 3 · LIMESTONE — warm grey-tan
+    return[~~Math.min(255,155+j*.8),~~Math.min(255,144+j*.7),~~Math.min(255,126+j*.6),255];
+  }
+  if(h<220){
+    // 4 · CONCRETE — dark slate grey
+    return[~~Math.min(255,80+j*.6),~~Math.min(255,85+j*.6),~~Math.min(255,96+j*.6),255];
+  }
+  // 5 · GLASS — deep navy-steel (taller = bluer-darker)
+  const t=Math.min(1,(h-220)/300);
+  return[~~Math.min(255,52-t*12+j*.5),~~Math.min(255,76-t*10+j*.4),~~Math.min(255,112+t*20+j*.3),255];
 }
 function bldLayer(id,data){
   return new PolygonLayer({id,data,extruded:true,wireframe:false,
     getPolygon:d=>d.p,
     getElevation:d=>d.h*BLD_SCALE,
     getFillColor:bldFill,
-    material:{ambient:.45,diffuse:.9,shininess:140,specularColor:[210,225,252]},
+    material:{ambient:.35,diffuse:.95,shininess:180,specularColor:[200,220,255]},
     pickable:false});
 }
 
@@ -412,9 +456,9 @@ function dotsLayer(){
 function render(){
   const L=[];
   // 1 — flat risk zones drawn on ground first
-  if(showHex)L.push(new HexagonLayer({id:'hex',data:rests,radius:140,extruded:false,pickable:false,
+  if(showHex)L.push(new HexagonLayer({id:'hex',data:rests,radius:150,extruded:false,pickable:false,
     getPosition:d=>[d.lon,d.lat],getColorWeight:d=>d.rs,colorAggregation:'MEAN',colorRange:HEXCOLS,
-    opacity:.55,coverage:.82}));
+    opacity:.70,coverage:.88}));
   // 2 — buildings on top (visible through semi-transparent hexbins)
   if(showBld&&bldMan)L.push(bldLayer('man',bldMan));
   if(showBld&&showBk&&bldBk)L.push(bldLayer('bk',bldBk));
@@ -452,7 +496,7 @@ const HOME={...vs};
 const dk=new DeckGL({
   container:'deck',views:new MapView({id:'v',repeat:false}),viewState:vs,
   controller:{inertia:250,scrollZoom:{smooth:true}},effects:[lighting],
-  parameters:{clearColor:[0.72,0.78,0.88,1]},   /* deeper sky blue makes towers pop */
+  parameters:{clearColor:[0.62,0.70,0.82,1]},   /* deep sky — dark buildings read clearly against it */
   layers:[],
   onViewStateChange:({viewState})=>{vs=viewState;}
 });
