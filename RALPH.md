@@ -1,8 +1,8 @@
 # RALPH loop status
 
-- updated: 2026-08-22T16:55:00Z
+- updated: 2026-08-22T16:26:09Z
 - last finished: milestone 5: Comms action — Telegram alert (real) + mock phone fallback
-- currently working on: milestone 6: ON-BOX: Nemotron local + real GB10 telemetry (next iteration)
+- currently working on: (between milestones)
 
 ## Iteration history
 - 2026-08-22T15:23:46Z START iteration 1 -> milestone 0 (Preflight + MongoDB load), attempt 1
@@ -27,3 +27,4 @@
 - M6-M8 — pending
 - 2026-08-22T16:55:00Z DONE milestone 5 (Comms action — Telegram alert (real) + mock phone fallback)
 - 2026-08-22T16:55:00Z START iteration 6 -> milestone 6 (ON-BOX: Nemotron local + real GB10 telemetry), attempt 1
+- 2026-08-22T16:26:09Z DONE milestone 5 (Comms action — Telegram alert (real) + mock phone fallback)
