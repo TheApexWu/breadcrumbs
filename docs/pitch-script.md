@@ -1,5 +1,34 @@
 # BREADCRUMBS — pitch script
 
+> ## ⚠️ SUPERSEDED BY [`team-bible.md`](team-bible.md)
+>
+> The Team Bible (added 2026-08-22) is now the authoritative pitch spec. Where this file and the
+> Bible disagree, **the Bible wins.** What changed:
+>
+> | | This file said | Bible says |
+> |---|---|---|
+> | **Mission** | recall response leads | **food traceability leads** — "our food supply is a black box"; the recall is the sharpest *proof*, not the headline |
+> | **The contrast** | 72h → seconds | **4 seconds vs 2 days** — say it and stop talking |
+> | **Problem framing** | 48M sickened (unverified) | the phone tree + **$0.04M–$1.1M** per restaurant firm, **~$10M** per grocer, **52%** of major recalls exceed $10M |
+> | **Corpus** | 29,309 | **29,310** |
+> | **Swap target** | "a verified record" (I inferred Jetro) | **Jetro, 0-of-1** — confirmed. A *verified low record*, never "clean" |
+> | **Risk baseline** | raw violation counts | counts **vs citywide median 4**, range 0–56 |
+> | **Coverage** | not addressed | **~100% of FDA lot-coded recalls, a minority of real outbreaks.** USDA FSIS is a labeled blind spot — Boar's Head 2024 would be invisible |
+> | **Telegram** | "fires the alert" | **drafted, not auto-dispatched** |
+> | **Change stream** | implied always-on | **observes inserts, does not yet auto-trigger `run()`** |
+> | **Vocabulary** | "operator" throughout | prefer **food business / restaurant group / grocer**. Say **recall responder**, never *outbreak detector* |
+> | **The ask** | 1 group, 30 days | **1 group, their real purchase records, 12 months** |
+>
+> New material the Bible adds and this file lacks: the **outbreak-coverage table** (Jif ✅ ·
+> McDonald's/Taylor Farms ✅ · Yuma ⚠️ · Boar's Head ❌ · Chipotle ❌), the **FDA-aligned Recall
+> Exposure & Action Report** format, the **business case** (FSMA 204 mandatory **July 20 2028**,
+> ~$30B by 2030, four buyer segments), **8 judge Q&A kill-shots**, **role division**
+> (Driver / Narrator / Q&A Lead), and **the six things we never overclaim**.
+>
+> All of the above is already reflected in the Figma deck.
+> Keep this file only for the run-book below — the rest is historical.
+
+
 **For M8.** Two deliverables with different clocks:
 
 | | Length | Deadline | Owner |
