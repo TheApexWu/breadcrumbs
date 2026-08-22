@@ -102,10 +102,22 @@ function supRisk(hub){const sk=hub.sk;const c=sk?scoreByFirm[sk]:null;const c1=c
   const lvl=c1>100?['HIGH','var(--red)']:c1>10?['MODERATE','var(--amber)']:c1>0?['LOW','var(--amber)']:['CLEAN','var(--grn)'];
   return {c1,recalls:c?c.recalls:0,lvl:lvl[0],col:lvl[1]};}
 
+
+// ── per-building risk field: so risk glows ON the buildings, not just the streets ──
+const CELL=0.0022; let riskGrid={}, riskNorm=1;
+function buildRiskGrid(){ riskGrid={};
+  for(const r of rests){ const w=r.grade==='C'?1:r.grade==='B'?0.4:0; if(!w)continue; const k=Math.round(r.lat/CELL)+'_'+Math.round(r.lon/CELL); riskGrid[k]=(riskGrid[k]||0)+w; }
+  const vals=Object.values(riskGrid).sort((a,b)=>a-b); riskNorm=(vals[Math.floor(vals.length*0.93)]||1)*0.85 || 1;
+}
+function cellRisk(lat,lon){ let sm=0; const gy=Math.round(lat/CELL),gx=Math.round(lon/CELL);
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++) sm+=riskGrid[(gy+dy)+'_'+(gx+dx)]||0; return sm; }
+function tagBuildings(arr){ for(const b of arr){ const c=b.p&&b.p[0]; b.rk=c?Math.min(1,cellRisk(c[1],c[0])/riskNorm):0; } }
+
 function boot(rj,scj,man){
   scorecard=scj.cards; scoreByFirm=Object.fromEntries(scorecard.map(c=>[c.firm,c]));
   for(const h of HUBS){const c=h.sk?scoreByFirm[h.sk]:null;h.class1=c?c.class1:0;}
   rests=rj.rows.map((r,i)=>({...r,i,hub:nearestHub(r.lon,r.lat),rs:rscore(r.grade)}));
+  buildRiskGrid(); tagBuildings(man);
   bld.manhattan=man; blayers.manhattan=true;
   m_est.textContent=rests.length.toLocaleString();
   m_c.textContent=(rj.meta.grades.C||0);
@@ -116,7 +128,7 @@ function boot(rj,scj,man){
 function bldLayer(key){
   return new PolygonLayer({id:'bld-'+key,data:bld[key],extruded:true,wireframe:false,
     getPolygon:d=>d.p, getElevation:d=>d.h,
-    getFillColor:d=>{const t=Math.min(1,d.h/130);return [26+t*22, 32+t*24, 46+t*30];},  // NEUTRAL city
+    getFillColor:d=>{const t=Math.min(1,d.h/130),rk=d.rk||0;const n0=26+t*22,n1=32+t*24,n2=46+t*30;const r0=210,r1=96,r2=64;return [n0+(r0-n0)*rk, n1+(r1-n1)*rk, n2+(r2-n2)*rk];},  // neutral, glowing warm where risk is high
     material:{ambient:0.55,diffuse:0.6,shininess:16,specularColor:[30,38,54]},
     pickable:false, parameters:{depthTest:true}});
 }
@@ -181,7 +193,7 @@ function toggleBoro(key,btn){
   btn.classList.add('loading'); btn.querySelector('.n')?.remove();
   const tag=document.createElement('span');tag.className='n';tag.textContent='loading '+(BCOUNT[key]/1000|0)+'k…';btn.appendChild(tag);
   fetch('assets/'+BFILES[key]).then(r=>r.json()).then(d=>{
-    bld[key]=d; blayers[key]=true; btn.classList.remove('loading'); btn.classList.add('on');
+    bld[key]=d; tagBuildings(d); blayers[key]=true; btn.classList.remove('loading'); btn.classList.add('on');
     tag.textContent=(d.length/1000|0)+'k'; updBld();
   }).catch(e=>{btn.classList.remove('loading');tag.textContent='err';});
 }
