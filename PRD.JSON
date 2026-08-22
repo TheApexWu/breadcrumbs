@@ -101,12 +101,14 @@
         "agent/swarm.py via NemoClaw (primary runtime): five roles — Watcher (subscribes to a Mongo CHANGE STREAM on recalls — a new insert fires the swarm; this IS the always-on watch), Tracer (call the exposure aggregation), Risk (call risk scoring), Briefer (compose the plain-language brief), Comms (draft the SMS + supplier hold notice). Each is a tool-calling agent over the M0 aggregation pipelines + M2 functions.",
         "Off-box: model behind an adapter = the OpenRouter default (glm) via OpenClaw so the scaffold is buildable now. On-box (M6): swap to local Nemotron via NemoClaw — one line at the adapter.",
         "Run Tracer/Risk concurrently where independent; log every tool-call (name, args, result) to an evidence transcript.",
-        "The Briefer/Comms outputs must be grounded in the M2 Response — no invented numbers; refuse certainty (instrument-not-oracle)."
+        "The Briefer/Comms outputs must be grounded in the M2 Response — no invented numbers; refuse certainty (instrument-not-oracle).",
+        "AGENT MEMORY in Mongo (MongoDB-track 'the agent survives its own sandbox'): the swarm persists its state + decisions + alert history to an agent_memory collection (run_id, recall_id, decision, alert_sent, ts). On restart it RECALLS prior state and DEDUPES — it does not re-alert a recall it already handled. This is durable agent state a JSON file cannot provide; it makes 'retrieval that changes behavior' concrete (past decisions steer the next run)."
       ],
       "verifications": [
         "running the swarm on the Dole recall produces a structured brief whose numbers EQUAL the M2 Response (no drift) — assert by comparing fields",
         "the tool-call transcript shows watch_feed -> ingest_recall -> trace_forward -> score_risk -> brief -> draft_sms in order, with real args/results logged",
-        "the model adapter has exactly one place to swap OpenRouter<->local Nemotron (assert the interface exists); at least one of OpenClaw/NemoClaw/OpenShell is the runtime"
+        "the model adapter has exactly one place to swap OpenRouter<->local Nemotron (assert the interface exists); at least one of OpenClaw/NemoClaw/OpenShell is the runtime",
+        "agent_memory persists across restart: after a swarm run, db.agent_memory holds the run's decisions/alerts with timestamps; running the SAME recall again reads prior state and does NOT re-alert (assert alert_sent stays 1, not 2) — a memory that re-alerts every run fails this"
       ],
       "human_gate": false,
       "completed": false
