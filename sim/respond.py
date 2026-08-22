@@ -153,18 +153,26 @@ def _distributor_risk(recall, db):
 
 
 def _swap_target(db):
-    """The lowest-class1 distributor to swap to. Among 0-class1 hubs, pick
-    deterministically (alphabetical by firm). Baldor (0, hub) wins."""
-    candidates = []
+    """Honest swap target. A distributor with recalls==0 has NO openFDA firm-name
+    match (absence of evidence, not a clean record) — never present that as 'safe'.
+    Prefer the lowest-class1 distributor that has a REAL record (recalls>0); its 0/low
+    Class-I is verified. Only fall back to a no-record firm, labeled 'unverified'."""
+    verified, unverified = [], []
     for d in db.distributors.find({"is_hub": True}):
-        candidates.append({
-            "firm": d.get("firm"),
-            "class1": int(d.get("class1", 0)),
-            "recalls": int(d.get("recalls", 0)),
-            "class": "real",
-        })
-    candidates.sort(key=lambda c: (c["class1"], c["firm"]))
-    return candidates[0] if candidates else {"firm": None, "class1": 0, "class": "real"}
+        c = {"firm": d.get("firm"), "class1": int(d.get("class1", 0)),
+             "recalls": int(d.get("recalls", 0))}
+        (verified if c["recalls"] > 0 else unverified).append(c)
+    if verified:
+        verified.sort(key=lambda c: (c["class1"], c["firm"]))
+        t = verified[0]
+        t["class"] = "real"
+        t["basis"] = f"{t['class1']} Class-I of {t['recalls']} recalls on file"
+        return t
+    unverified.sort(key=lambda c: c["firm"])
+    t = unverified[0] if unverified else {"firm": None, "class1": 0, "recalls": 0}
+    t["class"] = "unverified-nomatch"
+    t["basis"] = "no recall history on file (name-match only; NOT a verified clean record)"
+    return t
 
 
 def _allergen_match(recall):
