@@ -72,7 +72,13 @@
         "matches(recall, profile) filters correctly: a Class-I allergen recall matching the profile returns True; a Class-III recall outside the profile's categories/allergens returns False (assert both — a filter that lets everything through fails)"
       ],
       "human_gate": false,
-      "completed": false
+      "completed": true,
+      "evidence": [
+        "V1: operator_sites.count=12; all 12 GeoJSON Point loc, provenance.class='modeled-portfolio', distributor_link.class='modeled-link' — asserted by scripts/verify_m1.py (14/14 PASS).",
+        "V2: exposure(DOLE FRESH VEGETABLES INC Class I recall F-0757-2022) returns 5 exposed sites (distributor==recalling_firm); run1==run2 byte-identical (sorted by camis) — deterministic and non-empty.",
+        "V3: db.operator_sites.count({provenance.class:'real'})=0; db.operator_sites.count({provenance.class:/^modeled-/})=12 — no modeled doc mislabeled 'real'.",
+        "V4: matches(Class I allergen recall allergens=['milk'], DEFAULT_PROFILE)=True; matches(Class III non-allergen recall F-0904-2020, DEFAULT_PROFILE)=False — filter is discriminating (assert both)."
+      ]
     },
     {
       "id": "2",
