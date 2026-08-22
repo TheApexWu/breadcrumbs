@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8" />
 <title>BREADCRUMBS — NYC food supply intelligence (3D)</title>
 <style>
@@ -21,8 +24,12 @@
   #legend .row{display:flex;align-items:center;gap:6px;margin:3px 0}.sw{width:26px;height:8px;border-radius:1px}
   #detail{right:14px;bottom:14px;width:300px;display:none}.dh{display:flex;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--bd)}.dh .nm{color:var(--amber);font-size:13px}.x{color:var(--mut);cursor:pointer}#d_tab{width:100%;border-collapse:collapse;font-size:11px}#d_tab td{padding:5px 12px;border-bottom:1px solid #131b2e}#d_tab td.k{color:var(--mut);width:48%}
   #read{left:210px;bottom:14px;padding:4px 10px;font-size:10px;color:var(--mut);letter-spacing:.06em}
-  #load{position:fixed;inset:0;background:var(--bg);z-index:9;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px;letter-spacing:.16em;text-align:center}
+  #load{position:fixed;inset:0;background:var(--bg);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mut);font-size:12px;letter-spacing:.16em;text-align:center;gap:12px}
+  #load-bar-wrap{width:260px;height:3px;background:#1e2a44;border-radius:2px}
+  #load-bar{height:3px;background:var(--amber);border-radius:2px;width:0%;transition:width .3s}
 </style>
+</head>
+<body>
 <div id="cls">UNCLASSIFIED // SIMULATION · BREADCRUMBS · NYC FOOD-SUPPLY RISK · LOCAL / GB10</div>
 <div id="deck"></div>
 <div id="top" class="panel"><span class="brand">◈ BREADCRUMBS</span><span class="sep">|</span>
@@ -57,10 +64,16 @@
   <div class="row" style="color:var(--mut)">supply links = MODELED</div>
 </div>
 <div id="read" class="panel"></div>
-<div id="load">EXTRUDING NYC · loading buildings + DOHMH + openFDA …</div>
+<div id="load">
+  <div>EXTRUDING NYC · loading buildings + DOHMH + openFDA …</div>
+  <div id="load-bar-wrap"><div id="load-bar"></div></div>
+  <div id="load-status" style="font-size:10px;letter-spacing:.1em;margin-top:4px;color:#39435e">fetching assets…</div>
+</div>
 
 <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
 <script>
+const ASSET_BASE = 'https://raw.githubusercontent.com/TheApexWu/breadcrumbs/Siri/globe/assets/';
+
 const {DeckGL,MapView,PolygonLayer,HexagonLayer,ColumnLayer,ScatterplotLayer,ArcLayer,TextLayer,GeoJsonLayer,LightingEffect,AmbientLight,_SunLight:SunLight}=deck;
 
 const HUBS=[
@@ -80,9 +93,13 @@ let mapAffected=new Set();
 
 function nearestHub(lon,lat){let bi=0,bd=1e9;for(let i=0;i<HUBS.length;i++){const dx=HUBS[i].pos[0]-lon,dy=HUBS[i].pos[1]-lat,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i;}}return bi;}
 
-// lighting for the extruded city
 const lighting=new LightingEffect({ambient:new AmbientLight({color:[255,255,255],intensity:1.0}),
   sun:new SunLight({timestamp:1553998800000,color:[255,230,200],intensity:1.3})});
+
+function setLoadStatus(msg, pct) {
+  document.getElementById('load-status').textContent = msg;
+  if(pct !== undefined) document.getElementById('load-bar').style.width = pct + '%';
+}
 
 function boot(rj,scj,man){
   scorecard=scj.cards; scoreByFirm=Object.fromEntries(scorecard.map(c=>[c.firm,c]));
@@ -108,24 +125,20 @@ function frame(){
   const L=[];
   if(document.getElementById('bk').classList.contains('on')&&bldMan)L.push(bldLayer('man',bldMan));
   if(showBk&&bldBk)L.push(bldLayer('bk',bldBk));
-  // risk hexbins (aggregate — no dot mess)
   if(showHex)L.push(new HexagonLayer({id:'risk',data:rests,radius:130,elevationScale:6,extruded:true,pickable:true,
     getPosition:d=>[d.lon,d.lat],
     getColorWeight:d=>d.rs, colorAggregation:'MEAN', colorRange:HEXCOLORS,
     getElevationWeight:1, elevationAggregation:'SUM', elevationRange:[0,900],
     opacity:0.72, coverage:0.86,
     updateTriggers:{getColorWeight:[]}}));
-  // recall exposure — affected establishments rise as red columns
   if(recall){const aff=rests.filter(r=>mapAffected.has(r.i));
     L.push(new ColumnLayer({id:'aff',data:aff,diskResolution:6,radius:36,extruded:true,
       getPosition:d=>[d.lon,d.lat],getElevation:d=>120+pulse*90,getFillColor:[226,86,74,210],elevationScale:1}));}
-  // supply flow arcs (on demand)
   if(showArcs){const sample=rests.filter((_,k)=>k%90===0);
     L.push(new ArcLayer({id:'arcs',data:sample,getSourcePosition:d=>HUBS[d.hub].pos,getTargetPosition:d=>[d.lon,d.lat],
       getSourceColor:d=>recall&&mapAffected.has(d.i)?[226,86,74,180]:[63,182,201,120],
       getTargetColor:d=>recall&&mapAffected.has(d.i)?[226,86,74,60]:[63,182,201,20],
       getHeight:0.3,getWidth:1,updateTriggers:{getSourceColor:recall}}));}
-  // distributor hubs as columns sized by recall risk
   L.push(new ColumnLayer({id:'hubs',data:HUBS,diskResolution:12,radius:180,extruded:true,pickable:true,
     getPosition:d=>d.pos,getElevation:d=>200+d.class1*40+(recall&&recall.key===d.key?pulse*300:0),
     getFillColor:d=>recall&&recall.key===d.key?[226,86,74,230]:(d.class1>10?[226,86,74,160]:[63,182,201,150]),
@@ -195,12 +208,19 @@ document.getElementById('reset').onclick=()=>{vs={...HOME};};
 document.getElementById('bx').onclick=e=>{
   if(bldBk){showBk=!showBk;e.target.classList.toggle('on',showBk);return;}
   e.target.textContent='loading…';
-  fetch('assets/brooklyn_buildings.json').then(r=>r.json()).then(d=>{bldBk=d;showBk=true;e.target.textContent='+ Brooklyn';e.target.classList.add('on');});
+  fetch(ASSET_BASE+'brooklyn_buildings.json').then(r=>r.json()).then(d=>{bldBk=d;showBk=true;e.target.textContent='+ Brooklyn';e.target.classList.add('on');});
 };
 document.getElementById('d_x').onclick=()=>{selId=null;document.getElementById('detail').style.display='none';};
 
-Promise.all(['nyc-restaurants.json','distributor-scorecard.json','manhattan_buildings.json']
-  .map(f=>fetch('assets/'+f).then(r=>r.json())))
-  .then(([r,sc,man])=>boot(r,sc,man))
-  .catch(e=>{document.getElementById('load').textContent='LOAD FAILED: '+e;});
+// Load assets from GitHub raw (public repo — works in any browser)
+setLoadStatus('fetching restaurant data…', 15);
+Promise.all([
+  fetch(ASSET_BASE+'nyc-restaurants.json').then(r=>{setLoadStatus('loading buildings…',55);return r.json();}),
+  fetch(ASSET_BASE+'distributor-scorecard.json').then(r=>r.json()),
+  fetch(ASSET_BASE+'manhattan_buildings.json').then(r=>{setLoadStatus('building 3D city…',85);return r.json();})
+])
+.then(([r,sc,man])=>{setLoadStatus('rendering…',100);boot(r,sc,man);})
+.catch(e=>{document.getElementById('load').innerHTML=`<div style="color:var(--red)">LOAD FAILED</div><div style="font-size:10px;margin-top:8px;color:var(--mut)">${e.message}</div><div style="font-size:9px;margin-top:6px">Open this file locally alongside the assets/ folder,<br>or check CORS/network access.</div>`;});
 </script>
+</body>
+</html>
