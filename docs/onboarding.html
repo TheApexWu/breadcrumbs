@@ -56,10 +56,9 @@
 </style>
 <div class="wrap">
   <header>
-    <div class="kicker">Onboarding · Frontend / UI</div>
+    <div class="kicker">Onboarding · Team</div>
     <h1>◈ BREADCRUMBS</h1>
-    <p class="sub">Dell × NVIDIA hackathon build. One page to get you contributing to the
-    frontend without reverse-engineering anything. Read <code>docs/premise.md</code> second.</p>
+    <p class="sub">Dell × NVIDIA hackathon build. One page to get any new member contributing without reverse-engineering anything. Read <code>docs/premise.md</code> second.</p>
     <div style="margin-top:16px">
       <span class="tag">deck.gl 9</span><span class="tag">vanilla JS</span>
       <span class="tag">no build step</span><span class="tag">local / GB10</span>
@@ -112,14 +111,25 @@
     <li><code>food.html</code> — 2D fallback · maritime version lives on <code>main</code>.</li>
   </ul>
 
-  <h2>Where you plug in</h2>
-  <p class="meta" style="margin-bottom:14px">FRONTEND / UI — scope firmed up in person</p>
+  <h2>Where you plug in — pick a lane</h2>
+  <p class="meta" style="margin-bottom:14px">Scope firmed up in person. Three lanes; grab whichever fits.</p>
+  <h3>Frontend / UI</h3>
   <ul>
-    <li><strong>Polish <code>food3d.html</code></strong> — layout, motion, the C2 aesthetic
+    <li>Polish <code>food3d.html</code> — layout, motion, the C2 aesthetic
     (<code>docs/design-system.md</code>: amber/cyan on near-black, hairline borders, Plex / JetBrains mono).</li>
-    <li><strong>Agent-swarm panel + GB10 telemetry</strong> — the wow. Static mock first, wire later.</li>
+    <li><strong>Agent-swarm panel + GB10 telemetry HUD</strong> — the wow. Static mock first, wire later.</li>
     <li><strong>SMS / Comms action UI</strong> — the draft + send flow, phone-mockup for the demo.</li>
-    <li><strong>Product / pitch one-pager</strong> — <code>mockups/product-concept.html</code> is a start.</li>
+    <li>Product / pitch one-pager — <code>mockups/product-concept.html</code> is a start.</li>
+  </ul>
+  <h3>Agent / backend</h3>
+  <ul>
+    <li><strong>The swarm</strong> (Watcher→Tracer→Risk→Briefer→Comms) via OpenClaw/NemoClaw — tool-calls over MongoDB, local Nemotron on the GB10.</li>
+    <li>The recall-response engine — exposure × risk × action (see <code>PRD.JSON</code> M2).</li>
+  </ul>
+  <h3>Data / infra</h3>
+  <ul>
+    <li><strong>MongoDB</strong> — load + index the cached datasets, geospatial + aggregation queries, change-stream watcher (see <code>PRD.JSON</code> M0).</li>
+    <li>Offline vendoring — deck.gl + fonts local for the unplugged demo.</li>
   </ul>
 
   <h2>Stack — deliberately dependency-light</h2>

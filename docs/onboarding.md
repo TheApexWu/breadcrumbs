@@ -1,7 +1,6 @@
-# BREADCRUMBS — onboarding (Ritchie, frontend/UI)
+# BREADCRUMBS — onboarding (team)
 
-Welcome aboard. This is the Dell × NVIDIA hackathon build (today). One-page catch-up so you can
-start on the frontend without reverse-engineering anything.
+Welcome aboard. This is the Dell × NVIDIA hackathon build (today). One-page catch-up so any new member can start contributing without reverse-engineering anything.
 
 ## What BREADCRUMBS is (30 seconds)
 An always-on, **on-prem food-safety agent** for a NYC food operator. When an FDA recall drops, it
