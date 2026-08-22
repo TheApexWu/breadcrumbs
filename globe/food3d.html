@@ -89,7 +89,7 @@
   <div class="lbl">LAYERS</div>
   <div class="gp"><button id="heat" class="on">⬡ Risk hexbins</button><button id="pts" class="on">• Restaurants</button></div>
   <div class="gp"><button id="mysites" class="on">◈ My 45 sites</button><button id="arcs" class="on">↳ Supply flow</button><button id="reset">⟲ City</button></div>
-  <div class="gp"><button id="view3d">⊞ Top view</button><button id="lite">☀ Light / day</button></div>
+  <div class="gp"><button id="view3d">⊞ Top view</button><button id="lite" class="on">☾ Dark</button></div>
 </div>
 
 <div id="right" class="panel"><div class="sh"><span>◈ SENTINEL AGENT</span><span id="s_state" style="color:var(--grn)">● IDLE · local</span></div>
@@ -140,16 +140,24 @@ const HEAT=[[31,107,94,0],[47,125,107],[120,150,96],[224,169,90],[226,120,74],[2
 const HEAT_D=HEAT.slice(1);
 const HEAT_L=[[250,238,200,0],[246,212,150],[238,178,120],[230,138,100],[222,100,84],[214,72,66]];
 // varied building materials: brownstone · brick · limestone · concrete · glass (light + dark tones)
-const BLD_L=[[168,96,58],[196,116,80],[222,208,172],[165,176,187],[104,162,208]];
-const BLD_D=[[200,120,72],[218,142,96],[228,214,180],[150,162,176],[152,194,228]];
-function bldMat(d){if(d._m!==undefined)return d._m;const c=(d.p&&d.p[0])||[0,0],h=d.h||0;
-  d._m=h>125?4:h>82?3:h>46?2:(Math.abs(Math.round(c[0]*713)+Math.round(c[1]*911))%2);return d._m;}
+// ── Nick's building materials (breadcrumbs-light-ui): dark bases lit dramatically ──
+function bldHash(d){const p=d.p[0];return (Math.abs(Math.round(p[0]*9973)+Math.round(p[1]*9973)))%100;}
+const BLD_SCALE=1.45;
+function bldFill(d){
+  const h=d.h, v=bldHash(d), j=v*0.30-15;
+  if(h<20) return[~~Math.min(255,100+j),~~Math.min(255,60+j*.7),~~Math.min(255,42+j*.5),255];       // brownstone
+  if(h<55) return[~~Math.min(255,148+j),~~Math.min(255,78+j*.7),~~Math.min(255,54+j*.5),255];        // brick
+  if(h<120) return[~~Math.min(255,155+j*.8),~~Math.min(255,144+j*.7),~~Math.min(255,126+j*.6),255];  // limestone
+  if(h<220) return[~~Math.min(255,80+j*.6),~~Math.min(255,85+j*.6),~~Math.min(255,96+j*.6),255];      // concrete
+  const t=Math.min(1,(h-220)/300);
+  return[~~Math.min(255,52-t*12+j*.5),~~Math.min(255,76-t*10+j*.4),~~Math.min(255,112+t*20+j*.3),255];// glass
+}
 
 let rests=[], scorecard=[], scoreByFirm={}, bld={}, blayers={};
 let q='';
 const matchQ=d=>q&&(((d.cuisine||'').toLowerCase().includes(q))||((d.name||'').toLowerCase().includes(q))||((d.boro||'').toLowerCase().includes(q)));
 let gradeF='';const gmatch=d=>!gradeF||(d.grade||'')===gradeF;
-let light=false;  // Siri's look is dark-navy; buildings glow on it (light toggle still available)
+let light=true; try{document.body.classList.add("light");}catch(e){}
 let showHeat=true, showPts=true, showArcs=true, recall=null, pulse=0, selId=null, zoom=10.6;
 let mapAffected=new Set();
 // ── the food business's OWN 12 sites (real DOHMH establishments; supplier links MODELED) ──
@@ -434,8 +442,8 @@ const BRIDGE={response:{
 function fmtR(x){if(!x)return'';if(typeof x==='string')return x.slice(0,64);if(x.camis_list)return x.camis_list.length+' sites: '+x.camis_list.slice(0,3).join(', ')+'…';if(x.firm)return x.firm+' · '+(x.class1||0)+' Class-I / '+(x.recalls||0);if(x.compounding_count!=null)return x.compounding_count+' with critical violations';if(x.classification)return x.classification+' · '+(x.hazard_class||'');if(x.recall_number)return 'recall '+x.recall_number+' fired';if(x.headline)return x.headline;return JSON.stringify(x).slice(0,64);}
 
 
-const lighting=new LightingEffect({ambient:new AmbientLight({color:[255,255,255],intensity:1.05}),
-  sun:new SunLight({timestamp:1553990400000,color:[255,240,220],intensity:1.1})});
+const lighting=new LightingEffect({ambient:new AmbientLight({color:[255,248,235],intensity:1.2}),
+  sun:new SunLight({timestamp:new Date('2024-07-15T17:00:00Z').getTime(),color:[255,235,190],intensity:3.8})});
 
 function nearestHub(lon,lat){let bi=0,bd=1e9;for(let i=0;i<HUBS.length;i++){const dx=HUBS[i].pos[0]-lon,dy=HUBS[i].pos[1]-lat,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i;}}return bi;}
 function supRisk(hub){const sk=hub.sk;const c=sk?scoreByFirm[sk]:null;const c1=c?c.class1:0;
@@ -468,21 +476,18 @@ function boot(rj,scj,man){
 
 function bldLayer(key){
   return new PolygonLayer({id:'bld-'+key,data:bld[key],extruded:true,wireframe:false,
-    getPolygon:d=>d.p, getElevation:d=>d.h,
-    getFillColor:d=>{const m=(light?BLD_L:BLD_D)[bldMat(d)],t=Math.min(1,(d.h||0)/130);
-      const s=light?1-t*0.05:1+t*0.24;return [m[0]*s,m[1]*s,m[2]*s];},
-    updateTriggers:{getFillColor:light},  // neutral, glowing warm where risk is high
-    material:{ambient:0.55,diffuse:0.6,shininess:16,specularColor:[30,38,54]},
+    getPolygon:d=>d.p, getElevation:d=>d.h*BLD_SCALE,
+    getFillColor:bldFill,
+    material:{ambient:.35,diffuse:.95,shininess:180,specularColor:[200,220,255]},
     pickable:false, parameters:{depthTest:true}});
 }
 
 function frame(){
   const L=[];
   // ground-heat (risk wash) — flat, calm
-  if(showHeat)L.push(new HexagonLayer({id:'risk',data:rests,radius:125,extruded:true,elevationScale:5,elevationRange:[0,650],
-    getElevationWeight:1,elevationAggregation:'SUM',pickable:false,
+  if(showHeat)L.push(new HexagonLayer({id:'risk',data:rests,radius:120,extruded:false,pickable:false,
     getPosition:d=>[d.lon,d.lat],getColorWeight:d=>d.rs,colorAggregation:'MEAN',
-    colorRange:HEXCOLORS,opacity:light?0.5:0.85,coverage:0.86}));
+    colorRange:HEXCOLORS,opacity:light?0.42:0.6,coverage:0.9}));
   // neutral buildings, per enabled borough
   for(const k in blayers){ if(blayers[k]&&bld[k]) L.push(bldLayer(k)); }
   // individual restaurants (declutter: only when zoomed in)
@@ -535,7 +540,7 @@ let vs={longitude:-73.95,latitude:40.70,zoom:10.6,pitch:48,bearing:-16,minZoom:9
 const HOME={...vs};
 const dk=new DeckGL({container:'deck',views:new MapView({id:'v',repeat:false}),initialViewState:vs,
   controller:{dragPan:true,dragRotate:true,scrollZoom:{smooth:true},doubleClickZoom:true,touchZoom:true,touchRotate:true,keyboard:true,inertia:220,minPitch:0,maxPitch:85},
-  effects:[lighting],parameters:{clearColor:[.03,.055,.11,1]},layers:[],
+  effects:[lighting],parameters:{clearColor:[0.62,0.70,0.82,1]},layers:[],
   onViewStateChange:({viewState})=>{const rezoom=(viewState.zoom>12.6)!==(zoom>12.6);vs=viewState;zoom=viewState.zoom;
     read.textContent=`Z ${zoom.toFixed(1)} · pitch ${vs.pitch|0}° · NYC`;
     document.getElementById('hint').style.display=zoom>12.6?'none':'block';
@@ -654,7 +659,7 @@ document.getElementById('tg').onclick=()=>{const t=document.getElementById('tg')
   fetch('http://localhost:8899/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report:BRIDGE.response})})
     .then(r=>r.json()).then(d=>{t.textContent=d.ok?'\u2713 report + PDF sent':'\u2709 drafted (relay off)';showToast(d.ok?('\u2713 Recall report + PDF sent to Telegram \u2014 '+R.exposed_count+' affected sites listed'):'\u26a0 Report drafted \u2014 relay offline',d.ok);})
     .catch(()=>{t.textContent='\u2709 drafted (relay off)';showToast('\u26a0 Alert drafted \u2014 relay offline on the box',false);});};
-document.getElementById('lite').onclick=e=>{light=!light;document.body.classList.toggle('light',light);e.target.classList.toggle('on',light);e.target.textContent=light?'\u263e Dark / night':'\u2600 Light / day';dk.setProps({parameters:{clearColor:light?[.788,.831,.871,1]:[.027,.043,.07,1]}});};
+document.getElementById('lite').onclick=e=>{light=!light;document.body.classList.toggle('light',light);e.target.classList.toggle('on',light);e.target.textContent=light?'\u263e Dark / night':'\u2600 Light / day';dk.setProps({parameters:{clearColor:light?[0.62,0.70,0.82,1]:[.03,.055,.11,1]}});};
 document.getElementById('q').oninput=e=>{q=e.target.value.trim().toLowerCase();const m=q?rests.filter(matchQ):[];
   document.getElementById('qn').textContent=q?(m.length?(m.length+' match'+(m.length===1?'':'es')+' · Enter to zoom'):'no matches'):'';
   const ql=document.getElementById('qlist');
