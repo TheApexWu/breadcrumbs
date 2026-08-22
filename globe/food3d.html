@@ -51,7 +51,7 @@
   <div class="gp"><button class="boro" data-b="bronx">Bronx</button><button class="boro" data-b="staten">Staten</button></div>
   <div class="lbl">LAYERS</div>
   <div class="gp"><button id="heat" class="on">◍ Risk heat</button><button id="pts" class="on">• Restaurants</button></div>
-  <div class="gp"><button id="arcs">↳ Supply flow</button><button id="reset">⟲ View</button></div>
+  <div class="gp"><button id="mysites" class="on">◈ My 12 sites</button><button id="arcs">↳ Supply flow</button><button id="reset">⟲ City</button></div>
   <div class="gp"><button id="lite">☀ Light / day</button></div>
 </div>
 
@@ -70,7 +70,7 @@
   <div class="row" style="color:var(--mut)">buildings glow by critical-violation density</div>
   <div class="row" style="color:var(--mut)">supply links = MODELED</div>
 </div>
-<div id="rpt" class="panel" style="left:14px;top:56px;width:330px;max-height:44%;overflow-y:auto;display:none;padding:12px 14px;z-index:5"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="color:var(--amber);font-size:11px;letter-spacing:.12em">\u25c8 AGENT REPORT</span><span style="display:flex;gap:6px"><button id="tg" style="background:#0b0f1a;color:var(--amber);border:1px solid var(--amber);font-family:inherit;font-size:10px;padding:4px 8px;cursor:pointer">\u2708 Telegram</button><span id="rpt_x" style="color:var(--mut);cursor:pointer">\u2715</span></span></div><div id="rpt_body" style="font-size:12px;line-height:1.5"></div></div>
+<div id="rpt" class="panel" style="left:14px;top:56px;width:330px;max-height:44%;overflow-y:auto;display:none;padding:12px 14px;z-index:5"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="color:var(--amber);font-size:11px;letter-spacing:.12em">◈ AGENT REPORT</span><span style="display:flex;gap:6px"><button id="tg" style="background:#0b0f1a;color:var(--amber);border:1px solid var(--amber);font-family:inherit;font-size:10px;padding:4px 8px;cursor:pointer">✈ Telegram</button><span id="rpt_x" style="color:var(--mut);cursor:pointer">✕</span></span></div><div id="rpt_body" style="font-size:12px;line-height:1.5"></div><div style="margin-top:9px;border-top:1px solid var(--bd);padding-top:8px"><input id="ask_q" placeholder="ask the agent (local Nemotron on the box)…" style="width:100%;box-sizing:border-box;background:#070b14;border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:11px;padding:5px 8px"/><div id="ask_a" style="font-size:11px;color:var(--grn);margin-top:5px;line-height:1.45;min-height:12px"></div></div></div>
 <div id="read" class="panel"></div>
 <div id="hint">zoom in to see individual restaurants · click one for supplier quality</div>
 <div id="load">LOADING BREADCRUMBS · Manhattan + DOHMH + openFDA …</div>
@@ -99,6 +99,10 @@ const matchQ=d=>q&&(((d.cuisine||'').toLowerCase().includes(q))||((d.name||'').t
 let light=false;
 let showHeat=true, showPts=true, showArcs=false, recall=null, pulse=0, selId=null, zoom=10.6;
 let mapAffected=new Set();
+// ── the food business's OWN 12 sites (real DOHMH establishments; supplier links MODELED) ──
+const OPERATOR=[{"id":"50017041","name":"JUST SALAD","lon":-73.98948,"lat":40.75051,"cv":11,"cuisine":"Salads","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A"},{"id":"50035721","name":"JUST SALAD","lon":-73.9795,"lat":40.6694,"cv":10,"cuisine":"Salads","boro":"Brooklyn","dist":"DOLE FRESH VEGETABLES INC","grade":"A"},{"id":"50088095","name":"SWEETGREEN","lon":-73.98209,"lat":40.74607,"cv":8,"cuisine":"Salads","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A"},{"id":"50161809","name":"SALAD DON","lon":-73.9884,"lat":40.71814,"cv":10,"cuisine":"Salads","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"C"},{"id":"50125151","name":"JUST SALAD","lon":-73.9941,"lat":40.74113,"cv":8,"cuisine":"Salads","boro":"Manhattan","dist":"DOLE FRESH VEGETABLES INC","grade":"A"},{"id":"50008140","name":"CHOP'T","lon":-74.01567,"lat":40.71153,"cv":1,"cuisine":"Salads","boro":"Manhattan","dist":"FRESH EXPRESS INCORPORATED","grade":"A"},{"id":"41315226","name":"CHOP'T","lon":-73.98183,"lat":40.76131,"cv":1,"cuisine":"Salads","boro":"Manhattan","dist":"FRESH EXPRESS INCORPORATED","grade":"A"},{"id":"50179229","name":"THISBOWL NOMAD","lon":-73.98787,"lat":40.74391,"cv":1,"cuisine":"Salads","boro":"Manhattan","dist":"TAYLOR FARMS, INC.","grade":"A"},{"id":"50124505","name":"THE ONYX ROOM","lon":-73.92327,"lat":40.70681,"cv":1,"cuisine":"American","boro":"Brooklyn","dist":"RESTAURANT DEPOT","grade":"A"},{"id":"41016607","name":"EAST RIVER","lon":-73.96478,"lat":40.7108,"cv":1,"cuisine":"American","boro":"Brooklyn","dist":"RESTAURANT DEPOT","grade":"A"},{"id":"50011908","name":"BUDDHA BODAI","lon":-73.99871,"lat":40.71388,"cv":5,"cuisine":"Vegetarian","boro":"Manhattan","dist":"SYSCO","grade":"A"},{"id":"50129823","name":"ANIXI","lon":-73.99773,"lat":40.74631,"cv":4,"cuisine":"Vegetarian","boro":"Manhattan","dist":"SYSCO","grade":"A"}];
+const OPFRAME={longitude:-73.978,latitude:40.728,zoom:12.2,pitch:52,bearing:-14};
+const expCamis=()=>recall?new Set((BRIDGE.response.exposed_sites||[]).map(x=>String(x.camis))):new Set();
 const BRIDGE={response:{
   "allergen_match": null,
   "compounding_count": 5,
@@ -404,6 +408,7 @@ function boot(rj,scj,man){
   m_c.textContent=rests.filter(r=>r.cv>=12).length;  // sites with 12+ critical violations (p90)
   renderScore(); document.getElementById('load').style.display='none';
   dk.setProps({layers:frame()}); requestAnimationFrame(loop);
+  setTimeout(()=>flyTo(OPFRAME),700);  // open by framing the food business's own 12 sites, not the whole city
 }
 
 function bldLayer(key){
@@ -452,6 +457,17 @@ function frame(){
   L.push(new TextLayer({id:'hubT',data:HUBS,getPosition:d=>d.pos,getText:d=>d.name,getSize:9.5,sizeUnits:'pixels',
     getColor:d=>d.class1>10?[240,150,140,235]:[150,200,210,215],getPixelOffset:[0,-14],getTextAnchor:'middle',fontFamily:'monospace',
     outlineWidth:2,outlineColor:[3,6,12,220],fontSettings:{sdf:true},billboard:true}));
+  // ── the food business's OWN 12 sites — always visible, labeled, red when exposed ──
+  const eset=expCamis();
+  L.push(new ScatterplotLayer({id:'op',data:OPERATOR,pickable:true,getPosition:d=>[d.lon,d.lat],radiusUnits:'meters',
+    getRadius:d=>eset.has(d.id)?90+pulse*40:70,radiusMinPixels:7,radiusMaxPixels:20,stroked:true,lineWidthMinPixels:2.5,
+    getLineColor:d=>eset.has(d.id)?[226,86,74,255]:[90,220,255,255],
+    getFillColor:d=>eset.has(d.id)?[226,86,74,150]:[70,150,190,70],
+    updateTriggers:{getLineColor:recall,getFillColor:recall,getRadius:[recall,pulse]},
+    onClick:i=>{if(i.object){const r=rests.find(x=>String(x.id)===String(i.object.id));if(r)select(r.i,true);}}}));
+  L.push(new TextLayer({id:'opT',data:OPERATOR,getPosition:d=>[d.lon,d.lat],getText:d=>d.name,getSize:10.5,sizeUnits:'pixels',
+    getColor:d=>eset.has(d.id)?[255,180,170,255]:[150,228,255,235],getPixelOffset:[0,-16],getTextAnchor:'middle',fontFamily:'monospace',
+    outlineWidth:2.5,outlineColor:[3,6,12,235],fontSettings:{sdf:true},billboard:true,updateTriggers:{getColor:recall}}));
   return L;
 }
 
@@ -542,8 +558,21 @@ document.getElementById('heat').onclick=e=>{showHeat=!showHeat;e.target.classLis
 document.getElementById('pts').onclick=e=>{showPts=!showPts;e.target.classList.toggle('on',showPts);};
 document.getElementById('arcs').onclick=e=>{showArcs=!showArcs;e.target.classList.toggle('on',showArcs);};
 document.getElementById('reset').onclick=()=>{flyTo({...HOME});};
+document.getElementById('mysites').onclick=()=>flyTo(OPFRAME);
+document.getElementById('ask_q').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=e.target.value.trim();if(!q)return;
+  const R=BRIDGE.response,rc=R.recall,sw=(R.recommendation&&R.recommendation.swap_to)||{};
+  const ctx=`Recall: ${rc.recalling_firm} ${rc.recall_number||''} ${rc.classification}, ${(rc.product_description||'').slice(0,80)}, reason ${(rc.reason_for_recall||'').slice(0,60)}. Exposed: ${R.exposed_count} of the operator's 12 sites; ${R.compounding_count} have prior critical DOHMH violations. Distributor ${R.distributor_risk.firm}: ${R.distributor_risk.class1} Class-I on record. Recommended swap: ${sw.firm||'a verified-record supplier'} (${sw.basis||'verified low record'}).`;
+  const a=document.getElementById('ask_a');a.textContent='◈ reasoning on the box…';
+  fetch('http://localhost:8899/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,context:ctx})})
+    .then(r=>r.json()).then(d=>{a.textContent=d.ok?('◈ '+d.answer):('(local model offline — '+(d.error||'no relay')+')');})
+    .catch(()=>{a.textContent='(ask needs the local relay + Nemotron on the box)';});});
 document.getElementById('rpt_x').onclick=()=>{document.getElementById('rpt').style.display='none';};
-document.getElementById('tg').onclick=()=>{const t=document.getElementById('tg');t.textContent='\u2708 sending\u2026';fetch('http://localhost:8899/alert',{method:'POST'}).then(()=>t.textContent='\u2713 sent').catch(()=>{t.textContent=(BRIDGE.sms.sms||'drafted').slice(0,18)+'\u2026 (bot pending)';});};
+document.getElementById('tg').onclick=()=>{const t=document.getElementById('tg');const R=BRIDGE.response,rc=R.recall,sw=(R.recommendation&&R.recommendation.swap_to)||{};
+  const msg=`\u26a0 BREADCRUMBS \u2014 RECALL EXPOSURE ALERT\n\nFDA ${rc.classification||'Class I'} recall ${rc.recall_number||''} (${rc.recalling_firm||''})\nProduct: ${(rc.product_description||'').slice(0,80)}\nHazard: ${(rc.reason_for_recall||'').slice(0,80)}\n\nEXPOSURE: ${R.exposed_count} of your sites received the affected lot; ${R.compounding_count} carry prior critical DOHMH violations.\nACTION: HOLD the recalled lot. Swap sourcing to ${sw.firm||'a verified-record supplier'}${sw.basis?' ('+sw.basis+')':''} \u2014 away from ${R.distributor_risk.firm} (${R.distributor_risk.class1} Class-I on record).\n\nGenerated on-prem, offline.`;
+  t.textContent='✈ sending\u2026';
+  fetch('http://localhost:8899/alert',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:msg})})
+    .then(r=>r.json()).then(d=>{t.textContent=d.ok?'\u2713 sent to Telegram':'\u2709 drafted (relay off)';})
+    .catch(()=>{t.textContent='\u2709 drafted (relay off)';});};
 document.getElementById('lite').onclick=e=>{light=!light;document.body.classList.toggle('light',light);e.target.classList.toggle('on',light);e.target.textContent=light?'\u263e Dark / night':'\u2600 Light / day';dk.setProps({parameters:{clearColor:light?[.86,.90,.94,1]:[.027,.043,.07,1]}});};
 document.getElementById('q').oninput=e=>{q=e.target.value.trim().toLowerCase();const n=q?rests.filter(matchQ).length:0;document.getElementById('qn').textContent=q?(n+' match'+(n===1?'':'es')+' glowing'):'';};
 
