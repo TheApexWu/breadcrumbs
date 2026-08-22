@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
   :root{
-    --bg:#e8eaed;
+    --bg:#dfe1e5;
     --panel:#ffffff;
     --bd:#e0e0e0;
     --tx:#202124;
@@ -19,8 +19,8 @@
     --amber:#e37400;  --amber-lt:#fef3e2;
     --grn:#188038;    --grn-lt:#e6f4ea;
     --sh-sm:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.08);
-    --sh:0 2px 8px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.10);
-    --sh-lg:0 4px 20px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.10);
+    --sh:0 2px 10px rgba(0,0,0,.16),0 1px 4px rgba(0,0,0,.10);
+    --sh-lg:0 6px 24px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.10);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;font-family:'Inter',system-ui,sans-serif;color:var(--tx);font-size:13px}
@@ -42,42 +42,51 @@
   #supply-chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
 
   /* ── left column ── */
-  #left{position:fixed;top:74px;left:14px;z-index:8;width:336px;display:flex;flex-direction:column;gap:8px}
+  #left{position:fixed;top:74px;left:14px;z-index:8;width:340px;display:flex;flex-direction:column;gap:8px}
 
   /* ─── search card ─── */
-  #search-card{background:var(--panel);border-radius:26px;box-shadow:var(--sh-lg);overflow:hidden}
-  #search-row{display:flex;align-items:center;height:50px;padding:0 6px 0 18px;gap:8px}
+  #search-card{background:var(--panel);border-radius:26px;box-shadow:var(--sh-lg);overflow:hidden;transition:box-shadow .2s}
+  #search-card:focus-within{box-shadow:0 8px 30px rgba(26,115,232,.18),0 2px 8px rgba(0,0,0,.10)}
+  #search-row{display:flex;align-items:center;height:52px;padding:0 8px 0 18px;gap:8px}
+  #search-icon{flex-shrink:0;transition:color .15s}
+  #search-card:focus-within #search-icon{color:var(--blue)}
+  #search-icon svg{display:block}
   #search-input{flex:1;border:none;outline:none;font-size:14px;font-family:inherit;color:var(--tx);background:transparent;min-width:0}
   #search-input::placeholder{color:var(--mut);font-weight:400}
-  #search-clear{display:none;background:none;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--mut);display:none;align-items:center;justify-content:center;flex-shrink:0}
+  #search-clear{background:none;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;color:var(--mut);display:none;align-items:center;justify-content:center;flex-shrink:0;transition:background .12s}
   #search-clear:hover{background:#f1f3f4}
 
-  /* grade filter chips — always visible inside search card */
-  #grade-filters{display:flex;align-items:center;gap:4px;padding:0 14px 10px;overflow-x:auto;scrollbar-width:none}
+  /* grade filter chips */
+  #grade-filters{display:flex;align-items:center;gap:5px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
   #grade-filters::-webkit-scrollbar{display:none}
-  .gf{border:none;background:#f1f3f4;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;padding:4px 11px;border-radius:14px;white-space:nowrap;transition:background .14s,color .14s;color:var(--mut);letter-spacing:.01em}
-  .gf:hover{background:#e8eaed}
+  .gf{border:none;background:#f1f3f4;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;padding:5px 13px;border-radius:16px;white-space:nowrap;transition:background .14s,color .14s,transform .1s;color:var(--mut);letter-spacing:.01em}
+  .gf:hover{background:#e8eaed;transform:translateY(-1px)}
+  .gf:active{transform:translateY(0)}
   .gf.active{background:var(--blue-lt);color:var(--blue)}
   .gf[data-g="A"].active{background:var(--grn-lt);color:var(--grn)}
   .gf[data-g="B"].active{background:var(--amber-lt);color:var(--amber)}
   .gf[data-g="C"].active{background:var(--red-lt);color:var(--red)}
 
   /* search results dropdown */
-  #search-results{border-top:1px solid #f1f3f4;display:none;max-height:240px;overflow-y:auto}
-  .sr-item{padding:9px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}
-  .sr-item:hover{background:#f8f9fa}
+  #search-results{border-top:1px solid #f1f3f4;display:none;max-height:280px;overflow-y:auto;scroll-behavior:smooth}
+  #search-results.visible{display:block}
+  .sr-header{padding:8px 16px 4px;font-size:9px;letter-spacing:.12em;color:var(--mut);font-weight:600;text-transform:uppercase}
+  .sr-item{padding:10px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .1s;outline:none}
+  .sr-item:hover,.sr-item:focus,.sr-item.focused{background:#f8f9fa}
   .sr-item+.sr-item{border-top:1px solid #f8f9fa}
-  /* grade badge in result */
-  .sr-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .sr-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
   .sr-badge.ga{background:var(--grn-lt);color:var(--grn)}
   .sr-badge.gb{background:var(--amber-lt);color:var(--amber)}
   .sr-badge.gc{background:var(--red-lt);color:var(--red)}
   .sr-badge.gh{background:var(--blue-lt);color:var(--blue)}
   .sr-badge.gx{background:#f1f3f4;color:var(--mut)}
-  .sr-info{min-width:0}
+  .sr-info{min-width:0;flex:1}
   .sr-name{font-weight:500;font-size:13px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sr-sub{font-size:11px;color:var(--mut);margin-top:2px}
-  .sr-empty{padding:14px 18px;color:var(--mut);font-size:12px;text-align:center}
+  .sr-sub{font-size:11px;color:var(--mut);margin-top:2px;display:flex;align-items:center;gap:6px}
+  .sr-grade-pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700}
+  .sr-empty{padding:20px 18px;color:var(--mut);font-size:12px;text-align:center}
+  .sr-empty-icon{font-size:22px;margin-bottom:6px}
+  .sr-foot{padding:8px 16px;font-size:10px;color:var(--mut);border-top:1px solid #f1f3f4;text-align:center}
 
   /* ─── controls card ─── */
   #ctl-card{background:var(--panel);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
@@ -115,30 +124,53 @@
   .WARN .sev{background:var(--amber-lt);color:var(--amber)}
   #feed{font-size:10.5px;overflow-y:auto;max-height:90px;padding-bottom:4px}
   .fe{padding:3px 14px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .fe .t{color:#ccc}.fe b{color:var(--grn)}.fe.w{color:var(--amber)}
+  .fe b{color:var(--grn)}.fe.w{color:var(--amber)}
 
-  /* ── detail panel (bottom-right) ── */
-  #detail{position:fixed;right:14px;bottom:14px;width:300px;display:none;background:var(--panel);border-radius:16px;box-shadow:var(--sh-lg);z-index:9;overflow:hidden}
-  .dh{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--bd)}
-  .d-name{font-weight:600;font-size:13px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
-  .d-close{background:none;border:none;cursor:pointer;color:var(--mut);padding:3px 6px;border-radius:6px;font-size:16px;line-height:1}
-  .d-close:hover{background:#f1f3f4}
-  /* big grade hero */
-  .d-hero{display:flex;flex-direction:column;align-items:center;padding:18px 16px 14px;border-bottom:1px solid var(--bd);gap:6px}
-  .d-grade-ring{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700}
+  /* ── detail panel — bottom LEFT, doesn't overlap sentinel ── */
+  #detail{
+    position:fixed;left:14px;bottom:14px;width:340px;
+    display:none;
+    background:var(--panel);border-radius:18px;box-shadow:var(--sh-lg);
+    z-index:9;overflow:hidden;
+    transform:translateY(20px);opacity:0;
+    transition:transform .25s cubic-bezier(.16,1,.3,1),opacity .2s;
+  }
+  #detail.open{transform:translateY(0);opacity:1}
+  .dh{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bd)}
+  .d-name{font-weight:700;font-size:14px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;line-height:1.2}
+  .d-close{background:none;border:none;cursor:pointer;color:var(--mut);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;flex-shrink:0;transition:background .12s}
+  .d-close:hover{background:#f1f3f4;color:var(--tx)}
+
+  /* grade hero row */
+  .d-hero{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--bd);gap:16px}
+  .d-grade-ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;flex-shrink:0;position:relative}
+  .d-grade-ring::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2.5px solid transparent}
   .d-grade-ring.ga{background:var(--grn-lt);color:var(--grn)}
+  .d-grade-ring.ga::after{border-color:var(--grn)}
   .d-grade-ring.gb{background:var(--amber-lt);color:var(--amber)}
+  .d-grade-ring.gb::after{border-color:var(--amber)}
   .d-grade-ring.gc{background:var(--red-lt);color:var(--red)}
+  .d-grade-ring.gc::after{border-color:var(--red)}
   .d-grade-ring.gx{background:#f1f3f4;color:var(--mut)}
-  .d-grade-label{font-size:11px;color:var(--mut);font-weight:500}
-  .d-grade-desc{font-size:10px;color:var(--mut)}
+  .d-grade-info{flex:1;min-width:0}
+  .d-grade-label{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:3px}
+  .d-grade-sub{font-size:11px;color:var(--mut)}
+  .d-cuisine-tag{display:inline-block;padding:2px 10px;border-radius:10px;background:#f1f3f4;color:var(--tx2);font-size:11px;font-weight:500;margin-top:5px}
+
+  /* detail table */
   #d_tab{width:100%;border-collapse:collapse;font-size:12px}
-  #d_tab td{padding:7px 16px;border-bottom:1px solid #f8f9fa}
-  #d_tab td.k{color:var(--mut);width:42%;font-size:11px}
+  #d_tab tr{transition:background .1s}
+  #d_tab tr:hover{background:#f8f9fa}
+  #d_tab td{padding:8px 16px;border-bottom:1px solid #f8f9fa}
+  #d_tab td.k{color:var(--mut);width:38%;font-size:11px;font-weight:500}
   #d_tab tr:last-child td{border-bottom:none}
+  .d-score-bar{height:5px;border-radius:3px;background:var(--grn);margin-top:4px;transition:width .5s}
+
+  /* hub badge in detail */
+  .d-hub-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:10px;background:var(--blue-lt);color:var(--blue);font-size:11px;font-weight:600}
 
   /* ── legend ── */
-  #legend{position:fixed;left:14px;bottom:14px;background:var(--panel);border-radius:12px;box-shadow:var(--sh);padding:11px 14px;font-size:11px;z-index:7}
+  #legend{position:fixed;right:14px;bottom:14px;background:var(--panel);border-radius:12px;box-shadow:var(--sh);padding:11px 14px;font-size:11px;z-index:7}
   .leg-title{font-size:9px;letter-spacing:.12em;color:var(--mut);font-weight:600;text-transform:uppercase;margin-bottom:7px}
   .leg-row{display:flex;align-items:center;gap:8px;margin:4px 0;color:var(--tx2)}
   .sw{width:20px;height:6px;border-radius:2px;flex-shrink:0}
@@ -187,27 +219,29 @@
   <!-- search -->
   <div id="search-card">
     <div id="search-row">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2.3" stroke-linecap="round" style="flex-shrink:0">
-        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input id="search-input" type="text" placeholder="Search restaurants or hubs…" autocomplete="off"/>
-      <button id="search-clear" aria-label="Clear">
+      <span id="search-icon" style="flex-shrink:0;color:#5f6368">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      <input id="search-input" type="text" placeholder="Search restaurants, hubs, cuisines…" autocomplete="off" aria-label="Search"/>
+      <button id="search-clear" aria-label="Clear search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
 
-    <!-- grade quick-filters -->
+    <!-- grade quick-filters (always visible) -->
     <div id="grade-filters">
       <button class="gf active" data-g="all">All</button>
-      <button class="gf" data-g="A">● Grade A</button>
-      <button class="gf" data-g="B">● Grade B</button>
-      <button class="gf" data-g="C">● Grade C</button>
+      <button class="gf" data-g="A">● A — Pass</button>
+      <button class="gf" data-g="B">● B — Pass</button>
+      <button class="gf" data-g="C">● C — Violation</button>
       <button class="gf" data-g="hub">◆ Hubs</button>
     </div>
 
-    <div id="search-results"></div>
+    <div id="search-results" role="listbox" aria-label="Search results"></div>
   </div>
 
   <!-- controls -->
@@ -260,21 +294,24 @@
   <div id="feed"></div>
 </div>
 
-<!-- restaurant detail panel -->
-<div id="detail">
+<!-- restaurant detail panel (bottom LEFT) -->
+<div id="detail" role="dialog" aria-label="Restaurant details">
   <div class="dh">
     <div class="d-name" id="d_nm">—</div>
-    <button class="d-close" id="d_x">✕</button>
+    <button class="d-close" id="d_x" aria-label="Close">✕</button>
   </div>
   <div class="d-hero">
     <div class="d-grade-ring gx" id="d_grade_ring">?</div>
-    <div class="d-grade-label" id="d_grade_label">Health grade</div>
-    <div class="d-grade-desc" id="d_grade_desc"></div>
+    <div class="d-grade-info">
+      <div class="d-grade-label" id="d_grade_label">Health grade</div>
+      <div class="d-grade-sub" id="d_grade_sub">—</div>
+      <div id="d_cuisine_tag" class="d-cuisine-tag" style="display:none"></div>
+    </div>
   </div>
   <table id="d_tab"></table>
 </div>
 
-<!-- legend -->
+<!-- legend (bottom RIGHT) -->
 <div id="legend">
   <div class="leg-title">Risk hexbin</div>
   <div class="leg-row"><span class="sw" style="background:#2f7d6b"></span>Mostly grade A</div>
@@ -308,7 +345,8 @@ const {DeckGL,MapView,PolygonLayer,HexagonLayer,ColumnLayer,ScatterplotLayer,Arc
 const GRADE_COLOR={A:'#188038',B:'#e37400',C:'#d93025'};
 const GRADE_BG   ={A:'#e6f4ea',B:'#fef3e2',C:'#fce8e6'};
 const GRADE_RGB  ={A:[24,128,56],B:[227,116,0],C:[217,48,37]};
-const GRADE_DESC ={A:'Excellent · Pass',B:'Acceptable · Pass',C:'Poor · Violation'};
+const GRADE_DESC ={A:'Grade A · Excellent',B:'Grade B · Acceptable',C:'Grade C · Violation'};
+const GRADE_SUB  ={A:'No critical violations found',B:'Some violations, corrected',C:'Serious violations present'};
 const GRADE_CLASS={A:'ga',B:'gb',C:'gc'};
 function gradeRgb(g){return GRADE_RGB[g]||[95,99,104];}
 function gradeCls(g){return GRADE_CLASS[g]||'gx';}
@@ -326,15 +364,20 @@ const HEXCOLORS=[[47,125,107,180],[92,162,120,180],[176,168,96,180],[224,169,90,
 
 let rests=[],scorecard=[],scoreByFirm={},bldMan=null,bldBk=null;
 let showBk=false,showHex=true,showArcs=false,showBld=true,showDots=true;
-let recall=null,pulse=0,selId=null;
+let recall=null,pulse=0;
 let mapAffected=new Set();
-let activeGrade='all'; // 'all'|'A'|'B'|'C'|'hub'
+let activeGrade='all';
 
 function nearestHub(lon,lat){let bi=0,bd=1e9;HUBS.forEach((h,i)=>{const dx=h.pos[0]-lon,dy=h.pos[1]-lat,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i;}});return bi;}
 
+/* ── Realistic lighting ── */
 const lighting=new LightingEffect({
-  ambient:new AmbientLight({color:[255,255,255],intensity:1.4}),
-  sun:new SunLight({timestamp:1553998800000,color:[255,240,220],intensity:2.2})
+  ambient:new AmbientLight({color:[255,252,245],intensity:1.6}),
+  sun:new SunLight({
+    timestamp:new Date('2024-07-15T16:00:00Z').getTime(), // mid-afternoon summer — warm angle
+    color:[255,245,220],
+    intensity:2.8
+  })
 });
 
 function setLoadStatus(msg,pct){
@@ -357,13 +400,58 @@ function boot(rj,scj,man){
   requestAnimationFrame(loop);
 }
 
-/* ── buildings (sandstone tones) ── */
+/* ── Realistic buildings ── */
+/* Buildings get multi-tone color based on height category + position hash
+   Low  (0-20m)  : warm brownstone/brick    NYC prewar walk-ups
+   Mid  (20-80m) : limestone/terracotta mix  prewar mid-rises
+   High (80-180m): cool concrete/limestone   postwar slabs
+   Sky  (180m+)  : blue-tinted glass         glass curtain-wall towers  */
+function bldHash(d){
+  // Quick deterministic hash from first polygon vertex
+  const p=d.p[0];
+  return (Math.abs(Math.round(p[0]*10000)+Math.round(p[1]*10000)))%100;
+}
+function bldColor(d){
+  const h=d.h, v=bldHash(d), jit=v*0.4-20;
+  if(h<18){
+    // Brownstones/brick — warm reddish-tan
+    return[Math.min(255,178+jit*0.5), Math.min(255,138+jit*0.3), Math.min(255,108+jit*0.2), 255];
+  }else if(h<55){
+    // Prewar mid-rise — brick or limestone
+    if(v<50){
+      return[Math.min(255,190+jit*0.4), Math.min(255,162+jit*0.3), Math.min(255,132+jit*0.2), 255]; // brick
+    }else{
+      return[Math.min(255,210+jit*0.2), Math.min(255,202+jit*0.2), Math.min(255,190+jit*0.15), 255]; // limestone
+    }
+  }else if(h<150){
+    // Postwar slab — concrete grey with warm tint
+    return[Math.min(255,202+jit*0.15), Math.min(255,198+jit*0.15), Math.min(255,192+jit*0.12), 255];
+  }else{
+    // Glass tower — cool blue-grey, taller = bluer
+    const t=Math.min(1,(h-150)/250);
+    return[
+      Math.min(255,182-t*14+jit*0.1),
+      Math.min(255,196-t*4+jit*0.1),
+      Math.min(255,214+t*8+jit*0.08),
+      255
+    ];
+  }
+}
+
 function bldLayer(id,data){
   return new PolygonLayer({id,data,extruded:true,wireframe:false,
-    getPolygon:d=>d.p,getElevation:d=>d.h,
-    getFillColor:d=>{const t=Math.min(1,d.h/120);return[Math.round(205-t*18),Math.round(200-t*12),Math.round(194+t*14),255];},
-    material:{ambient:0.8,diffuse:0.6,shininess:40,specularColor:[200,210,220]},
-    pickable:false});
+    getPolygon:d=>d.p,
+    getElevation:d=>d.h,
+    getFillColor:bldColor,
+    material:{
+      ambient:0.55,
+      diffuse:0.8,
+      shininess:80,
+      specularColor:[220,230,245]   // cool specular for glass-like reflection
+    },
+    pickable:false,
+    updateTriggers:{getFillColor:[]}
+  });
 }
 
 /* ── restaurant dots (grade-coloured) ── */
@@ -373,9 +461,9 @@ function dotsLayer(){
   if(activeGrade==='hub') data=[];
   return new ScatterplotLayer({id:'dots',data,
     getPosition:d=>[d.lon,d.lat],
-    getRadius:10,radiusUnits:'meters',radiusMinPixels:2,radiusMaxPixels:7,
-    getFillColor:d=>[...gradeRgb(d.grade),200],
-    getLineColor:[255,255,255,160],lineWidthMinPixels:0.8,
+    getRadius:12,radiusUnits:'meters',radiusMinPixels:2,radiusMaxPixels:8,
+    getFillColor:d=>[...gradeRgb(d.grade),210],
+    getLineColor:[255,255,255,180],lineWidthMinPixels:0.8,
     pickable:true,
     onClick:i=>{if(i.object)showRestaurant(i.object);}
   });
@@ -389,7 +477,7 @@ function frame(){
     getPosition:d=>[d.lon,d.lat],
     getColorWeight:d=>d.rs,colorAggregation:'MEAN',colorRange:HEXCOLORS,
     getElevationWeight:1,elevationAggregation:'SUM',elevationRange:[0,800],
-    opacity:0.75,coverage:0.86}));
+    opacity:0.72,coverage:0.86}));
   if(showDots)L.push(dotsLayer());
   if(recall){const aff=rests.filter(r=>mapAffected.has(r.i));
     L.push(new ColumnLayer({id:'aff',data:aff,diskResolution:6,radius:38,extruded:true,
@@ -409,7 +497,7 @@ function frame(){
   L.push(new TextLayer({id:'hubT',data:HUBS,getPosition:d=>d.pos,getText:d=>d.name,
     getSize:10,sizeUnits:'pixels',
     getColor:d=>d.class1>10?[180,30,20,240]:[26,115,232,220],
-    getPixelOffset:[0,-18],getTextAnchor:'middle',fontFamily:'Inter,system-ui,sans-serif',
+    getPixelOffset:[0,-20],getTextAnchor:'middle',fontFamily:'Inter,system-ui,sans-serif',
     outlineWidth:2,outlineColor:[255,255,255,230],fontSettings:{sdf:true},billboard:true}));
   return L;
 }
@@ -419,7 +507,8 @@ const HOME={...vs};
 const dk=new DeckGL({
   container:'deck',views:new MapView({id:'v',repeat:false}),viewState:vs,
   controller:{inertia:250,scrollZoom:{smooth:true}},effects:[lighting],
-  parameters:{clearColor:[0.88,0.90,0.93,1]},layers:[],
+  parameters:{clearColor:[0.82,0.84,0.87,1]},   // slightly bluer sky to match glass towers
+  layers:[],
   onViewStateChange:({viewState})=>{vs=viewState;document.getElementById('read').textContent=`Z ${vs.zoom.toFixed(1)} · pitch ${vs.pitch|0}°`;}
 });
 
@@ -433,15 +522,32 @@ function showRestaurant(r){
   ring.textContent=g;
   ring.className='d-grade-ring '+(GRADE_CLASS[g]||'gx');
   document.getElementById('d_nm').textContent=r.name||'Restaurant';
-  document.getElementById('d_grade_label').textContent=GRADE_DESC[g]||'Ungraded';
-  document.getElementById('d_grade_desc').textContent=r.cuisine?r.cuisine:'';
+  document.getElementById('d_grade_label').textContent=GRADE_DESC[g]||'Health grade';
+  document.getElementById('d_grade_sub').textContent=GRADE_SUB[g]||'No data';
+  const ctag=document.getElementById('d_cuisine_tag');
+  if(r.cuisine){ctag.textContent=r.cuisine;ctag.style.display='inline-block';}
+  else{ctag.style.display='none';}
+
+  const hub=HUBS[r.hub];
+  const hubHtml=hub?`<span class="d-hub-badge">◆ ${hub.name}</span>`:'—';
+  const riskScore=r.rs||0;
+  const riskPct=Math.round(riskScore*100);
+  const riskColor=g==='C'?'var(--red)':g==='B'?'var(--amber)':'var(--grn)';
+
   document.getElementById('d_tab').innerHTML=[
     ['Address', r.address||r.street||'—'],
-    ['Borough', r.boro||'—'],
+    ['Borough', r.boro||'Manhattan'],
     ['Cuisine', r.cuisine||'—'],
-    ['Nearest hub', HUBS[r.hub]?HUBS[r.hub].name:'—'],
+    ['Nearest hub', hubHtml],
+    ['Risk score', `<div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600;color:${riskColor}">${riskPct}%</span><div style="flex:1;height:5px;border-radius:3px;background:#f1f3f4"><div style="width:${riskPct}%;height:5px;border-radius:3px;background:${riskColor}"></div></div></div>`],
   ].map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('');
-  document.getElementById('detail').style.display='block';
+
+  const det=document.getElementById('detail');
+  det.style.display='block';
+  requestAnimationFrame(()=>det.classList.add('open'));
+
+  // fly map to restaurant
+  vs={...vs,longitude:r.lon,latitude:r.lat,zoom:Math.max(vs.zoom,14.5)};
 }
 
 /* ── distributor score panel ── */
@@ -457,7 +563,7 @@ function renderScore(){
   }).join('');
   document.querySelectorAll('.sc[data-hub]').forEach(el=>el.onclick=()=>pickHub(el.dataset.hub));
 }
-function feed(h,cls){const t=new Date().toLocaleTimeString('en-GB');document.getElementById('feed').insertAdjacentHTML('afterbegin',`<div class="fe ${cls||''}"><span class="t">${t}</span> ${h}</div>`);}
+function feed(h,cls){const t=new Date().toLocaleTimeString('en-GB');document.getElementById('feed').insertAdjacentHTML('afterbegin',`<div class="fe ${cls||''}"><span style="color:#ccc">${t}</span> ${h}</div>`);}
 function alertln(sev,txt){document.getElementById('alerts').insertAdjacentHTML('afterbegin',`<div class="al ${sev}"><span class="sev">${sev}</span><span>${txt}</span></div>`);}
 function pickHub(key){
   const h=HUBS.find(x=>x.key===key);if(!h)return;
@@ -470,12 +576,18 @@ function pickHub(key){
 
 /* ── search ── */
 let searchIndex=[];
+let focusedIdx=-1;
+
 function buildSearchIndex(){
+  searchIndex=[];
   // Hubs first
-  searchIndex=HUBS.map(h=>({type:'hub',label:h.name,sub:h.kind==='market'?'Produce market':'Distributor',grade:null,action:()=>pickHub(h.key)}));
-  // Restaurants (all with a name)
-  rests.forEach(r=>{
-    if(r.name)searchIndex.push({type:'rest',label:r.name,sub:(r.boro||'NYC'),grade:r.grade||null,action:()=>{vs={...vs,longitude:r.lon,latitude:r.lat,zoom:15};showRestaurant(r);}});
+  HUBS.forEach(h=>searchIndex.push({type:'hub',label:h.name,sub:h.kind==='market'?'Produce market':'Food distributor',grade:null,action:()=>pickHub(h.key)}));
+  // Grade C first (highest risk), then B, then A, then ungraded
+  const order={C:0,B:1,A:2};
+  const sorted=[...rests].sort((a,b)=>(order[a.grade]??3)-(order[b.grade]??3));
+  sorted.forEach(r=>{
+    if(r.name)searchIndex.push({type:'rest',label:r.name,sub:r.boro||'Manhattan',grade:r.grade||null,cuisine:r.cuisine||null,
+      action:()=>{vs={...vs,longitude:r.lon,latitude:r.lat,zoom:15};showRestaurant(r);}});
   });
 }
 
@@ -483,42 +595,73 @@ const siEl=document.getElementById('search-input');
 const scEl=document.getElementById('search-clear');
 const srEl=document.getElementById('search-results');
 
-function renderResults(q){
+function renderResults(q, showDefault){
   const qL=q.toLowerCase();
   let pool=searchIndex;
-  // filter by activeGrade
   if(activeGrade==='hub')  pool=pool.filter(x=>x.type==='hub');
   else if(activeGrade!=='all') pool=pool.filter(x=>x.type==='hub'||x.grade===activeGrade);
-  // filter by query text
-  if(qL) pool=pool.filter(x=>x.label.toLowerCase().includes(qL));
-  const hits=pool.slice(0,8);
-  if(!hits.length){srEl.innerHTML='<div class="sr-empty">No results</div>';srEl.style.display='block';return;}
-  srEl.innerHTML=hits.map((x,i)=>{
+  if(qL) pool=pool.filter(x=>
+    x.label.toLowerCase().includes(qL)||
+    (x.cuisine&&x.cuisine.toLowerCase().includes(qL))||
+    (x.sub&&x.sub.toLowerCase().includes(qL))
+  );
+  const hits=pool.slice(0,showDefault?6:9);
+  if(!hits.length){
+    srEl.innerHTML='<div class="sr-empty"><div class="sr-empty-icon">🔍</div>No results for "'+q+'"</div>';
+    srEl.classList.add('visible');
+    return;
+  }
+
+  const header=showDefault
+    ? `<div class="sr-header">${activeGrade==='all'?'Top risk restaurants':`Grade ${activeGrade} restaurants`}</div>`
+    : '';
+
+  srEl.innerHTML=header+hits.map((x,i)=>{
     const cls=x.type==='hub'?'gh':gradeCls(x.grade);
-    const lbl=x.type==='hub'?'◆':x.grade||'?';
-    const grade_pill=x.grade?`<span style="display:inline-block;padding:0 7px;border-radius:10px;font-size:10px;font-weight:700;background:${GRADE_BG[x.grade]||'#f1f3f4'};color:${GRADE_COLOR[x.grade]||'#5f6368'};margin-left:6px">${x.grade}</span>`:'';
-    return `<div class="sr-item" data-i="${i}">
+    const lbl=x.type==='hub'?'◆':(x.grade||'?');
+    const gradePill=x.grade?`<span class="sr-grade-pill" style="background:${GRADE_BG[x.grade]};color:${GRADE_COLOR[x.grade]}">${x.grade}</span>`:'';
+    const cuisineSub=x.cuisine&&x.cuisine!==x.label?`· ${x.cuisine}`:'';
+    return `<div class="sr-item" role="option" tabindex="-1" data-i="${i}">
       <div class="sr-badge ${cls}">${lbl}</div>
       <div class="sr-info">
-        <div class="sr-name">${x.label}${grade_pill}</div>
-        <div class="sr-sub">${x.sub}</div>
+        <div class="sr-name">${x.label} ${gradePill}</div>
+        <div class="sr-sub">${x.sub}${cuisineSub?'<span>'+cuisineSub+'</span>':''}</div>
       </div></div>`;
-  }).join('');
-  srEl.style.display='block';
+  }).join('')+(pool.length>hits.length?`<div class="sr-foot">+${pool.length-hits.length} more — keep typing to narrow</div>`:'');
+
+  srEl.classList.add('visible');
+  focusedIdx=-1;
   srEl.querySelectorAll('.sr-item').forEach(el=>{
     const hit=hits[+el.dataset.i];
-    el.onclick=()=>{hit.action();siEl.value=hit.label;srEl.style.display='none';scEl.style.display='flex';};
+    el.onclick=()=>{hit.action();siEl.value=hit.label;hideResults();scEl.style.display='flex';};
   });
 }
+
+function hideResults(){srEl.classList.remove('visible');focusedIdx=-1;}
+
+siEl.addEventListener('focus',()=>{
+  // Show results on focus even without typing
+  renderResults(siEl.value.trim(),!siEl.value.trim());
+});
 
 siEl.addEventListener('input',()=>{
   const q=siEl.value.trim();
   scEl.style.display=q?'flex':'none';
-  if(q||activeGrade!=='all'){renderResults(q);}
-  else{srEl.style.display='none';srEl.innerHTML='';}
+  renderResults(q,!q);
 });
-scEl.onclick=()=>{siEl.value='';srEl.style.display='none';scEl.style.display='none';siEl.focus();};
-document.addEventListener('click',e=>{if(!e.target.closest('#search-card'))srEl.style.display='none';});
+
+// Keyboard navigation
+siEl.addEventListener('keydown',e=>{
+  const items=srEl.querySelectorAll('.sr-item');
+  if(!items.length)return;
+  if(e.key==='ArrowDown'){e.preventDefault();focusedIdx=Math.min(focusedIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('focused',i===focusedIdx));items[focusedIdx]&&items[focusedIdx].scrollIntoView({block:'nearest'});}
+  else if(e.key==='ArrowUp'){e.preventDefault();focusedIdx=Math.max(focusedIdx-1,0);items.forEach((el,i)=>el.classList.toggle('focused',i===focusedIdx));}
+  else if(e.key==='Enter'&&focusedIdx>=0){items[focusedIdx]&&items[focusedIdx].click();}
+  else if(e.key==='Escape'){hideResults();siEl.blur();}
+});
+
+scEl.onclick=()=>{siEl.value='';hideResults();scEl.style.display='none';siEl.focus();};
+document.addEventListener('click',e=>{if(!e.target.closest('#search-card'))hideResults();});
 
 // grade filter chips
 document.querySelectorAll('.gf').forEach(btn=>{
@@ -526,12 +669,9 @@ document.querySelectorAll('.gf').forEach(btn=>{
     activeGrade=btn.dataset.g;
     document.querySelectorAll('.gf').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    // re-render map dots
     dk.setProps({layers:frame()});
-    // re-render search results if any text, or show filtered list when a grade is picked
     const q=siEl.value.trim();
-    if(activeGrade!=='all'||q){renderResults(q);}
-    else{srEl.style.display='none';srEl.innerHTML='';}
+    renderResults(q,!q);
   };
 });
 
@@ -587,7 +727,11 @@ document.getElementById('bx').onclick=e=>{
   e.target.textContent='Loading…';e.target.disabled=true;
   fetch(ASSET_BASE+'brooklyn_buildings.json').then(r=>r.json()).then(d=>{bldBk=d;showBk=true;e.target.textContent='Brooklyn';e.target.disabled=false;e.target.classList.add('on');});
 };
-document.getElementById('d_x').onclick=()=>{document.getElementById('detail').style.display='none';};
+document.getElementById('d_x').onclick=()=>{
+  const det=document.getElementById('detail');
+  det.classList.remove('open');
+  setTimeout(()=>{det.style.display='none';},250);
+};
 
 /* ── load assets ── */
 setLoadStatus('Fetching restaurant data…',15);
