@@ -1,8 +1,8 @@
 # RALPH loop status
 
-- updated: 2026-08-22T16:35:00Z
+- updated: 2026-08-22T16:11:38Z
 - last finished: milestone 3: Agent swarm (OpenClaw/NemoClaw, tool-calling, concurrent)
-- currently working on: milestone 4: Bridge — serve the agent/data to the frontend (next iteration)
+- currently working on: (between milestones)
 
 ## Iteration history
 - 2026-08-22T15:23:46Z START iteration 1 -> milestone 0 (Preflight + MongoDB load), attempt 1
@@ -22,3 +22,4 @@
 - M3 Agent swarm — COMPLETE (evidence in PRD.JSON)
 - M4 Bridge — next
 - M5-M8 — pending
+- 2026-08-22T16:11:38Z DONE milestone 3 (Agent swarm (OpenClaw/NemoClaw, tool-calling, concurrent))
