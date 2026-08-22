@@ -1,6 +1,6 @@
 # BREADCRUMBS — branch brief (`nick` lane)
 
-**Status as of Aug 22 2026, ~11:45.** Working notes for the asset/UI lane. Not a spec —
+**Status as of Aug 22 2026, ~13:00.** Working notes for the asset/UI lane. Not a spec —
 `PRD.JSON`, `docs/premise.md`, `docs/branching.md` and `bridge/CONTRACT.md` remain authoritative.
 Structural companion: [`SYSTEM-MAP.md`](SYSTEM-MAP.md).
 
@@ -25,19 +25,47 @@ Two notes from doing it:
 
 ---
 
-## 2. The loop has not landed a milestone
+## 2. The loop landed M0–M5 — in one hour
 
-All 9 PRD milestones are `completed:false`. `agent/ sim/ db/ bridge/` on `ralph` are the scaffold
-only. Every commit on `ralph` since the scaffold is a hand-edit to `PRD.JSON`, not loop output:
+**This section previously said the loop had produced nothing. That was true at 11:40 and false by
+12:26.** The loop ran **15:23–16:26 UTC**, completed six milestones, and stopped cleanly:
+`STOP: no eligible milestone (human-gate M6 or dep-blocked M7 remain — Alex certifies those)`.
 
-| commit | change |
-|---|---|
-| `02d33de` | Telegram → M5 primary comms channel (real Bot API, token from env) |
-| `777ac5c` | allergen radar → M0 tag + M2 match; notification-preference profile → M1 |
-| `79e375a` | merge sync `ralph` ← `food` |
+| M | Landed | Evidence |
+|---|---|---|
+| M0 | Preflight + Mongo — **29,309 recalls**, 17,204 establishments, 26,386 crit-violation records, 2dsphere indexes | 16/16 verify PASS |
+| M1 | Operator model — 12-site portfolio, modeled supplier links, alert profile | 14/14 |
+| M2 | Recall-response — exposure × risk × action, deterministic | 19/19 |
+| M3 | Agent swarm — 5 roles, Tracer‖Risk concurrent, `agent_memory` dedup | 22/22 |
+| M4 | **Bridge** — `:8899` + committed static mirror, full contract | 19/19 |
+| M5 | Telegram alert (real Bot API, env token) + mock-phone fallback | — |
 
-The loop is being *tuned*, not *run*. And it is backend-only by design — **it will never emit a
-design.** Waiting on it for visual direction is waiting on the wrong process.
+M6–M8 remain `completed:false` and are human-gated: local Nemotron + real telemetry, agent-quality
+verdict, pitch. Hard wall 18:00.
+
+**`food` moved too** — five commits, and `22fde8b` is a 273-line rebuild of `food3d.html`:
+HexagonLayer → HeatmapLayer ground-heat, five lazy borough toggles, clickable restaurants, free
+camera to 85° with `FlyToInterpolator`, search-to-glow, draggable HUD panels, particles flowing
+along the supply arcs. `Siri` is fully contained in `food` — its one commit is
+`mockups/theme-lab.html`, eight live-switchable themes.
+
+### What this changes for this lane
+
+- **The design surface now exists.** §2's old conclusion — *wait for M4, the loop will never emit
+  a design* — is half-obsolete. The loop still emits no visual design, but `bridge/CONTRACT.md`
+  now specifies every field and its provenance class, so asset work that has to render
+  real-vs-modeled finally has something concrete to match.
+- **The console and the backend have never met.** `grep '8899\|bridge/\|operator_sites'
+  globe/food3d.html` → nothing. The backend computes the true answer; the frontend performs a
+  `setTimeout` lookalike of it. Highest-value unclaimed work in the repo.
+- **Idea #1 got a baseline.** `data/recalls.json` holds 29,309 full openFDA rows with dates and
+  distribution patterns. "Recalls not yet in openFDA" is now a measurable delta, not a hypothesis
+  — and it is also the timelapse data §7 said didn't exist.
+- **Idea #2 partly collides.** `agent/comms.py` already owns `TELEGRAM_BOT_TOKEN` and outbound
+  `sendMessage`. The inbound half (`getUpdates`, "I'm about to go to Chipotle") is untouched and
+  would sit on top of it.
+
+Full traced walkthrough: [`END-TO-END.md`](END-TO-END.md). Pitch: [`pitch-script.md`](pitch-script.md).
 
 ---
 

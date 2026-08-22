@@ -246,24 +246,38 @@ Humans own **frontend + assets** — `globe/*.html`, `globe/assets/`, `mockups/`
 
 ## 9. Current state and open items
 
-**Built + real (today):** cached datasets in `globe/assets/`; consoles `globe/food3d.html` (3D, primary) +
-`globe/food.html` (2D fallback); data fetchers in `scripts/`; premise locked; branch model in place.
+**Updated Aug 22 ~13:00.** The previous version of this section said the loop had landed nothing.
+It ran 15:23–16:26 UTC and landed six milestones.
 
-**Not built yet:** the backend. As of **11:40**, the ralph loop **still has not landed a milestone** — all 9 PRD
-milestones are `completed:false` and `agent/ sim/ db/ bridge/` are the scaffold only. Every commit on `ralph`
-since the scaffold is a **hand-edit to `PRD.JSON`**, not loop output: `02d33de` (M5 Telegram = primary comms),
-`777ac5c` (allergen radar → M0 tag + M2 match; notification-preference profile → M1). Off-box milestones
-**M0–M5** are built by the loop (Alex's machine via OpenRouter); **M6–M8** are on-box / human-gated (Alex owns
-the GB10 numbers, agent-quality verdict, and pitch). **Implication for the asset lane:** the design surface the
-loop will produce (bridge fields, transcript shape, telemetry) does not exist yet — brand/asset work that has to
-match it should wait for M4, and only the name-agnostic pieces (mark, palette, type) can be settled now.
+**Built + real:** cached datasets (`globe/assets/`, `data/`) · consoles `globe/food3d.html` (3D,
+rebuilt on `food` @ `22fde8b`) + `globe/food.html` (2D) · **the full off-box backend, M0–M5**:
+Mongo load with 2dsphere indexes and aggregation-based tools, the 12-site operator model, the
+deterministic response engine, the five-role swarm with real concurrency and durable
+`agent_memory`, the bridge on `:8899` with a committed offline mirror, and Telegram comms with a
+zero-network fallback.
 
-**Gotchas worth fixing (asset/UI lane):**
-- `docs/design-system.md` still reads **"STRAITS / maritime"** — never rewritten for food. It recommends
-  **cyan** as the single brand accent (amber = WATCH status only); the concept page currently uses amber.
-  Resolve the brand color, then update this doc. *(In progress in `mockups/logo-lab.html`.)*
-- **deck.gl + fonts still load from unpkg** — must be **vendored locally** before the offline GB10 demo.
-- ~~Stray `amadeus@100.106.203.57ure.py` in repo root~~ — **fixed** on `food` (`89c2c3f`).
+**Human-gated, not built:** M6 (Nemotron on-box + real NVML/tegrastats telemetry + pull-the-cable),
+M7 (agent-quality verdict), M8 (pitch + 90-second video, 18:00 submission wall). Alex owns all
+three; the loop scaffolded them and stopped.
+
+**The open seam:** the console is **not wired to the bridge**. `globe/food3d.html` contains no
+reference to `:8899`, `bridge/`, `/operator_sites`, `/transcript` or `/telemetry`. It fetches three
+static JSONs, invents supplier links in-browser via `nearestHub()` geometry, and narrates a
+five-step `setTimeout` mock of the swarm that now exists for real. Closing this is contract-shaped
+work — see `bridge/CONTRACT.md` and [`END-TO-END.md`](END-TO-END.md) §7.
+
+**Gotchas worth fixing:**
+- **deck.gl still loads from `unpkg.com`** (`globe/food3d.html:73`) — violates hard rule 4; the
+  unplugged demo is a white screen. Highest-risk item before the GB10 run.
+- **`bridge/out/*.json` is stale** — generated before `e22220b` changed the swap target, so the
+  committed offline payloads still say `swap_to: BALDOR`. Fix: `bridge/server.py --write-out`.
+- **`docs/premise.md`'s 90-second script is superseded** — its Baldor line is the artifact that
+  was just removed, and its "C health grade" line contradicts hard rule 6. Corrected script in
+  [`pitch-script.md`](pitch-script.md).
+- `docs/design-system.md` still reads **"STRAITS / maritime"**. Brand color is settled by
+  `mockups/vision.html` (`--brand:#3fb6c9` cyan, amber demoted, plus a new `--allergen:#c77dff`);
+  `theme-lab.html` now offers eight alternates. Logo mark still unpicked (`mockups/logo-lab.html`).
+- `amadeus@100.106.203.57ure.py` still on `ralph` (cleaned on `food`).
 
 ---
 
@@ -275,9 +289,13 @@ match it should wait for M4, and only the name-agnostic pieces (mark, palette, t
 | `docs/premise.md` | the locked product premise + 90-sec demo |
 | `docs/branching.md` | branches + file ownership |
 | `RALPH.md` | how each loop iteration behaves |
-| `bridge/CONTRACT.md` | the backend↔frontend interface *(written at M4)* |
+| `bridge/CONTRACT.md` | the backend↔frontend interface — **complete, M4 landed** |
+| `docs/END-TO-END.md` | the traced start-to-finish walkthrough (code, not milestone notes) |
+| `docs/pitch-script.md` | the 90-sec video + 5-min pitch script, run-book, and do-not-say list |
+| `docs/context-nick.md` | this lane's standing brief |
 | `docs/design-system.md` | visual tokens *(currently stale — maritime)* |
 | `docs/onboarding.md` | new-teammate catch-up |
 | `docs/ideas.md` | team idea log — suggestions not yet in the PRD |
 | `mockups/vision.html` | the send-ready vision page (4 risk dimensions, allergen radar) |
+| `mockups/theme-lab.html` | 8 live-switchable visual themes over the 3D map |
 | `DATA-README.txt` (USB) | dataset provenance + load hints |
