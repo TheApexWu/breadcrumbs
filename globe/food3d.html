@@ -40,6 +40,8 @@
 
 <div id="ctl">
   <button id="rec">⚠ SIMULATE RECALL <span class="n">demo</span></button>
+  <input id="q" placeholder="search cuisine / name (e.g. pizza)" style="width:100%;box-sizing:border-box;background:#070b14;border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:11px;padding:6px 9px;margin-top:2px"/>
+  <div id="qn" style="font-size:9px;color:var(--amber);min-height:11px;padding-left:2px"></div>
   <div class="lbl">BOROUGHS · toggle (lazy-loaded)</div>
   <div class="gp"><button class="boro on" data-b="manhattan">Manhattan</button></div>
   <div class="gp"><button class="boro" data-b="brooklyn">Brooklyn</button><button class="boro" data-b="queens">Queens</button></div>
@@ -87,6 +89,8 @@ const gcol=g=>g==='A'?[90,200,110]:g==='B'?[224,169,90]:g==='C'?[226,86,74]:[110
 const HEAT=[[31,107,94,0],[47,125,107],[120,150,96],[224,169,90],[226,120,74],[226,86,74]];
 
 let rests=[], scorecard=[], scoreByFirm={}, bld={}, blayers={};
+let q='';
+const matchQ=d=>q&&(((d.cuisine||'').toLowerCase().includes(q))||((d.name||'').toLowerCase().includes(q)));
 let showHeat=true, showPts=true, showArcs=false, recall=null, pulse=0, selId=null, zoom=10.6;
 let mapAffected=new Set();
 
@@ -126,10 +130,13 @@ function frame(){
   // neutral buildings, per enabled borough
   for(const k in blayers){ if(blayers[k]&&bld[k]) L.push(bldLayer(k)); }
   // individual restaurants (declutter: only when zoomed in)
-  if(showPts && zoom>12.6)L.push(new ScatterplotLayer({id:'pts',data:rests,pickable:true,
-    getPosition:d=>[d.lon,d.lat],radiusUnits:'meters',getRadius:d=>d.i===selId?70:28,radiusMinPixels:2,radiusMaxPixels:8,
-    getFillColor:d=>d.i===selId?[255,255,255,255]:(recall&&mapAffected.has(d.i)?[226,86,74,240]:[...gcol(d.grade),200]),
-    updateTriggers:{getFillColor:[selId,recall],getRadius:selId},
+  // search halo — soft amber glow under the matches
+  if(q)L.push(new ScatterplotLayer({id:'halo',data:rests.filter(matchQ),getPosition:d=>[d.lon,d.lat],radiusUnits:'meters',getRadius:120,radiusMinPixels:5,radiusMaxPixels:22,getFillColor:[255,200,90,45]}));
+  if((showPts && zoom>12.6) || q)L.push(new ScatterplotLayer({id:'pts',data:rests,pickable:true,
+    getPosition:d=>[d.lon,d.lat],radiusUnits:'meters',
+    getRadius:d=>d.i===selId?70:(q?(matchQ(d)?80:12):28),radiusMinPixels:q?1:2,radiusMaxPixels:q?10:8,
+    getFillColor:d=>d.i===selId?[255,255,255,255]:(recall&&mapAffected.has(d.i)?[226,86,74,240]:(q?(matchQ(d)?[255,206,100,255]:[80,90,112,14]):[...gcol(d.grade),200])),
+    updateTriggers:{getFillColor:[selId,recall,q],getRadius:[selId,q]},
     onClick:i=>{if(i.object)select(i.object.i);}}));
   // recall-affected: red beacons even when zoomed out
   if(recall){const aff=rests.filter(r=>mapAffected.has(r.i));
@@ -227,6 +234,7 @@ document.getElementById('heat').onclick=e=>{showHeat=!showHeat;e.target.classLis
 document.getElementById('pts').onclick=e=>{showPts=!showPts;e.target.classList.toggle('on',showPts);};
 document.getElementById('arcs').onclick=e=>{showArcs=!showArcs;e.target.classList.toggle('on',showArcs);};
 document.getElementById('reset').onclick=()=>{flyTo({...HOME});};
+document.getElementById('q').oninput=e=>{q=e.target.value.trim().toLowerCase();const n=q?rests.filter(matchQ).length:0;document.getElementById('qn').textContent=q?(n+' match'+(n===1?'':'es')+' glowing'):'';};
 
 
 // draggable HUD panels (grab empty areas / labels; controls still click)
