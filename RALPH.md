@@ -1,8 +1,8 @@
 # RALPH loop status
 
-- updated: 2026-08-22T16:11:38Z
-- last finished: milestone 3: Agent swarm (OpenClaw/NemoClaw, tool-calling, concurrent)
-- currently working on: (between milestones)
+- updated: 2026-08-22T16:35:00Z
+- last finished: milestone 4: Bridge — serve the agent/data to the frontend (contract, no console edits)
+- currently working on: next milestone (iteration 5)
 
 ## Iteration history
 - 2026-08-22T15:23:46Z START iteration 1 -> milestone 0 (Preflight + MongoDB load), attempt 1
@@ -14,12 +14,13 @@
 - 2026-08-22T16:35:00Z DONE milestone 2: respond() computes exposure (M1) x risk (distributor class1 + compounding) x action (hold + swap to 0-class1 Baldor). 19/19 verifications PASS. See docs-notes/m2.md.
 - 2026-08-22T16:05:00Z START iteration 3 -> milestone 3 (Agent swarm (OpenClaw/NemoClaw, tool-calling, concurrent)), attempt 1
 - 2026-08-22T16:35:00Z DONE milestone 3: agent/swarm.py — 5 tool-calling roles (Watcher/Tracer/Risk/Briefer/Comms), ModelAdapter single swap point (OpenClaw/OpenRouter off-box <-> NemoClaw/Nemotron on-box), Tracer+Risk concurrent, agent_memory dedup across restart. 22/22 verifications PASS. See docs-notes/m3.md.
+- 2026-08-22T16:12:00Z START iteration 4 -> milestone 4 (Bridge), attempt 1
+- 2026-08-22T16:35:00Z DONE milestone 4: bridge/server.py (stdlib HTTP on :8899 + bridge/out/*.json offline mirror), CONTRACT.md (every field + provenance), bridge/samples/ canned payloads. /response calls respond() directly (no drift). 19/19 verifications PASS. See docs-notes/m4.md.
 
 ## Milestones
 - M0 Preflight + MongoDB load — COMPLETE (evidence in PRD.JSON)
 - M1 Operator model (portfolio + modeled supplier links) — COMPLETE (evidence in PRD.JSON)
 - M2 Recall-response engine — COMPLETE (evidence in PRD.JSON)
 - M3 Agent swarm — COMPLETE (evidence in PRD.JSON)
-- M4 Bridge — next
+- M4 Bridge — COMPLETE (evidence in PRD.JSON)
 - M5-M8 — pending
-- 2026-08-22T16:11:38Z DONE milestone 3 (Agent swarm (OpenClaw/NemoClaw, tool-calling, concurrent))
