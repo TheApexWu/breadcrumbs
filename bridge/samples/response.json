@@ -1,0 +1,100 @@
+{
+  "allergen_match": null,
+  "compounding_count": 5,
+  "distributor_risk": {
+    "class": "real",
+    "class1": 205,
+    "firm": "DOLE",
+    "recalls": 236
+  },
+  "exposed_count": 5,
+  "exposed_sites": [
+    {
+      "boro": "Manhattan",
+      "camis": "50017041",
+      "class": "modeled",
+      "crit_violations": 11,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "JUST SALAD"
+    },
+    {
+      "boro": "Brooklyn",
+      "camis": "50035721",
+      "class": "modeled",
+      "crit_violations": 10,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "JUST SALAD"
+    },
+    {
+      "boro": "Manhattan",
+      "camis": "50088095",
+      "class": "modeled",
+      "crit_violations": 8,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "SWEETGREEN"
+    },
+    {
+      "boro": "Manhattan",
+      "camis": "50125151",
+      "class": "modeled",
+      "crit_violations": 8,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "JUST SALAD"
+    },
+    {
+      "boro": "Manhattan",
+      "camis": "50161809",
+      "class": "modeled",
+      "crit_violations": 10,
+      "cuisine": "Salads",
+      "distributor": "DOLE FRESH VEGETABLES INC",
+      "name": "SALAD DON"
+    }
+  ],
+  "origin": {
+    "class": "real",
+    "commodity_category": "Leafy greens",
+    "commodity_origin": [],
+    "firm_state": "CA",
+    "note": "firm state from openFDA; commodity category inferred from product text; origin from UN Comtrade US-imports preview"
+  },
+  "provenance": {
+    "modeled": [
+      "exposed_sites",
+      "allergen_match",
+      "recommendation"
+    ],
+    "real": [
+      "recall",
+      "compounding_count",
+      "distributor_risk",
+      "origin"
+    ]
+  },
+  "recall": {
+    "allergens": [],
+    "classification": "Class I",
+    "hazard_class": "pathogen",
+    "product_description": "Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107",
+    "reason_for_recall": "Harvest equipment used in harvesting raw iceberg lettuce was tested by  Dole and found to contain Listeria monocytogenes.",
+    "recall_number": "F-0757-2022",
+    "recalling_firm": "DOLE FRESH VEGETABLES INC",
+    "state": "CA"
+  },
+  "recommendation": {
+    "action": "hold",
+    "class": "modeled",
+    "rationale": "hold the recalled lot; swap sourcing to the lowest-class1 distributor to minimize repeat-recall risk",
+    "swap_to": {
+      "basis": "0 Class-I of 1 recalls on file",
+      "class": "real",
+      "class1": 0,
+      "firm": "JETRO",
+      "recalls": 1
+    }
+  }
+}

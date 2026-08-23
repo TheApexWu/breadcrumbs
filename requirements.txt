@@ -1,0 +1,5 @@
+# BREADCRUMBS backend (loop-owned). Install into a LOCAL venv, never system.
+pymongo>=4.6
+requests>=2.31
+pyarrow>=15
+# agent framework is NemoClaw on-box (OpenClaw off-box) — added by the loop when wired

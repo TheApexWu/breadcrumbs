@@ -1,0 +1,11 @@
+{
+  "agents_concurrent": 0,
+  "model": "openrouter/glm (off-box stub; on-box swap -> Nemotron/NemoClaw)",
+  "note": "off-box dev stub; M6 wires real NVML/tegrastats on the GB10",
+  "source": "stub",
+  "tokens_per_sec": null,
+  "ts": "2026-08-22T18:13:04Z",
+  "unified_gb": null,
+  "unified_gb_total": 128,
+  "watts": null
+}
