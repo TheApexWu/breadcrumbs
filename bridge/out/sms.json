@@ -1,0 +1,8 @@
+{
+  "class": "grounded",
+  "compounding_count": 5,
+  "exposed_count": 5,
+  "hold_notice": "HOLD NOTICE \u2014 DOLE FRESH VEGETABLES INC Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107\nRecall: F-0757-2022 (Class I)\nAction: hold all inventory from this supplier; do not serve.\nReason: Harvest equipment used in harvesting raw iceberg lettuce was tested by  Dole and found to contain Listeria monocytogenes.\nAffected sites: 5 (modeled links)",
+  "sms": "ALERT: Marketside 12oz Classic Salad  UPC:6-81131-32894-4  SKU: 3107 recalled (Class I, Harvest equipment used in harvesting raw iceberg lettuce was) \u2014 5 of your sites exposed (5 with prior critical violations). HOLD lot and swap sourcing to JETRO.",
+  "swap_to": "JETRO"
+}

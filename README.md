@@ -9,6 +9,11 @@ how bad, and what to do.** Not a dashboard: an agent that watches, reasons, and 
 
 Built for the **Dell × NVIDIA AI Factory (BuilderBase) hackathon**, Aug 22 2026.
 
+> 🏆 **Winner — Best Use of MongoDB.** The decision layer is real Mongo, not a JSON store: `$geoNear`
+> blast-radius on a 2dsphere index, `$lookup`/`$group` aggregation joins, a **change stream** as the
+> always-on Watcher, and a durable `agent_memory` that dedupes across restarts (retrieval that changes
+> behavior). Ran live and offline on the GB10 with a local Nemotron model.
+
 ---
 
 ## Why it matters
@@ -55,39 +60,64 @@ FDA recall lands ─▶ [MongoDB change stream] ─▶ Agent swarm (local Nemotr
 
 ## Repo layout
 ```
-globe/            the deck.gl consoles — food3d.html (3D, primary), food.html (2D)
+globe/            the deck.gl console — food3d.html (3D, primary), food.html (2D)
 globe/assets/     cached real data (recalls, DOHMH, distributors, buildings) — offline
-agent/ sim/ db/   backend (loop-built): swarm, recall-response, Mongo queries      [ralph branch]
-bridge/           the ONLY backend↔frontend seam (Mongo-backed JSON + CONTRACT.md) [ralph branch]
-rust-engine/      experimental Bevy 3D fly-through (parallel track)                 [rust branch]
+agent/            the 5-agent swarm (swarm.py) + Telegram/mock comms (comms.py)
+db/               MongoDB aggregation primitives — $geoNear/$lookup/$group (queries.py)
+sim/              operator model (operator.py) + recall-response engine (respond.py)
+bridge/           the backend↔frontend seam — server.py + CONTRACT.md + sample payloads
+tools/            telegram_relay.py — the live /ask + /report HTTP relay the console calls
+scripts/          load_mongo.py (data → Mongo), fetch_recalls.py, verify_m0..m5.py (checks)
+docs-notes/       m0..m5.md — how each milestone was built and verified
 mockups/          product-concept, vision, theme-lab
-docs/             premise, onboarding, branching, system-map, ideas
-PRD.JSON          milestones the ralph loop builds against
+docs/             premise, onboarding, branching, design-system, fda-report-spec
+deck/             the pitch deck (pptx/pdf) + build_deck.py
+PRD.JSON          the milestones the build targets
 ```
 
 ## Branches
-- `main` — maritime fallback, frozen.
-- `food` — **shared base** (frontend + data + docs). Teammates PR here.
-- `ralph` — the autonomous loop's backend build (backend-only). Don't hand-edit.
+- `main` / `food` — the full build (frontend + backend + data + docs). Both hold the shipped project.
+- `ralph` — the autonomous loop's original backend build; its code now lives in `main`/`food`. Archival.
 - `rust` — experimental Bevy engine (parallel, upside only).
-- `ui-*` / `assets-*` — teammate playgrounds off `food`.
+- `Siri` / `nick` — teammate UI branches merged into the console.
 
 Ownership + workflow: [`docs/branching.md`](docs/branching.md).
 
 ## Run it
 ```bash
-git clone https://github.com/TheApexWu/breadcrumbs.git && cd breadcrumbs && git checkout food
-# start MongoDB as a replica set (change streams need it):
-mongod --dbpath ./.mongo --replSet rs0 &   # then: mongosh --eval 'rs.initiate()'
-python3 scripts/load_mongo.py               # load cached data into Mongo
-cd globe && python3 -m http.server 8777     # open http://localhost:8777/food3d.html
+git clone https://github.com/TheApexWu/breadcrumbs.git && cd breadcrumbs
+pip install -r requirements.txt
+
+# 1. MongoDB as a replica set (the change-stream Watcher needs it):
+mongod --dbpath ./.mongo --replSet rs0 &   # then once: mongosh --eval 'rs.initiate()'
+python3 scripts/load_mongo.py              # load the cached real data into Mongo
+python3 scripts/verify_m0.py               # optional: prove the aggregations == pure-python control
 ```
-On the console: click a supplier to trace it · type a cuisine (e.g. `pizza`) to spotlight · `⚠ SIMULATE
-RECALL` to watch exposure light up. Drag the HUD panels; free-fly with drag-rotate + scroll.
+
+**The console (what you demo):**
+```bash
+python3 tools/telegram_relay.py &          # the /ask + /report relay on :8899 (agent Q&A + Telegram PDF)
+cd globe && python3 -m http.server 8777    # open http://localhost:8777/food3d.html
+```
+`⚠ SIMULATE RECALL` lights up the exposed sites · ask the box a question (grounded, local model) · `✈`
+sends the FDA-formatted PDF to Telegram · drag the HUD panels · free-fly with drag-rotate + scroll.
+The ask/Telegram buttons call `localhost:8899`, so run the console on the same machine as the relay.
+
+**The swarm (the backend pipeline):**
+```bash
+python3 -m agent.swarm F-0757-2022         # run the 5-agent swarm on the Dole hero recall
+```
+Prints the full tool-call transcript (Watcher → Tracer ∥ Risk → Briefer → Comms), the grounded brief,
+and the dedup state. Re-run it: the second pass recalls prior `agent_memory` and does **not** re-alert.
+
+On the GB10, one env swap points the model adapter at the local Nemotron (`BC_BACKEND=nemotron
+NEMOCLAW_URL=http://localhost:8000/v1`) — everything else is identical, fully offline.
 
 ## Status
-Backend **M0–M5 built + verified** (Mongo load, operator model, recall-response, agent swarm, bridge,
-Telegram). **M6–M8 human-gated** (on-box Nemotron + real GB10 telemetry, agent-quality, pitch).
+🏆 **Won Best Use of MongoDB** at the Dell × NVIDIA AI Factory hackathon. Backend **M0–M5 built +
+verified** (Mongo load, operator model, recall-response, 5-agent swarm, bridge, Telegram) and the live
+demo ran **on the GB10 with a local Nemotron model, offline**. Roadmap (M6–M8): real GB10 NVML
+telemetry + pull-the-cable test, per-menu-item allergen matching, multi-operator onboarding.
 
 ## Honesty by design
 Every payload separates **real** from **modeled**. Real: recalls, violations, distributor history,

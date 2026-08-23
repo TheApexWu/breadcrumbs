@@ -1,0 +1,28 @@
+{
+  "class": "instrument-not-oracle",
+  "classification": "Class I",
+  "compounding_count": 5,
+  "distributor_class1": 205,
+  "distributor_recalls": 236,
+  "exposed_count": 5,
+  "grounded_in": "M2 Response (sim.respond)",
+  "headline": "DOLE FRESH VEGETABLES INC Class I recall: 5 of your sites exposed (modeled links), 5 with prior critical violations.",
+  "provenance": {
+    "modeled": [
+      "exposed_sites",
+      "allergen_match",
+      "recommendation"
+    ],
+    "real": [
+      "recall",
+      "compounding_count",
+      "distributor_risk",
+      "origin"
+    ]
+  },
+  "recall_number": "F-0757-2022",
+  "recalling_firm": "DOLE FRESH VEGETABLES INC",
+  "recommendation": "hold",
+  "swap_to": "JETRO",
+  "swap_to_class1": 0
+}
