@@ -15,7 +15,7 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "data")
 os.makedirs(OUT, exist_ok=True)
 UA = {"User-Agent": "breadcrumbs-hackathon/1.0"}
 BASE = "https://api.fda.gov/food/enforcement.json"
-FETCH_AT = "2026-08-22"
+FETCH_AT = time.strftime("%Y-%m-%d")  # date this cache was actually fetched
 
 
 def get(url, retries=4):

@@ -95,8 +95,13 @@ sms_text = (out.get("sms") or {}).get("sms", "")
 sents = [s for s in re.split(r"(?<=[.!?])\s+", sms_text.strip()) if s]
 check("V1 sms is <=2 sentences (SMS-style layman alert)",
       len(sents) <= 2, "sentences=%d" % len(sents))
+# Expected values come from the M2 Response, not literals: the swap target follows the live openFDA
+# recall history, so "BALDOR" (true on 22 Aug 2026) became JETRO once the data refreshed.
+swap_firm = resp_truth["recommendation"]["swap_to"]["firm"]
+n_exposed = "%d of your sites" % resp_truth["exposed_count"]
 check("V1 sms names the swap target + exposed count",
-      ("BALDOR" in sms_text and "5" in sms_text), "sms=%s" % sms_text[:80])
+      swap_firm.split()[0].upper() in sms_text.upper() and n_exposed in sms_text,
+      "swap=%s exposed=%s sms=%s" % (swap_firm, n_exposed, sms_text[:80]))
 
 
 # ── V2: Telegram adapter POSTs and gets ok:true (test relay) OR skips cleanly ─
