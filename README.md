@@ -19,8 +19,7 @@ Built for the **Dell × NVIDIA AI Factory (BuilderBase) hackathon**, Aug 22 2026
 ## Why it matters
 48M Americans get food poisoning a year; 3,000 die. When a recall or undeclared-allergen alert hits —
 hundreds a year — an operator has *hours* to answer "am I exposed?" Today that's days of manual
-invoice-and-phone-call scrambling. One missed recall = an outbreak (Chipotle's 2015 E. coli wiped ~$11B
-in market cap). BREADCRUMBS turns that scramble into a 4-second automated brief.
+invoice-and-phone-call scrambling. BREADCRUMBS turns that scramble into an automated brief in seconds.
 
 ## Why it must be local
 An operator's supplier list, volumes, and margins are trade secrets — they will never send them to a
@@ -40,12 +39,14 @@ FDA recall lands ─▶ [MongoDB change stream] ─▶ Agent swarm (local Nemotr
 - **Action** — hold / pull / swap-supplier, delivered as a Telegram alert.
 
 ## Four live risk dimensions (all real, free, offline-cacheable data)
+Counts from a fresh `fetch_recalls.py` + `load_mongo.py` run on 5 Oct 2026; they grow as the sources update.
+
 | Dimension | Source | Scale |
 |---|---|---|
-| Recall exposure | openFDA food enforcement | 29,309 recalls |
-| **Allergen radar** | openFDA (undeclared-allergen) | 6,896 — the #2 cause |
-| Supplier risk | openFDA recall history by firm | Dole 205 Class-I, Baldor 0* |
-| Establishment risk | NYC DOHMH critical violations | 155,091 |
+| Recall exposure | openFDA food enforcement | 29,461 recalls |
+| **Allergen radar** | openFDA, classified undeclared-allergen | 5,679, the #2 named cause after pathogens (12,167) |
+| Supplier risk | openFDA recall history by firm | per-distributor Class I/II/III counts* |
+| Establishment risk | NYC DOHMH critical violations | ~154,000 across 26,385 restaurants |
 
 \* firms with `0` recalls are labeled **unverified** (no openFDA name match ≠ a clean record).
 
@@ -86,12 +87,13 @@ Ownership + workflow: [`docs/branching.md`](docs/branching.md).
 ## Run it
 ```bash
 git clone https://github.com/TheApexWu/breadcrumbs.git && cd breadcrumbs
-pip install -r requirements.txt
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 
 # 1. MongoDB as a replica set (the change-stream Watcher needs it):
-mongod --dbpath ./.mongo --replSet rs0 &   # then once: mongosh --eval 'rs.initiate()'
-python3 scripts/load_mongo.py              # load the cached real data into Mongo
-python3 scripts/verify_m0.py               # optional: prove the aggregations == pure-python control
+mkdir -p .mongo && mongod --dbpath ./.mongo --replSet rs0 &   # then once: mongosh --eval 'rs.initiate()'
+python3 scripts/fetch_recalls.py           # ~1 min, needs network: writes data/recalls.json + data/crit-violations.json
+python3 scripts/load_mongo.py              # load the cached real data into Mongo (MONGO_URI overrides localhost:27017)
+python3 scripts/verify_m0.py               # optional: verify_m0..m5 check each milestone (all pass on a fresh clone)
 ```
 
 **The console (what you demo):**
@@ -109,6 +111,8 @@ python3 -m agent.swarm F-0757-2022         # run the 5-agent swarm on the Dole h
 ```
 Prints the full tool-call transcript (Watcher → Tracer ∥ Risk → Briefer → Comms), the grounded brief,
 and the dedup state. Re-run it: the second pass recalls prior `agent_memory` and does **not** re-alert.
+Off-box the model calls go to OpenRouter (`OPENROUTER_API_KEY`); with no key and no local model they fall
+back to templated text, and the rest of the pipeline (exposure, risk, dedup, the SMS) still runs.
 
 On the GB10, one env swap points the model adapter at the local Nemotron (`BC_BACKEND=nemotron
 NEMOCLAW_URL=http://localhost:8000/v1`) — everything else is identical, fully offline.
@@ -118,6 +122,10 @@ NEMOCLAW_URL=http://localhost:8000/v1`) — everything else is identical, fully 
 verified** (Mongo load, operator model, recall-response, 5-agent swarm, bridge, Telegram) and the live
 demo ran **on the GB10 with a local Nemotron model, offline**. Roadmap (M6–M8): real GB10 NVML
 telemetry + pull-the-cable test, per-menu-item allergen matching, multi-operator onboarding.
+
+## Team
+Built at the hackathon by Amadeus Wu (backend, agent swarm, data pipeline, console), Srishti Chauhan
+(3D console UI), notua (pitch deck and logo) and Nicholas Sutin (system map, logo mockups).
 
 ## Honesty by design
 Every payload separates **real** from **modeled**. Real: recalls, violations, distributor history,

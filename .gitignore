@@ -21,3 +21,7 @@ telegram.env
 __pycache__/
 *.pyc
 .DS_Store
+
+# local run artifacts (README run steps)
+.mongo/
+.venv/
