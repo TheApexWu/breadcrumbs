@@ -35,6 +35,8 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
+from pymongo import ReturnDocument
+from pymongo.errors import DuplicateKeyError
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -163,13 +165,45 @@ def recall_state(recall_id, db=None):
     return db.agent_memory.find_one({"recall_id": recall_id}, sort=[("ts", -1)])
 
 
-def record_run(recall_id, decision, alert_sent, response, db=None, re_alert=False):
+CLAIM_STALE_S = 300
+
+
+def claim_alert(recall_id, db=None):
+    """Atomically claim the first alert for a recall. Returns the claim doc if
+    this run won (it alone may send), else None. A unique partial index makes
+    the insert the arbiter, so concurrent runs cannot both pass a read-then-
+    write check. A claim left in status "claimed" past CLAIM_STALE_S (its run
+    died before sending) is taken over, so a crash cannot swallow the alert."""
+    db = get_db() if db is None else db
+    db.agent_memory.create_index("recall_id", name="one_alert_claim", unique=True,
+                                 partialFilterExpression={"claim": True})
+    # alerts recorded before claims existed carry no claim flag; honor them
+    if db.agent_memory.find_one({"recall_id": recall_id, "alert_sent": 1,
+                                 "re_alert": False, "claim": {"$exists": False}}):
+        return None
+    doc = {"run_id": str(uuid.uuid4()), "recall_id": recall_id, "claim": True,
+           "status": "claimed", "decision": "claimed", "alert_sent": 1,
+           "re_alert": False, "ts": _now()}
+    try:
+        db.agent_memory.insert_one(doc)
+        return doc
+    except DuplicateKeyError:
+        cutoff = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - CLAIM_STALE_S))
+        return db.agent_memory.find_one_and_update(
+            {"recall_id": recall_id, "claim": True, "status": "claimed", "ts": {"$lt": cutoff}},
+            {"$set": {"run_id": doc["run_id"], "ts": doc["ts"]}},
+            return_document=ReturnDocument.AFTER)
+
+
+def record_run(recall_id, decision, alert_sent, response, db=None, re_alert=False,
+               claim=None, sent_ok=None):
     """Persist this run to agent_memory. alert_sent is 1 only on first alert;
     a deduped re-run records runs++ but alert_sent stays 0 for this entry
-    (the recall's aggregate alert_sent count stays 1, not 2)."""
+    (the recall's aggregate alert_sent count stays 1, not 2). With a claim,
+    the claim doc is completed in place instead of inserting a second row."""
     db = get_db() if db is None else db
     doc = {
-        "run_id": str(uuid.uuid4()),
+        "run_id": claim["run_id"] if claim else str(uuid.uuid4()),
         "recall_id": recall_id,
         "decision": decision,
         "alert_sent": 1 if alert_sent else 0,
@@ -182,6 +216,10 @@ def record_run(recall_id, decision, alert_sent, response, db=None, re_alert=Fals
             "swap_to": response.get("recommendation", {}).get("swap_to", {}).get("firm"),
         },
     }
+    if claim:
+        doc["status"] = "sent" if sent_ok else "send_failed"
+        db.agent_memory.update_one({"_id": claim["_id"]}, {"$set": doc})
+        return dict(claim, **doc)
     db.agent_memory.insert_one(doc)
     return doc
 
@@ -430,9 +468,10 @@ def run(recall_number, db=None, adapter=None, force_alert=False):
     recall = tool_ingest_recall(transcript, recall_number, db)
     recall_id = recall.get("recall_number") or str(recall.get("_id"))
 
-    # agent_memory: recall prior state (retrieval that changes behavior)
-    prior = recall_state(recall_id, db)
-    if prior and not force_alert:
+    # agent_memory: claim the first alert atomically; losing the claim means a
+    # prior (or concurrent) run owns this recall's alert
+    claim = None if force_alert else claim_alert(recall_id, db)
+    if claim is None and not force_alert:
         # DEDUP: we already handled this recall. Re-recall prior state, do
         # NOT re-alert. Record the re-run (alert_sent=0 for this entry).
         response = respond(recall, db)
@@ -484,7 +523,8 @@ def run(recall_number, db=None, adapter=None, force_alert=False):
 
     # persist to agent_memory (first alert for this recall)
     mem = record_run(recall_id, "alert sent: hold + swap recommendation",
-                     alert_sent=True, response=response, db=db, re_alert=False)
+                     alert_sent=True, response=response, db=db, re_alert=force_alert,
+                     claim=claim, sent_ok=bool(send_res.get("ok")))
 
     return {
         "brief": brief, "sms": sms, "response": response,
