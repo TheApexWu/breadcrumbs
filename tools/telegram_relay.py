@@ -51,10 +51,10 @@ def _tg_document(pdf_bytes, filename, caption):
 def _ask(question, context):
     sysmsg = ("detailed thinking off. You are BREADCRUMBS, a sharp NYC food-safety analyst advising an "
               "operator during a live recall. Answer the question DIRECTLY in ONE or TWO short sentences. "
-              "Lead with the number or the answer, then one clause of why it matters. Use the exact figures in "
-              "the FACTS and count them yourself when asked 'how many'. Be decisive and specific — never say "
-              "'not specified', never list what you don't know, never hedge, no markdown headers or bullets. "
-              "Talk like an expert who already read the report.")
+              "Lead with the number or the answer, then one clause of why it matters. Use only figures that appear "
+              "in the FACTS, copied exactly; never estimate, compute or count a new one. If the FACTS do not "
+              "answer the question, say so in one sentence and name what record would answer it. No hedging "
+              "beyond that, no markdown headers or bullets.")
     user = "FACTS:\n%s\n\nQUESTION: %s\n\nAnswer in 1-2 direct sentences:" % (context or "(none)", question)
     body = json.dumps({"model": MODEL, "temperature": 0.1, "max_tokens": 160,
                        "messages": [{"role": "system", "content": sysmsg},
@@ -64,7 +64,21 @@ def _ask(question, context):
     with urllib.request.urlopen(req, timeout=45) as r:
         d = json.load(r)
     txt = re.sub(r"<think>.*?</think>", "", d["choices"][0]["message"]["content"], flags=re.S).strip()
-    return {"ok": True, "answer": txt, "model": MODEL, "local": True}
+    ungrounded = _ungrounded_numbers(txt, context)
+    if ungrounded:
+        # the console renders answer as-is, so the warning has to travel inside it
+        txt += " [unverified: %s not in the recall facts]" % ", ".join(ungrounded)
+    return {"ok": True, "answer": txt, "ungrounded": ungrounded, "model": MODEL, "local": True}
+
+
+_NUM = re.compile(r"\d[\d,]*(?:\.\d+)?")
+
+
+def _ungrounded_numbers(answer, context):
+    """Numbers in the model's answer that never appear in the FACTS it was given."""
+    norm = lambda m: m.replace(",", "").rstrip(".")
+    known = {norm(m) for m in _NUM.findall(context or "")}
+    return sorted({norm(m) for m in _NUM.findall(answer or "")} - known)
 
 # ---- last-resort static PDF (valid, minimal) if reportlab itself fails ----
 _FALLBACK_PDF = (
