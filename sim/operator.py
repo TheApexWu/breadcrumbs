@@ -18,6 +18,7 @@ Hard rules:
 import math, sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from pymongo import GEOSPHERE
+from db.entity import normalize_firm
 from db.queries import get_db, exposure as _exposure
 
 MONGO_URI = None  # inherited from db.queries
@@ -138,6 +139,7 @@ def build_portfolio(db=None):
             "crit_violations": est.get("crit_violations", 0),
             "loc": est["loc"],
             "distributor": supplier,
+            "distributor_key": normalize_firm(supplier),
             "distributor_rule": "produce-supplier" if spec["supplier"] else "nearest-hub",
             "primary_hub": hub["primary_hub"],
             "hub_distance_m": hub["hub_distance_m"],
@@ -154,6 +156,7 @@ def build_portfolio(db=None):
     db.operator_sites.insert_many(rows)
     db.operator_sites.create_index([("loc", GEOSPHERE)])
     db.operator_sites.create_index("distributor")
+    db.operator_sites.create_index("distributor_key")
     db.operator_sites.create_index("camis")
 
     return rows
@@ -179,8 +182,7 @@ def matches(recall, profile):
     suppliers = (profile.get("scope") or {}).get("suppliers") or []
     if suppliers:
         has_criteria = True
-        firm = (recall.get("recalling_firm") or "").upper().strip()
-        if firm in [s.upper().strip() for s in suppliers]:
+        if normalize_firm(recall.get("recalling_firm")) in {normalize_firm(s) for s in suppliers}:
             matched = True
 
     profile_allergens = profile.get("allergens") or []
