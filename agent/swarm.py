@@ -35,6 +35,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
+from pymongo.errors import OperationFailure
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -402,18 +403,48 @@ def tool_send(transall, response, brief, sms_payload, profile=None,
 def watch_change_stream(on_recall, db=None, timeout_s=60):
     """The Watcher's always-on watch: a Mongo CHANGE STREAM on the recalls
     collection. A new insert fires on_recall(recall_doc). This IS the
-    always-on watch (PRD hard rule). Blocks until timeout or interrupted."""
+    always-on watch (PRD hard rule).
+
+    Resumes after the last handled insert (token in watcher_state), so a
+    restart does not miss recalls inserted while it was down. The token is
+    saved only after on_recall returns: a handler that raises propagates, and
+    the same insert is redelivered on the next start (at-least-once; run()
+    dedups via agent_memory). Returns when timeout_s elapses (None = forever):
+      {"status": "timeout" | "unavailable" | "history_lost", "handled": n, "detail": str}
+    """
     db = get_db() if db is None else db
+    state = db.watcher_state
+    saved = state.find_one({"_id": "recalls"}) or {}
+    deadline = None if timeout_s is None else time.monotonic() + timeout_s
+    handled = 0
     try:
-        with db.recalls.watch([{"$match": {"operationType": "insert"}}]) as stream:
-            for change in stream:
+        with db.recalls.watch([{"$match": {"operationType": "insert"}}],
+                              resume_after=saved.get("token"),
+                              max_await_time_ms=1000) as stream:
+            if "token" not in saved:
+                # anchor a first run, or a crash before the first event resumes from "now"
+                state.update_one({"_id": "recalls"},
+                                 {"$set": {"token": stream.resume_token}}, upsert=True)
+            while deadline is None or time.monotonic() < deadline:
+                change = stream.try_next()
+                if change is None:
+                    continue
                 recall = change.get("fullDocument")
                 if recall:
                     on_recall(recall)
-    except Exception as e:
-        # change streams need a replica set; fall back to polling in dev
-        print("[watcher] change stream unavailable (%s); use run() directly" % type(e).__name__)
-        return
+                    handled += 1
+                state.update_one({"_id": "recalls"},
+                                 {"$set": {"token": change["_id"]}}, upsert=True)
+    except OperationFailure as e:
+        # 286: the saved token fell off the oplog, so inserts were missed. Say so
+        # instead of quietly restarting from now; the caller decides what to replay.
+        if e.code == 286:
+            return {"status": "history_lost", "handled": handled, "detail": str(e)}
+        # 40573: change streams need a replica set (bare dev mongod)
+        if e.code == 40573:
+            return {"status": "unavailable", "handled": handled, "detail": str(e)}
+        raise
+    return {"status": "timeout", "handled": handled, "detail": ""}
 
 
 # ── the swarm run ─────────────────────────────────────────────────────────────
