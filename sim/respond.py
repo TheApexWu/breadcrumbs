@@ -29,6 +29,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from db.entity import normalize_firm, resolve_firm
 from db.queries import get_db, scorecard, compounding
 from sim.operator import exposure
 
@@ -119,7 +120,7 @@ def _distributor_risk(recall, db):
     """The distributor's real class1 recall count. Matched by short name
     (distributors collection stores short names; recalls use full firm names).
     Falls back to the scorecard aggregation by full recalling_firm."""
-    firm_full = (recall.get("recalling_firm") or "").upper().strip()
+    firm_full = normalize_firm(recall.get("recalling_firm"))
     if not firm_full:
         return {"firm": None, "class1": 0, "recalls": 0, "class": "real"}
 
@@ -128,8 +129,9 @@ def _distributor_risk(recall, db):
     # recalling_firm (e.g. "DOLE" prefix of "DOLE FRESH VEGETABLES INC").
     best = None
     for d in db.distributors.find({}):
-        short = (d.get("firm") or "").upper().strip()
-        if short and firm_full.startswith(short):
+        short = normalize_firm(d.get("firm"))
+        # whole-word prefix only: "DOLE" covers "DOLE FRESH VEGETABLES", not "DOLEMITE FOODS"
+        if short and (firm_full == short or firm_full.startswith(short + " ")):
             if best is None or len(short) > len(best.get("firm", "")):
                 best = d
     if best:
@@ -142,7 +144,7 @@ def _distributor_risk(recall, db):
 
     # Fallback: scorecard aggregation by full recalling_firm.
     for row in scorecard(db):
-        if (row.get("firm") or "").upper() == firm_full:
+        if normalize_firm(row.get("firm")) == firm_full:
             return {
                 "firm": row["firm"],
                 "class1": int(row.get("class1", 0)),
@@ -231,6 +233,10 @@ def respond(recall, db=None):
     origin = _commodity_origin(recall, db)
     allergen = _allergen_match(recall)
     swap = _swap_target(db)
+    # Loud when the firm is close to, but not exactly, a supplier we use: a likely
+    # spelling variant that a human should confirm, never an empty "you're safe".
+    supplier_resolution = resolve_firm(recall.get("recalling_firm"),
+                                       db.operator_sites.distinct("distributor_key"))
 
     response = {
         "recall": {
@@ -245,6 +251,7 @@ def respond(recall, db=None):
         },
         "exposed_sites": exposed,
         "exposed_count": len(exposed),
+        "supplier_resolution": supplier_resolution,
         "compounding_count": compounding_count,
         "distributor_risk": dist_risk,
         "origin": origin,

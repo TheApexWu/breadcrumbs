@@ -4,7 +4,7 @@ PRD M0 — the analytical primitives as MongoDB AGGREGATION pipelines.
 These are what the agent's tools call (M3). Real Mongo $lookup/$group/$geoNear,
 not hand-rolled JS loops (PRD hard rule: Mongo used tastefully).
 
-  exposure(recall)    : operator_sites whose modeled distributor == recall's firm
+  exposure(recall)    : operator_sites whose modeled distributor resolves to the recall's firm
                         ($match + $lookup recalls<->distributors<->sites)
   scorecard()         : distributor recall history via $group over recalls
   compounding(site_ids): exposed sites with crit_violations>0 ($match)
@@ -16,6 +16,8 @@ M1/M2 make the set non-empty and the real exposure assertions land there.
 """
 import os
 from pymongo import MongoClient
+
+from db.entity import normalize_firm
 
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
 DB_NAME = "breadcrumbs"
@@ -30,11 +32,11 @@ def exposure(recall, db=None):
     matches the recall's recalling_firm. Enriched with the distributor doc and
     the firm's recall history via $lookup."""
     db = get_db() if db is None else db
-    firm = (recall.get("recalling_firm") or "").upper().strip()
-    if not firm:
+    key = normalize_firm(recall.get("recalling_firm"))
+    if not key:
         return []
     pipeline = [
-        {"$match": {"distributor": firm}},
+        {"$match": {"distributor_key": key}},
         {"$lookup": {"from": "distributors", "localField": "distributor",
                      "foreignField": "firm", "as": "distributor_doc"}},
         {"$lookup": {"from": "recalls", "localField": "distributor",
@@ -47,10 +49,11 @@ def exposure_control(recall, db=None):
     """Pure-python control for exposure(): same join, no aggregation engine.
     Used by M0 verification to prove the aggregation returns the same set."""
     db = get_db() if db is None else db
-    firm = (recall.get("recalling_firm") or "").upper().strip()
-    if not firm:
+    key = normalize_firm(recall.get("recalling_firm"))
+    if not key:
         return []
-    return [s for s in db.operator_sites.find({"distributor": firm}, {"_id": 0})]
+    return [s for s in db.operator_sites.find({}, {"_id": 0})
+            if normalize_firm(s.get("distributor")) == key]
 
 
 def scorecard(db=None):
