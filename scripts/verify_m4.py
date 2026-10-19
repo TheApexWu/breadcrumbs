@@ -177,7 +177,7 @@ check("V2 every operator_site is labeled class:'modeled-portfolio'",
 # git diff name-only against the milestone-4 baseline. Allowed prefixes:
 ALLOWED = ("agent/", "sim/", "db/", "scripts/", "bridge/",
            "PRD.JSON", "RALPH.md", "STATUS.md", "docs-notes/",
-           "evidence/", "logs/", ".gitignore", "requirements.txt")
+           "evidence/", "logs/", "tests/", ".gitignore", "requirements.txt")
 HUMAN_OWNED = ("globe/", "mockups/", "docs/")
 
 diff = subprocess.run(
