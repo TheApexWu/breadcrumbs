@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>BREADCRUMBS — NYC Food Safety Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#000814;
+  --panel:#ffffff;
+  --bd:#e0e3e8;
+  --tx:#1a1c1e;
+  --tx2:#3c4148;
+  --mut:#6b7280;
+  --blue:#1a73e8;
+  --blue-lt:#e8f0fe;
+  --red:#c5221f;    --red-lt:#fce8e6;
+  --amber:#b06000;  --amber-lt:#fef3e2;
+  --grn:#1a7340;    --grn-lt:#e6f4ea;
+  --sh:0 1px 4px rgba(0,0,0,.10),0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 2px 8px rgba(0,0,0,.12),0 8px 32px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,sans-serif;color:var(--tx);font-size:13px;background:linear-gradient(to bottom,#0d1b3e 0%,#050d1f 55%,#000814 100%);background-attachment:fixed}
+#deck{position:fixed;inset:0}
+
+/* ── top bar ── */
+#top{
+  position:fixed;top:0;left:0;right:0;height:52px;
+  display:flex;align-items:center;gap:16px;padding:0 20px;
+  background:var(--panel);border-bottom:1px solid var(--bd);
+  box-shadow:0 1px 3px rgba(0,0,0,.08);z-index:10
+}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--blue);letter-spacing:-.01em;flex-shrink:0}
+.brand svg{width:18px;height:18px}
+.brand-divider{font-weight:300;color:var(--bd);font-size:18px;margin:0 2px}
+.brand-sub{font-weight:400;font-size:13px;color:var(--mut)}
+#top .div{width:1px;height:22px;background:var(--bd);flex-shrink:0}
+.kpi{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.kpi-label{font-size:10px;font-weight:500;color:var(--mut);letter-spacing:.04em;text-transform:uppercase}
+.kpi-val{font-size:14px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums}
+#status-chip{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  padding:5px 12px 5px 9px;border-radius:20px;
+  font-size:11px;font-weight:600;flex-shrink:0;
+  background:var(--grn-lt);color:var(--grn)
+}
+#status-chip.alert{background:var(--red-lt);color:var(--red)}
+#status-chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:none}
+#status-chip.alert .dot{animation:pulse-dot 1.2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+
+/* ── layout ── */
+#left{position:fixed;top:64px;left:14px;z-index:8;width:330px;display:flex;flex-direction:column;gap:8px}
+#right{position:fixed;top:64px;right:14px;z-index:8;width:300px;display:flex;flex-direction:column;gap:0;background:var(--panel);border-radius:14px;box-shadow:var(--sh-lg);overflow:hidden;max-height:calc(100vh - 80px)}
+
+/* ── search ── */
+#search-card{background:var(--panel);border-radius:24px;box-shadow:var(--sh-lg);overflow:hidden;transition:box-shadow .2s}
+#search-card:focus-within{box-shadow:0 2px 8px rgba(26,115,232,.15),0 8px 32px rgba(26,115,232,.10)}
+#search-row{display:flex;align-items:center;height:50px;padding:0 8px 0 16px;gap:10px}
+#si{flex:1;border:none;outline:none;font-size:14px;font-family:inherit;color:var(--tx);background:transparent;min-width:0}
+#si::placeholder{color:var(--mut)}
+#sc{background:none;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--mut);display:none;align-items:center;justify-content:center;flex-shrink:0}
+#sc:hover{background:#f1f3f4}
+#grade-row{display:flex;gap:5px;padding:0 14px 11px;overflow-x:auto;scrollbar-width:none}
+#grade-row::-webkit-scrollbar{display:none}
+.gf{border:none;background:#f1f3f4;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;padding:4px 12px;border-radius:14px;white-space:nowrap;color:var(--mut);transition:all .12s}
+.gf:hover{background:#e8eaed}
+.gf.on{background:var(--blue-lt);color:var(--blue)}
+.gf[data-g="A"].on{background:var(--grn-lt);color:var(--grn)}
+.gf[data-g="B"].on{background:var(--amber-lt);color:var(--amber)}
+.gf[data-g="C"].on{background:var(--red-lt);color:var(--red)}
+#sr{border-top:1px solid #f0f2f4;display:none;max-height:300px;overflow-y:auto}
+#sr.show{display:block}
+.sr-hd{padding:8px 14px 3px;font-size:10px;letter-spacing:.1em;color:var(--mut);font-weight:600;text-transform:uppercase}
+.sri{padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .08s}
+.sri:hover,.sri.hi{background:#f8f9fb}
+.sri+.sri{border-top:1px solid #f8f9fb}
+.sr-bd{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.sr-bd.ga{background:var(--grn-lt);color:var(--grn)}
+.sr-bd.gb{background:var(--amber-lt);color:var(--amber)}
+.sr-bd.gc{background:var(--red-lt);color:var(--red)}
+.sr-bd.gh{background:var(--blue-lt);color:var(--blue)}
+.sr-bd.gx{background:#f1f3f4;color:var(--mut)}
+.sr-info{min-width:0;flex:1}
+.sr-nm{font-weight:500;font-size:13px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.sr-pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700;flex-shrink:0}
+.sr-sub{font-size:11px;color:var(--mut);margin-top:2px}
+.sr-more{padding:7px 14px;font-size:10px;color:var(--mut);text-align:center;border-top:1px solid #f0f2f4}
+.sr-empty{padding:22px 14px;text-align:center;color:var(--mut);font-size:12px}
+
+/* ── controls ── */
+#ctl{background:var(--panel);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.cs{padding:10px 14px}
+.cs+.cs{border-top:1px solid #f0f2f4}
+.cl{font-size:9px;letter-spacing:.12em;color:var(--mut);font-weight:600;text-transform:uppercase;margin-bottom:7px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 12px;border-radius:14px;border:1.5px solid var(--bd);background:#fff;color:var(--tx2);font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.chip:hover:not(:disabled){border-color:#aaa}
+.chip.on{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.chip:disabled{opacity:.35;cursor:not-allowed}
+
+/* flag button */
+#flag-btn{
+  width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #f0c4c2;
+  background:#fdf5f5;color:var(--red);font-size:12px;font-weight:600;
+  font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:all .15s;line-height:1;text-align:left
+}
+#flag-btn:hover{background:var(--red-lt)}
+#flag-btn.armed{background:var(--red);color:#fff;border-color:var(--red)}
+#flag-btn .tag{margin-left:auto;font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,.07);font-weight:500}
+#flag-btn.armed .tag{background:rgba(255,255,255,.2)}
+
+/* ── right panel ── */
+.rp-hd{padding:12px 14px;border-bottom:1px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.rp-title{font-weight:600;font-size:12px;color:var(--tx);display:flex;align-items:center;gap:7px}
+.rp-dot{width:6px;height:6px;border-radius:50%;background:var(--grn)}
+.rp-badge{font-size:10px;color:var(--mut)}
+.rp-sec{padding:6px 14px 2px;font-size:9px;letter-spacing:.12em;color:var(--mut);font-weight:600;text-transform:uppercase}
+#dist-list{overflow-y:auto;max-height:200px}
+.di{padding:8px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .08s}
+.di:hover{background:#fafafa}
+.di+.di{border-top:1px solid #f8f9fb}
+.di-name{flex:1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.di-bar{height:4px;border-radius:2px;background:var(--red);opacity:.7;flex-shrink:0}
+.di-n{font-size:10px;color:var(--mut);min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
+#alert-list{overflow-y:auto;max-height:140px}
+.al{padding:8px 14px;display:flex;gap:8px;font-size:11px;line-height:1.4}
+.al+.al{border-top:1px solid #f8f9fb}
+.al-sev{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.04em;flex-shrink:0;margin-top:1px}
+.al.crit .al-sev{background:var(--red-lt);color:var(--red)}
+.al.warn .al-sev{background:var(--amber-lt);color:var(--amber)}
+.al-txt{color:var(--tx2);flex:1}
+.rp-empty{padding:14px;font-size:11px;color:var(--mut);text-align:center}
+
+/* ── detail panel ── */
+#detail{
+  position:fixed;left:14px;bottom:14px;width:330px;
+  background:var(--panel);border-radius:16px;box-shadow:var(--sh-lg);
+  z-index:9;overflow:hidden;display:none;
+  transform:translateY(12px);opacity:0;
+  transition:transform .22s cubic-bezier(.16,1,.3,1),opacity .18s
+}
+#detail.open{transform:translateY(0);opacity:1}
+.dt-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd)}
+.dt-name{font-size:14px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.dt-close{background:none;border:none;cursor:pointer;color:var(--mut);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .1s}
+.dt-close:hover{background:#f1f3f4}
+.dt-hero{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--bd)}
+.dt-ring{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;flex-shrink:0;border:2.5px solid transparent}
+.dt-ring.ga{background:var(--grn-lt);color:var(--grn);border-color:var(--grn)}
+.dt-ring.gb{background:var(--amber-lt);color:var(--amber);border-color:var(--amber)}
+.dt-ring.gc{background:var(--red-lt);color:var(--red);border-color:var(--red)}
+.dt-ring.gx{background:#f1f3f4;color:var(--mut);border-color:#ddd}
+.dt-info{flex:1;min-width:0}
+.dt-grade-name{font-size:15px;font-weight:700;margin-bottom:2px}
+.dt-grade-sub{font-size:11px;color:var(--mut);line-height:1.4}
+.dt-cuisine{display:inline-block;margin-top:5px;padding:2px 9px;background:#f1f3f4;border-radius:10px;font-size:11px;font-weight:500;color:var(--tx2)}
+#dt-rows{width:100%;border-collapse:collapse}
+#dt-rows td{padding:8px 16px;border-bottom:1px solid #f4f5f7;font-size:12px;vertical-align:middle}
+#dt-rows td:first-child{color:var(--mut);font-size:11px;font-weight:500;width:36%;white-space:nowrap}
+#dt-rows tr:last-child td{border:none}
+.risk-bar-wrap{display:flex;align-items:center;gap:8px}
+.risk-pct{font-weight:600;font-size:12px;min-width:28px}
+.risk-track{flex:1;height:4px;background:#eee;border-radius:2px;overflow:hidden}
+.risk-fill{height:4px;border-radius:2px;transition:width .4s}
+.hub-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--blue-lt);color:var(--blue);border-radius:10px;font-size:11px;font-weight:600}
+
+/* ── legend ── */
+#legend{position:fixed;right:14px;bottom:14px;background:var(--panel);border-radius:12px;box-shadow:var(--sh-lg);padding:12px 14px;font-size:11px;z-index:7;line-height:1;width:220px}
+.leg-hd{font-size:9px;letter-spacing:.12em;color:var(--mut);font-weight:600;text-transform:uppercase;margin-bottom:8px}
+.leg-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:var(--tx2);font-size:11px}
+.leg-row:last-child{margin-bottom:0}
+.lsw{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+.leg-note{font-size:10px;color:var(--mut);margin-top:8px;padding-top:8px;border-top:1px solid #f0f2f4;line-height:1.5}
+
+/* ── loading ── */
+#load{position:fixed;inset:0;background:linear-gradient(to bottom,#0d1b3e 0%,#000814 100%);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.load-brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;color:var(--blue)}
+.load-brand svg{width:26px;height:26px}
+.load-sub{font-size:12px;color:var(--mut);letter-spacing:.06em}
+#lb-wrap{width:220px;height:2px;background:#d8dde4;border-radius:2px}
+#lb{height:2px;background:var(--blue);border-radius:2px;width:0;transition:width .3s}
+#ls{font-size:11px;color:var(--mut);margin-top:4px}
+</style>
+</head>
+<body>
+<div id="deck"></div>
+
+<!-- top bar -->
+<div id="top">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
+    </svg>
+    BREADCRUMBS
+  </div>
+  <span class="brand-divider">/</span>
+  <span class="brand-sub">NYC Food Safety Intelligence</span>
+  <div class="div"></div>
+  <div class="kpi"><span class="kpi-label">Establishments</span><span class="kpi-val" id="t-est">—</span></div>
+  <div class="kpi"><span class="kpi-label">Grade C</span><span class="kpi-val" id="t-c" style="color:var(--red)">—</span></div>
+  <div class="kpi" id="t-af-w" style="display:none"><span class="kpi-label">Exposure</span><span class="kpi-val" id="t-af">—</span></div>
+  <div id="status-chip"><span class="dot"></span><span id="t-st">All Systems Normal</span></div>
+</div>
+
+<!-- left column -->
+<div id="left">
+
+  <!-- search -->
+  <div id="search-card">
+    <div id="search-row">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9aa0ab" stroke-width="2.4" stroke-linecap="round" style="flex-shrink:0">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="si" type="text" placeholder="Search restaurants, cuisines, addresses…" autocomplete="off"/>
+      <button id="sc" aria-label="Clear">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div id="grade-row">
+      <button class="gf on" data-g="all">All grades</button>
+      <button class="gf" data-g="A">Grade A</button>
+      <button class="gf" data-g="B">Grade B</button>
+      <button class="gf" data-g="C">Grade C</button>
+      <button class="gf" data-g="hub">Distributors</button>
+    </div>
+    <div id="sr"></div>
+  </div>
+
+  <!-- controls -->
+  <div id="ctl">
+    <div class="cs">
+      <div class="cl">Map layers</div>
+      <div class="chips">
+        <button class="chip on" id="l-hex">Risk zones</button>
+        <button class="chip on" id="l-dots">Restaurants</button>
+        <button class="chip" id="l-arcs">Supply routes</button>
+        <button class="chip on" id="l-bld">Buildings</button>
+      </div>
+    </div>
+    <div class="cs">
+      <div class="cl">Geography</div>
+      <div class="chips">
+        <button class="chip on" id="b-man">Manhattan</button>
+        <button class="chip" id="b-bk">Brooklyn</button>
+      </div>
+    </div>
+    <div class="cs">
+      <button id="flag-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+        </svg>
+        Flag Recall Event
+        <span class="tag" id="flag-tag">inactive</span>
+      </button>
+    </div>
+    <div class="cs" style="padding:7px 14px">
+      <button class="chip" id="b-reset" style="font-size:10px">↺ Reset view</button>
+    </div>
+  </div>
+</div>
+
+<!-- right: risk panel -->
+<div id="right">
+  <div class="rp-hd">
+    <div class="rp-title"><span class="rp-dot" id="rp-dot"></span>Distributor Risk</div>
+    <span class="rp-badge" id="rp-badge">openFDA · live</span>
+  </div>
+  <div class="rp-sec">Supply chain risk</div>
+  <div id="dist-list"></div>
+  <div class="rp-sec" style="margin-top:4px">Active alerts</div>
+  <div id="alert-list"><div class="rp-empty">No active alerts</div></div>
+</div>
+
+<!-- detail panel (bottom left) -->
+<div id="detail">
+  <div class="dt-head">
+    <div class="dt-name" id="dt-nm">—</div>
+    <button class="dt-close" id="dt-x">✕</button>
+  </div>
+  <div class="dt-hero">
+    <div class="dt-ring gx" id="dt-ring">?</div>
+    <div class="dt-info">
+      <div class="dt-grade-name" id="dt-gname">—</div>
+      <div class="dt-grade-sub" id="dt-gsub">—</div>
+      <span id="dt-cuisine" style="display:none" class="dt-cuisine"></span>
+    </div>
+  </div>
+  <table id="dt-rows"></table>
+</div>
+
+<!-- legend (bottom right) -->
+<div id="legend">
+  <div class="leg-hd">Health risk heatmap</div>
+  <!-- gradient bar -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+    <span style="font-size:10px;color:var(--mut);white-space:nowrap">Low risk</span>
+    <div style="flex:1;height:10px;border-radius:4px;background:linear-gradient(to right,rgb(18,110,90),rgb(52,168,100),rgb(130,200,80),rgb(240,200,40),rgb(240,130,20),rgb(220,60,20),rgb(180,20,20))"></div>
+    <span style="font-size:10px;color:var(--mut);white-space:nowrap">High risk</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--mut);margin-bottom:10px;padding:0 1px">
+    <span>Grade A</span><span>Mixed</span><span>Grade C</span>
+  </div>
+  <div class="leg-hd" style="margin-top:2px">Building type</div>
+  <div class="leg-row"><span class="lsw" style="background:#6e3c2a"></span>Brownstone (low-rise)</div>
+  <div class="leg-row"><span class="lsw" style="background:#944e36"></span>Brick (prewar)</div>
+  <div class="leg-row"><span class="lsw" style="background:#9b907e"></span>Limestone (classic)</div>
+  <div class="leg-row"><span class="lsw" style="background:#505560"></span>Concrete (postwar)</div>
+  <div class="leg-row"><span class="lsw" style="background:#344c70"></span>Glass (tower)</div>
+  <div class="leg-note">◆ Column height = distributor recall risk</div>
+</div>
+
+<!-- loading -->
+<div id="load">
+  <div class="load-brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
+    </svg>
+    BREADCRUMBS
+  </div>
+  <div class="load-sub">NYC Department of Health · openFDA</div>
+  <div id="lb-wrap"><div id="lb"></div></div>
+  <div id="ls">Loading…</div>
+</div>
+
+<script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
+<script>
+const BASE='https://raw.githubusercontent.com/TheApexWu/breadcrumbs/Siri/globe/assets/';
+const {DeckGL,MapView,PolygonLayer,HexagonLayer,ColumnLayer,ScatterplotLayer,ArcLayer,TextLayer,LightingEffect,AmbientLight,_SunLight:SunLight}=deck;
+
+/* ── grade config ── */
+const GC ={A:'#1a7340',B:'#b06000',C:'#c5221f'};
+const GB ={A:'#e6f4ea',B:'#fef3e2',C:'#fce8e6'};
+const GR ={A:[26,115,64], B:[176,96,0],  C:[197,34,31]};
+const GN ={A:'Grade A',   B:'Grade B',   C:'Grade C'};
+const GS ={A:'No critical violations',B:'Violations corrected on site',C:'Serious violations present'};
+const GCL={A:'ga',B:'gb',C:'gc'};
+const rs =g=>g==='C'?1:g==='B'?0.5:g==='A'?0.05:0.25;
+function gRgb(g){return GR[g]||[107,114,128];}
+function gCls(g){return GCL[g]||'gx';}
+
+/* ── hubs ── */
+const HUBS=[
+  {key:'HUNTS PT PRODUCE',name:'Hunts Point Produce Market',pos:[-73.879,40.807],kind:'market'},
+  {key:'BALDOR',          name:'Baldor Specialty Foods',    pos:[-73.878,40.811],kind:'dist'},
+  {key:'RESTAURANT DEPOT',name:'Restaurant Depot / Jetro', pos:[-73.843,40.784],kind:'dist'},
+  {key:'US FOODS',        name:'US Foods (Bronx)',          pos:[-73.866,40.802],kind:'dist'},
+  {key:'SYSCO',           name:'Sysco Metro NY',            pos:[-73.720,40.752],kind:'dist'},
+];
+const SKEYS={'HUNTS PT PRODUCE':null,'BALDOR':'BALDOR','RESTAURANT DEPOT':'RESTAURANT DEPOT','US FOODS':'US FOODS','SYSCO':'SYSCO'};
+/* Heatmap: vivid 7-stop ramp — deep teal → lime → gold → orange → crimson
+   Each stop is clearly distinct so any neighbourhood reads its grade band at a glance */
+const HEXCOLS=[
+  [18, 110,  90, 200],   // 1 — deep teal      (all grade A)
+  [52, 168, 100, 200],   // 2 — medium green
+  [130, 200,  80, 200],  // 3 — yellow-green
+  [240, 200,  40, 210],  // 4 — bright amber
+  [240, 130,  20, 215],  // 5 — orange
+  [220,  60,  20, 220],  // 6 — red-orange
+  [180,  20,  20, 230],  // 7 — deep crimson   (dense grade C)
+];
+
+/* ── state ── */
+let rests=[],scorecard=[],scoreByFirm={},bldMan=null,bldBk=null;
+let showHex=true,showDots=true,showArcs=false,showBld=true,showBk=false;
+let recall=null,pulse=0,affected=new Set();
+let activeGrade='all';
+
+function nearHub(lon,lat){let bi=0,bd=1e9;HUBS.forEach((h,i)=>{const d=(h.pos[0]-lon)**2+(h.pos[1]-lat)**2;if(d<bd){bd=d;bi=i;}});return bi;}
+
+/* ── lighting (dramatic late-afternoon NYC) ── */
+const lighting=new LightingEffect({
+  ambient:new AmbientLight({color:[255,248,235],intensity:1.2}),
+  sun:new SunLight({timestamp:new Date('2024-07-15T17:00:00Z').getTime(),color:[255,235,190],intensity:3.8})
+});
+
+function setLoad(msg,pct){document.getElementById('ls').textContent=msg;if(pct!=null)document.getElementById('lb').style.width=pct+'%';}
+
+function boot(rj,scj,man){
+  scorecard=scj.cards;scoreByFirm=Object.fromEntries(scorecard.map(c=>[c.firm,c]));
+  for(const h of HUBS){const k=SKEYS[h.key],c=k?scoreByFirm[k]:null;h.class1=c?c.class1:0;h.recalls=c?c.recalls:0;h.recent=c?c.recent:null;h.recentProd=c?c.recent_product:null;}
+  rests=rj.rows.map((r,i)=>({...r,i,hub:nearHub(r.lon,r.lat),rs:rs(r.grade)}));
+  bldMan=man;
+  document.getElementById('t-est').textContent=rests.length.toLocaleString();
+  document.getElementById('t-c').textContent=(rj.meta.grades.C||0).toLocaleString();
+  renderDist();
+  buildIndex();
+  document.getElementById('load').style.display='none';
+  dk.setProps({layers:render()});
+  requestAnimationFrame(loop);
+}
+
+/* ── building colours — 5 clearly distinct material families ──────────────────
+   Each category uses a base colour + small per-building hash variation (~±15 RGB)
+   so individual buildings differ slightly while the category reads clearly.
+
+   1. BROWNSTONE   dark reddish-brown   low walk-ups  (h < 20 m)
+   2. BRICK        burnt terracotta      prewar        (20–55 m)
+   3. LIMESTONE    warm grey-tan         classic       (55–120 m)
+   4. CONCRETE     dark slate            postwar slab  (120–220 m)
+   5. GLASS        deep navy-steel       supertall     (220 m+)
+   ─────────────────────────────────────────────────────────────────────────── */
+function bldHash(d){const p=d.p[0];return (Math.abs(Math.round(p[0]*9973)+Math.round(p[1]*9973)))%100;}
+const BLD_SCALE=1.45;
+function bldFill(d){
+  const h=d.h, v=bldHash(d), j=v*0.30-15;   // j in range -15..+15
+  if(h<20){
+    // 1 · BROWNSTONE — dark reddish-brown
+    return[~~Math.min(255,100+j),~~Math.min(255,60+j*.7),~~Math.min(255,42+j*.5),255];
+  }
+  if(h<55){
+    // 2 · BRICK — burnt terracotta
+    return[~~Math.min(255,148+j),~~Math.min(255,78+j*.7),~~Math.min(255,54+j*.5),255];
+  }
+  if(h<120){
+    // 3 · LIMESTONE — warm grey-tan
+    return[~~Math.min(255,155+j*.8),~~Math.min(255,144+j*.7),~~Math.min(255,126+j*.6),255];
+  }
+  if(h<220){
+    // 4 · CONCRETE — dark slate grey
+    return[~~Math.min(255,80+j*.6),~~Math.min(255,85+j*.6),~~Math.min(255,96+j*.6),255];
+  }
+  // 5 · GLASS — deep navy-steel (taller = bluer-darker)
+  const t=Math.min(1,(h-220)/300);
+  return[~~Math.min(255,52-t*12+j*.5),~~Math.min(255,76-t*10+j*.4),~~Math.min(255,112+t*20+j*.3),255];
+}
+function bldLayer(id,data){
+  return new PolygonLayer({id,data,extruded:true,wireframe:false,
+    getPolygon:d=>d.p,
+    getElevation:d=>d.h*BLD_SCALE,
+    getFillColor:bldFill,
+    material:{ambient:.35,diffuse:.95,shininess:180,specularColor:[200,220,255]},
+    pickable:false});
+}
+
+/* ── restaurant dots ── */
+function dotsLayer(){
+  let data=rests;
+  if(activeGrade==='A'||activeGrade==='B'||activeGrade==='C') data=rests.filter(r=>r.grade===activeGrade);
+  if(activeGrade==='hub') data=[];
+  return new ScatterplotLayer({id:'dots',data,
+    getPosition:d=>[d.lon,d.lat],getRadius:12,radiusUnits:'meters',radiusMinPixels:2,radiusMaxPixels:8,
+    getFillColor:d=>[...gRgb(d.grade),210],getLineColor:[255,255,255,180],lineWidthMinPixels:.8,
+    pickable:true,onClick:({object})=>{if(object)openDetail(object);}
+  });
+}
+
+/* ── full layer stack ──
+   ORDER MATTERS: hexbins first (flat ground overlay), then buildings on top.
+   Hexbins are 2D (extruded:false) so they never occlude buildings.            */
+function render(){
+  const L=[];
+  // 1 — flat risk zones drawn on ground first
+  if(showHex)L.push(new HexagonLayer({id:'hex',data:rests,radius:150,extruded:false,pickable:false,
+    getPosition:d=>[d.lon,d.lat],getColorWeight:d=>d.rs,colorAggregation:'MEAN',colorRange:HEXCOLS,
+    opacity:.70,coverage:.88}));
+  // 2 — buildings on top (visible through semi-transparent hexbins)
+  if(showBld&&bldMan)L.push(bldLayer('man',bldMan));
+  if(showBld&&showBk&&bldBk)L.push(bldLayer('bk',bldBk));
+  if(showDots)L.push(dotsLayer());
+  if(recall){
+    const aff=rests.filter(r=>affected.has(r.i));
+    L.push(new ColumnLayer({id:'aff',data:aff,diskResolution:6,radius:38,extruded:true,
+      getPosition:d=>[d.lon,d.lat],getElevation:d=>130+pulse*100,getFillColor:[197,34,31,200],elevationScale:1}));
+  }
+  if(showArcs){
+    const samp=rests.filter((_,k)=>k%80===0);
+    L.push(new ArcLayer({id:'arcs',data:samp,
+      getSourcePosition:d=>HUBS[d.hub].pos,getTargetPosition:d=>[d.lon,d.lat],
+      getSourceColor:d=>recall&&affected.has(d.i)?[197,34,31,200]:[26,115,232,130],
+      getTargetColor:d=>recall&&affected.has(d.i)?[197,34,31,50]:[26,115,232,25],
+      getHeight:.3,getWidth:1.5,updateTriggers:{getSourceColor:recall}}));
+  }
+  L.push(new ColumnLayer({id:'hubs',data:HUBS,diskResolution:16,radius:200,extruded:true,pickable:true,
+    getPosition:d=>d.pos,
+    getElevation:d=>220+d.class1*45+(recall&&recall.key===d.key?pulse*320:0),
+    getFillColor:d=>recall&&recall.key===d.key?[197,34,31,240]:(d.class1>10?[197,34,31,180]:[26,115,232,170]),
+    radiusUnits:'meters',
+    updateTriggers:{getElevation:[recall,pulse],getFillColor:recall},
+    onClick:({object})=>{if(object)selectHub(object.key);}}));
+  L.push(new TextLayer({id:'hubT',data:HUBS,getPosition:d=>d.pos,getText:d=>d.name,
+    getSize:10,sizeUnits:'pixels',
+    getColor:d=>d.class1>10?[175,28,20,240]:[26,115,232,220],
+    getPixelOffset:[0,-20],getTextAnchor:'middle',fontFamily:'Inter,sans-serif',
+    outlineWidth:2,outlineColor:[255,255,255,220],fontSettings:{sdf:true},billboard:true}));
+  return L;
+}
+
+let vs={longitude:-73.985,latitude:40.745,zoom:12.4,pitch:60,bearing:-18,minZoom:10,maxZoom:17};
+const HOME={...vs};
+const dk=new DeckGL({
+  container:'deck',views:new MapView({id:'v',repeat:false}),viewState:vs,
+  controller:{inertia:250,scrollZoom:{smooth:true}},effects:[lighting],
+  parameters:{clearColor:[0.03,0.07,0.16,1]},   /* deep navy sky to match page gradient */
+  layers:[],
+  onViewStateChange:({viewState})=>{vs=viewState;}
+});
+let last=performance.now();
+function loop(now){const dt=Math.min(80,now-last);last=now;if(recall)pulse=(Math.sin(now/360)+1)/2;dk.setProps({viewState:vs,layers:render()});requestAnimationFrame(loop);}
+
+/* ── restaurant detail ── */
+function openDetail(r){
+  const g=r.grade||'?';
+  const ring=document.getElementById('dt-ring');
+  ring.textContent=g;ring.className='dt-ring '+(GCL[g]||'gx');
+  document.getElementById('dt-nm').textContent=r.name||'Restaurant';
+  const gNameEl=document.getElementById('dt-gname');
+  gNameEl.textContent=GN[g]||'Ungraded';
+  gNameEl.style.color=GC[g]||'var(--mut)';
+  document.getElementById('dt-gsub').textContent=GS[g]||'No inspection data';
+  const ctag=document.getElementById('dt-cuisine');
+  if(r.cuisine){ctag.textContent=r.cuisine;ctag.style.display='inline-block';}else{ctag.style.display='none';}
+  const hub=HUBS[r.hub];
+  const riskPct=Math.round((r.rs||0)*100);
+  const rCol=g==='C'?'var(--red)':g==='B'?'var(--amber)':'var(--grn)';
+  document.getElementById('dt-rows').innerHTML=[
+    ['Address', r.address||r.street||'—'],
+    ['Borough', r.boro||'Manhattan'],
+    ['Cuisine', r.cuisine||'—'],
+    ['Distributor', hub?`<span class="hub-tag">◆ ${hub.name}</span>`:'—'],
+    ['Risk score', `<div class="risk-bar-wrap"><span class="risk-pct" style="color:${rCol}">${riskPct}%</span><div class="risk-track"><div class="risk-fill" style="width:${riskPct}%;background:${rCol}"></div></div></div>`],
+  ].map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  const det=document.getElementById('detail');
+  det.style.display='block';
+  requestAnimationFrame(()=>det.classList.add('open'));
+  vs={...vs,longitude:r.lon,latitude:r.lat,zoom:Math.max(vs.zoom,14.5)};
+}
+
+/* ── distributor risk panel ── */
+function renderDist(){
+  const max=Math.max(...scorecard.map(c=>c.class1),1);
+  document.getElementById('dist-list').innerHTML=scorecard.map(c=>{
+    const col=c.class1>10?'var(--red)':c.class1>0?'var(--amber)':'var(--grn)';
+    const hub=HUBS.find(h=>SKEYS[h.key]===c.firm);
+    return `<div class="di"${hub?` data-hub="${hub.key}"`:''}>`+
+      `<span class="di-name" style="color:${col}">${c.firm}</span>`+
+      `<div class="di-bar" style="width:${~~(48*c.class1/max)}px"></div>`+
+      `<span class="di-n">${c.class1} / ${c.recalls}</span></div>`;
+  }).join('');
+  document.querySelectorAll('.di[data-hub]').forEach(el=>el.onclick=()=>selectHub(el.dataset.hub));
+}
+
+function addAlert(cls,txt){
+  const el=document.getElementById('alert-list');
+  const empty=el.querySelector('.rp-empty');
+  if(empty)empty.remove();
+  el.insertAdjacentHTML('afterbegin',`<div class="al ${cls}"><span class="al-sev">${cls.toUpperCase()}</span><span class="al-txt">${txt}</span></div>`);
+}
+
+function selectHub(key){
+  const h=HUBS.find(x=>x.key===key);if(!h)return;
+  showArcs=true;document.getElementById('l-arcs').classList.add('on');
+  vs={...vs,longitude:h.pos[0],latitude:h.pos[1]};
+  dk.setProps({layers:render()});
+}
+
+/* ── search ── */
+let idx=[],focIdx=-1;
+
+function buildIndex(){
+  idx=[];
+  HUBS.forEach(h=>idx.push({type:'hub',label:h.name,sub:h.kind==='market'?'Produce market':'Food distributor',grade:null,action:()=>selectHub(h.key)}));
+  const ord={C:0,B:1,A:2};
+  [...rests].sort((a,b)=>(ord[a.grade]??3)-(ord[b.grade]??3)).forEach(r=>{
+    if(r.name)idx.push({type:'rest',label:r.name,sub:r.boro||'Manhattan',cuisine:r.cuisine||null,grade:r.grade||null,
+      action:()=>{vs={...vs,longitude:r.lon,latitude:r.lat,zoom:15};openDetail(r);}});
+  });
+}
+
+const siEl=document.getElementById('si');
+const scEl=document.getElementById('sc');
+const srEl=document.getElementById('sr');
+
+function showResults(q,def){
+  const qL=q.toLowerCase();
+  let pool=idx;
+  if(activeGrade==='hub')   pool=pool.filter(x=>x.type==='hub');
+  else if(activeGrade!=='all') pool=pool.filter(x=>x.type==='hub'||x.grade===activeGrade);
+  if(qL) pool=pool.filter(x=>
+    x.label.toLowerCase().includes(qL)||
+    (x.cuisine&&x.cuisine.toLowerCase().includes(qL))||
+    (x.sub&&x.sub.toLowerCase().includes(qL))
+  );
+  const hits=pool.slice(0,def?6:10);
+  if(!hits.length){srEl.innerHTML='<div class="sr-empty">No results found</div>';srEl.classList.add('show');return;}
+  const hd=def?`<div class="sr-hd">${activeGrade==='all'?'Highest risk':'Grade '+activeGrade}</div>`:'';
+  srEl.innerHTML=hd+hits.map((x,i)=>{
+    const cls=x.type==='hub'?'gh':gCls(x.grade);
+    const pill=x.grade?`<span class="sr-pill" style="background:${GB[x.grade]};color:${GC[x.grade]}">${x.grade}</span>`:'';
+    return `<div class="sri" data-i="${i}">
+      <div class="sr-bd ${cls}">${x.type==='hub'?'◆':(x.grade||'?')}</div>
+      <div class="sr-info">
+        <div class="sr-nm">${x.label}${pill}</div>
+        <div class="sr-sub">${x.sub}${x.cuisine?` · ${x.cuisine}`:''}</div>
+      </div></div>`;
+  }).join('')+(pool.length>hits.length?`<div class="sr-more">+${pool.length-hits.length} more — keep typing</div>`:'');
+  srEl.classList.add('show');focIdx=-1;
+  srEl.querySelectorAll('.sri').forEach(el=>{
+    const hit=hits[+el.dataset.i];
+    el.onclick=()=>{hit.action();siEl.value=hit.label;hideResults();scEl.style.display='flex';};
+  });
+}
+function hideResults(){srEl.classList.remove('show');focIdx=-1;}
+
+siEl.addEventListener('focus',()=>showResults(siEl.value.trim(),!siEl.value.trim()));
+siEl.addEventListener('input',()=>{
+  const q=siEl.value.trim();
+  scEl.style.display=q?'flex':'none';
+  showResults(q,!q);
+});
+siEl.addEventListener('keydown',e=>{
+  const items=srEl.querySelectorAll('.sri');
+  if(!items.length)return;
+  if(e.key==='ArrowDown'){e.preventDefault();focIdx=Math.min(focIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('hi',i===focIdx));items[focIdx]?.scrollIntoView({block:'nearest'});}
+  else if(e.key==='ArrowUp'){e.preventDefault();focIdx=Math.max(focIdx-1,0);items.forEach((el,i)=>el.classList.toggle('hi',i===focIdx));}
+  else if(e.key==='Enter'&&focIdx>=0)items[focIdx]?.click();
+  else if(e.key==='Escape'){hideResults();siEl.blur();}
+});
+scEl.onclick=()=>{siEl.value='';hideResults();scEl.style.display='none';siEl.focus();};
+document.addEventListener('click',e=>{if(!e.target.closest('#search-card'))hideResults();});
+
+document.querySelectorAll('.gf').forEach(btn=>{
+  btn.onclick=()=>{
+    activeGrade=btn.dataset.g;
+    document.querySelectorAll('.gf').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    dk.setProps({layers:render()});
+    showResults(siEl.value.trim(),!siEl.value.trim());
+  };
+});
+
+/* ── recall / flag event ── */
+let rampTimer=null;
+const flagBtn=document.getElementById('flag-btn');
+const flagSVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`;
+
+flagBtn.onclick=()=>{
+  const chip=document.getElementById('status-chip');
+  const rpdot=document.getElementById('rp-dot');
+  if(recall){
+    recall=null;affected=new Set();
+    flagBtn.classList.remove('armed');
+    flagBtn.innerHTML=flagSVG+'Flag Recall Event<span class="tag" id="flag-tag">inactive</span>';
+    chip.className='';chip.innerHTML='<span class="dot"></span><span id="t-st">All Systems Normal</span>';
+    document.getElementById('t-af').textContent='—';
+    document.getElementById('t-af-w').style.display='none';
+    clearInterval(rampTimer);document.getElementById('alert-list').innerHTML='<div class="rp-empty">No active alerts</div>';
+    rpdot.style.background='var(--grn)';
+    dk.setProps({layers:render()});return;
+  }
+  const cand=HUBS.filter(h=>rests.some(r=>HUBS[r.hub].key===h.key)).sort((a,b)=>b.class1-a.class1);
+  recall=cand[0];
+  const served=rests.filter(r=>HUBS[r.hub].key===recall.key);
+  affected=new Set(served.map(r=>r.i));
+  const cg=served.filter(r=>r.grade==='C').length;
+  showArcs=true;document.getElementById('l-arcs').classList.add('on');
+  flagBtn.classList.add('armed');
+  flagBtn.innerHTML=flagSVG+'Clear Flag<span class="tag" id="flag-tag">active</span>';
+  chip.className='alert';chip.innerHTML='<span class="dot"></span><span>Recall Active — '+recall.name+'</span>';
+  document.getElementById('t-af-w').style.display='flex';
+  vs={...vs,longitude:recall.pos[0],latitude:recall.pos[1]};
+  rpdot.style.background='var(--red)';
+  const prod=(recall.recentProd||'product').trim();
+  setTimeout(()=>addAlert('crit',`Class I recall issued — ${recall.name} · "${prod}"`),300);
+  setTimeout(()=>addAlert('warn',`${served.length} linked establishments identified`),900);
+  if(cg>0)setTimeout(()=>addAlert('warn',`${cg} exposed establishments currently grade C`),1500);
+  let n=0;const N=served.length;
+  rampTimer=setInterval(()=>{n=Math.min(N,n+Math.ceil(N/40));document.getElementById('t-af').textContent=n.toLocaleString();if(n>=N)clearInterval(rampTimer);},40);
+};
+
+/* ── layer toggles ── */
+document.getElementById('l-hex').onclick=e=>{showHex=!showHex;e.target.classList.toggle('on',showHex);dk.setProps({layers:render()});};
+document.getElementById('l-dots').onclick=e=>{showDots=!showDots;e.target.classList.toggle('on',showDots);dk.setProps({layers:render()});};
+document.getElementById('l-arcs').onclick=e=>{showArcs=!showArcs;e.target.classList.toggle('on',showArcs);dk.setProps({layers:render()});};
+document.getElementById('l-bld').onclick=e=>{showBld=!showBld;e.target.classList.toggle('on',showBld);dk.setProps({layers:render()});};
+document.getElementById('b-man').onclick=e=>e.target.classList.toggle('on');
+document.getElementById('b-bk').onclick=e=>{
+  if(bldBk){showBk=!showBk;e.target.classList.toggle('on',showBk);dk.setProps({layers:render()});return;}
+  e.target.textContent='Loading…';e.target.disabled=true;
+  fetch(BASE+'brooklyn_buildings.json').then(r=>r.json()).then(d=>{
+    bldBk=d;showBk=true;e.target.textContent='Brooklyn';e.target.disabled=false;e.target.classList.add('on');dk.setProps({layers:render()});
+  });
+};
+document.getElementById('b-reset').onclick=()=>{vs={...HOME};};
+document.getElementById('dt-x').onclick=()=>{
+  const det=document.getElementById('detail');
+  det.classList.remove('open');
+  setTimeout(()=>det.style.display='none',220);
+};
+
+/* ── boot ── */
+setLoad('Loading restaurant data…',15);
+Promise.all([
+  fetch(BASE+'nyc-restaurants.json').then(r=>{setLoad('Loading buildings…',55);return r.json();}),
+  fetch(BASE+'distributor-scorecard.json').then(r=>r.json()),
+  fetch(BASE+'manhattan_buildings.json').then(r=>{setLoad('Rendering city…',88);return r.json();})
+]).then(([r,sc,man])=>{setLoad('Ready',100);boot(r,sc,man);})
+.catch(e=>{document.getElementById('load').innerHTML=`<div style="color:var(--red);font-weight:600;font-size:16px">Failed to load</div><div style="font-size:12px;margin-top:8px;color:var(--mut)">${e.message}</div>`;});
+</script>
+</body>
+</html>
