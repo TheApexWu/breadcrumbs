@@ -67,13 +67,18 @@ append_history() {
   echo "- $(date -u +%Y-%m-%dT%H:%M:%SZ) $1" >> RALPH.md
 }
 
-commit_and_push() {
+commit_only() {
   local msg="$1"
   git add -A
   if ! git diff --cached --quiet; then
     git commit -m "$msg"
   fi
-  git push || append_history "WARN: git push failed for '$msg' (will retry next iteration)"
+}
+
+# One push per run, on every exit path, so the public remote gets the run's result once
+# instead of each iteration's commit as it lands.
+push_once() {
+  git push || append_history "WARN: git push failed at end of run (commits are local only)"
 }
 
 write_blocked() {
@@ -90,10 +95,12 @@ write_blocked() {
     tail -n 80 "$log" 2>/dev/null
     echo '```'
   } > BLOCKED.md
-  commit_and_push "ralph: BLOCKED on milestone $mid"
+  commit_only "ralph: BLOCKED on milestone $mid"
 }
 
 # --- main loop ---------------------------------------------------------------
+
+trap push_once EXIT
 
 iteration=0
 retries=0
@@ -111,7 +118,7 @@ while true; do
   if [ -z "$target" ]; then
     update_ralph_md "$last_finished" "NO ELIGIBLE MILESTONES LEFT (human-gate or dep-blocked remain)"
     append_history "STOP: no eligible milestone (human-gate M3/M6 or dep-blocked M7 remain — Alex certifies those)"
-    commit_and_push "ralph: all milestones complete"
+    commit_only "ralph: all milestones complete"
     echo "Loop done: all machine-verifiable milestones built. Remaining are human-gate (M3 recon, M6 essay) or blocked on them."
     exit 0
   fi
@@ -152,7 +159,7 @@ Rules for this iteration:
 3. Read ./docs-notes/*.md and RALPH.md for context left by previous iterations. Leave terse notes there for the next iteration.
 4. Complete every task in the milestone, then run EVERY item in its verifications array and make them pass.
 5. When (and only when) all verifications pass: edit PRD.JSON to set this milestone's completed to true and add an 'evidence' field (one line per verification describing proof).
-6. Commit all work with message 'ralph: milestone $mid complete — $mname' and push.
+6. Commit all work with message 'ralph: milestone $mid complete — $mname'. Do NOT push; the loop pushes once when the run ends.
 7. If you become COMPLETELY blocked (missing credential you cannot obtain, external service permanently failing, contradiction in requirements), create BLOCKED.md explaining exactly what is blocking you, what you tried, and what a human must do — then stop.
 8. Keep code comments minimal and only where they inform the next loop iteration. Do not write exhaustive tests; only test what the PRD says to test."
 
@@ -168,7 +175,7 @@ Rules for this iteration:
   if [ -f BLOCKED.md ]; then
     echo "Agent reported BLOCKED — halting."
     append_history "BLOCKED on milestone $mid (see BLOCKED.md)"
-    commit_and_push "ralph: BLOCKED on milestone $mid"
+    commit_only "ralph: BLOCKED on milestone $mid"
     exit 2
   fi
 
@@ -178,8 +185,8 @@ Rules for this iteration:
     last_mid=""
     append_history "DONE milestone $mid ($mname)"
     update_ralph_md "$last_finished" "(between milestones)"
-    # ensure the milestone landed in git even if the agent forgot to commit/push
-    commit_and_push "ralph: milestone $mid complete — $mname"
+    # ensure the milestone landed in git even if the agent forgot to commit
+    commit_only "ralph: milestone $mid complete — $mname"
   else
     # not completed: context window filled, crash, or verifications failed — retry same milestone
     append_history "RETRY milestone $mid (exit=$rc, not marked completed; attempt $((retries + 1)) logged to $log)"

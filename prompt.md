@@ -1,9 +1,10 @@
 # BREADCRUMBS — Ralph loop contract (the HOW)
 
 Per-iteration contract for the autonomous build loop. `ralph.sh` drives it: one milestone per
-`opencode` process, on OpenRouter, verifying each with a program the agent cannot edit, committing +
-pushing per pass. This file is the source of truth for *how* an iteration behaves; `PRD.JSON` is the
-source of truth for *what* (milestones, verifications, hard_rules).
+`opencode` process, on OpenRouter, verifying each with a program the agent cannot edit, committing
+per pass and pushing once when the run ends. This file is the source of truth for *how* an
+iteration behaves; `PRD.JSON` is the source of truth for *what* (milestones, verifications,
+hard_rules).
 
 ## Each iteration you are ONE step of the loop
 1. **Read `PRD.JSON` in full first.** `project.full_context` and `hard_rules` are non-negotiable.
@@ -13,7 +14,8 @@ source of truth for *what* (milestones, verifications, hard_rules).
    with a program — not with your own say-so.
 4. Only when all verifications pass: set the milestone `completed:true` and add an `evidence` array
    (one line per verification: the command + its result).
-5. Commit `ralph: milestone <id> complete — <name>` and push.
+5. Commit `ralph: milestone <id> complete — <name>`. Do not push; `ralph.sh` pushes once when
+   the run ends.
 6. If truly blocked (a credential you cannot get, a source down, a contradiction), write `BLOCKED.md`
    explaining exactly what blocks you and what a human must do — then stop.
 
@@ -42,7 +44,7 @@ source of truth for *what* (milestones, verifications, hard_rules).
 - [x] Real data cached (openFDA / DOHMH / distributors / buildings) in `globe/assets/`.
 - [x] Branch `ralph` checked out; humans isolated on their own branches.
 - [ ] Local MongoDB reachable (M0 preflight asserts it).
-- [ ] Alex's explicit go. The loop spends OpenRouter credit and auto-pushes — do not fire on assumption.
+- [ ] Alex's explicit go. The loop spends OpenRouter credit and pushes when the run ends — do not fire on assumption.
 
 ## Test discipline
 Test only what must survive repeated runs: Mongo load counts + provenance, the exposure aggregation
